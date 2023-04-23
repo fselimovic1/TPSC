@@ -1,0 +1,6 @@
+function randArray = make_rand_array(coeffs)
+randArray = [repmat(10, round(coeffs(1) * 100), 1); repmat(25, ...
+    round(coeffs(2) * 100), 1); repmat(50, round(coeffs(3) * 100), 1); ...
+    repmat(100, round(coeffs(4) * 100), 1)];
+end
+
