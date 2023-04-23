@@ -127,7 +127,7 @@ data
 
 
 \begin_inset Tabular
-<lyxtabular version="3" rows="11" columns="2">
+<lyxtabular version="3" rows="12" columns="2">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="left" valignment="top">
@@ -180,7 +180,29 @@ number of nodes
 \begin_layout Plain Layout
 
 \emph on
-data.nBrances
+data.fn
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+nominal system frequency
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\emph on
+data.nBranches
 \end_layout
 
 \end_inset
@@ -1796,6 +1818,17 @@ data.scada
 \emph default
  data about conventional SCADA measurements, and it is presented in detail
  in Table.
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+
+\series bold
+\emph on
+data.zi 
+\series default
+\emph default
+vector of nodes with no load nor generation, i.e., zero injection buses.
 \end_layout
 
 \begin_layout Standard

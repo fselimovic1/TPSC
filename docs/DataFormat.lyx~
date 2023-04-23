@@ -127,7 +127,7 @@ data
 
 
 \begin_inset Tabular
-<lyxtabular version="3" rows="11" columns="2">
+<lyxtabular version="3" rows="12" columns="2">
 <features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="left" valignment="top">
@@ -180,7 +180,29 @@ number of nodes
 \begin_layout Plain Layout
 
 \emph on
-data.nBrances
+data.fn
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+nominal system frequency
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\emph on
+data.nBranches
 \end_layout
 
 \end_inset
@@ -1338,7 +1360,7 @@ branch status (0=in service, 1=out of service )
 \begin_inset Text
 
 \begin_layout Plain Layout
-minimum bus angle difference
+minimum bus voltage angle difference
 \end_layout
 
 \end_inset
@@ -1367,7 +1389,7 @@ rad
 \begin_inset Text
 
 \begin_layout Plain Layout
-maximum bus angle difference
+maximum bus voltage angle difference
 \end_layout
 
 \end_inset

@@ -1,4 +1,6 @@
 function results = run_wls_tse_pmu(solver, data, measurements)
 nBuses = data.nBuses;
-end
 
+for i = 1:measurements.t * solver.fc
+end
+end

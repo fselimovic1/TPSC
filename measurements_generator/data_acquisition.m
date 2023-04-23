@@ -33,19 +33,7 @@ if strcmp(data.mode, 'tracking')
         data.f = repmat(data.fVal, 1, samples);
         load = loadrandomwalk(samples, data.lPerc);
     end
-%     if data.fType == 3
-%         data.f = get_predefined_curve(fPM, tSE, data.pstart, fn, ...
-%             data.fType, data.fSubType, data.fMin);
-%         load = load_for_fcurve(data.fSubType, fPM, fn, data.f);
-%     elseif data.fType == 2
-%         data.f = get_predefined_curve(fPM, tSE, data.pstart, fn, ...
-%             data.fType, data.fSubType, data.fMin);
-%         load = load_profile(fPM, tSE);
-%     elseif data.fType == 1
-%         data.f = repmat(fn + 1, 1, tSE * fPM);
-%         load = load_profile(fPM, tSE);
-%     end
-
+    
 %   Distrubute Loads & Allocate memory
     loadBuses = find(mpc.bus(:, 3) ~= 0);
     dybuses = loadBuses(mod(1:numel(loadBuses), data.occursOfLoad) ~= 0);
@@ -242,5 +230,6 @@ measurements.scada(measurements.scada(:, 1) == 0, :) = [];
 % Save results
 measurements.exactVals = U_all .* exp(1i * theta_all);
 measurements.f = freqProfile;
+measurements.t = tSE;
 end
 
