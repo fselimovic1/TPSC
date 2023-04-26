@@ -12,7 +12,7 @@
 
 %----------------------------About Solver----------------------------------
 solver.domain = 'real';
-solver.method = 'wls_tse';
+solver.method = 'sgn_sse';
 solver.fc = 10;
 solver.maxNumberOfIter = 20;
 solver.eps = 1e-6;
@@ -20,7 +20,7 @@ solver.eps = 1e-6;
 
 %---------------------Load Power System & Measurements---------------------
 name = 'case39';
-version = 'DynA';
+version = 'E';
 
 load(strcat('SG', name, 'D_', version));
 load(strcat('SG', name, 'M_', version));

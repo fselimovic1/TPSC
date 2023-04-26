@@ -8,7 +8,7 @@ clear
 %--------------------------Generate New Data-------------------------------
 %--------------------Power system with measurement deiveces----------------
 name = 'case39';
-version = 'DynA';
+version = 'E';
 load(strcat('SG', name, 'D_', version));
 mpc = ext2int(loadcase(name));
 %--------------------------------------------------------------------------
@@ -16,7 +16,7 @@ mpc = ext2int(loadcase(name));
 %-----------------------------State Estimation mode------------------------
 % 'tracking' - measurements will be taken for a specific time period
 % 'static' - measurements will be taken for a single, distinct moment in time.
-data.mode = 'tracking';
+data.mode = 'static';
 %--------------------------------------------------------------------------
 
 %---------------------------Tracking SE options----------------------------

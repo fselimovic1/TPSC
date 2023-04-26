@@ -11,7 +11,7 @@ function results_sse(solver, measurements, results)
  if results.converged
      fprintf('\tExecution time: %f [ms]\n', results.t*1000) 
  else
-     fprintf('\tThe algortihm did not converged after: %d iterations!\n \t :( :( :(', solver.maxNumberOfIter)
+     fprintf('\tThe algortihm did not converged after: %d iterations!\n \t :( :( :(\n', solver.maxNumberOfIter)
      return;
  end
  fprintf('\tNumber of iterations: %d\n', results.iter) 

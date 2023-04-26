@@ -9,7 +9,7 @@ clear
 %--------------------Distribute Measurement Devices------------------------
 %----------------------------Power System----------------------------------
 name = 'case39';
-version = 'DynA';
+version = 'E';
 %--------------------------------------------------------------------------
 
 %---------------------------Legacy measurements----------------------------
@@ -31,7 +31,7 @@ freqOfOccurSCADA = [ 1,  1,  0,  0,  0,  1 ];
 %               2 - Injected current phasor
 %               3 - Bus voltage phasor  
 %                  1  2  3
-freqOfOccurPMU = [ 1, 0, 1 ];
+freqOfOccurPMU = [ 0, 0, 0 ];
 
 % 1 - Share of devices from P10
 % 2 - Share of devices from P25
