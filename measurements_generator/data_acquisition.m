@@ -26,13 +26,12 @@ Qgen = zeros(buses, 1);
 phase_shift = 0;
 U_all = zeros(buses, samples);
 theta_all = zeros(buses, samples);
-fBus = ones(buses, 2);
+fBus = ones(buses, 4);
 pmuidx = data.pmu(:, 1);
 
 % Meausred values
-measurements.pmu = []; % zeros(samples * size(data.pmu, 1), 6);
-mpmu = [];
-iPMU = 1;
+ifPMU = 1;
+isynPMU = 1;
 measurements.scada = zeros(samples * nSCADA, 5);
 
 if strcmp(data.mode, 'tracking')
@@ -61,7 +60,7 @@ if ~isfield(data, 'adj')
 end
 
 freqProfile = data.f;
-for i = 1:samples
+for i = 0:samples
     if strcmp(data.mode, 'tracking')
         % Dynamic Load
         mpc.bus(dybuses, 3) = active_dy_load(:, i);
@@ -91,8 +90,11 @@ for i = 1:samples
     end
     fBus(pmuidx, 1) = ones(nPMUs, 1) .* freqProfile(i) + ...
                       randn(nPMUs, 1) .* data.pmu(:, 5);
-    fBus(pmuidx, 2) = ones(nPMUs, 1) .* rocof + ...
+    fBus(pmuidx, 2) = ones(nPMUs, 1) .* freqProfile(i);
+    fBus(pmuidx, 3) = ones(nPMUs, 1) .* rocof + ...
                       randn(nPMUs, 1) .* data.pmu(:, 6);
+    fBus(pmuidx, 4) = ones(nPMUs, 1) .* rocof;
+    
     % Data
     U = result.bus(:, 8);
     U_all(:, i) = U;
@@ -189,63 +191,61 @@ for i = 1:samples
         mPeriod = 1/data.pmu(j, 7);
         if  mod(ti, mPeriod) == 0
             bus = data.pmu(j, 1);
-            measurements.pmu((i - 1) * size(data.pmu, 1) + j, 1) = i;
-            measurements.pmu((i - 1) * size(data.pmu, 1) + j, 2) = data.pmu(j, 1);
-            measurements.pmu((i - 1) * size(data.pmu, 1) + j, 3) = data.pmu(j, 2);
-            measurements.pmu((i - 1) * size(data.pmu, 1) + j, [9, 10]) = ...
-                                                   fBus(data.pmu(j, 1), :);
-            if i == 1
-                measurements.pmu((i - 1) * size(data.pmu, 1) + j, 10) = ...
-                    (freqProfile(i) - fn) * fPM + randn * data.pmu(j, 6);
-            else
-                measurements.pmu((i - 1) * size(data.pmu, 1) + j, 10) = ...
-                    (freqProfile(i) - freqProfile(i - 1)) * fPM + randn * data.pmu(j, 6);
+            Vj = Ubus(bus);
+            % - fPMU
+            measurements.fpmu(ifPMU, [1, 2]) = [i, bus];
+            measurements.fpmu(ifPMU, 3:6) = fBus(bus, :);
+            ifPMU = ifPMU + 1;
+            % - synPMU
+            % - Bus voltage
+            measurements.synpmu(isynPMU, 1) = i;
+            measurements.synpmu(isynPMU, 2) = bus;
+            measurements.synpmu(isynPMU, 3) = 3;
+            measurements.synpmu(isynPMU, 4) = bus;
+            measurements.synpmu(isynPMU, 5:8) = [ abs(Vj) * (1 + randn * data.pmu(j, 3)/100)...
+                                  angle(Vj) + randn * data.pmu(j, 4) ...
+                                  abs(Vj) angle(Vj)];
+            isynPMU = isynPMU + 1;
+            adjBuses = data.adj{bus};
+            branches = [];
+            for k = 1:numel(adjBuses)
+                branches = [branches; find(data.branch(:, 1) == [bus ...
+                    adjBuses(k)] & data.branch(:, 2) == [adjBuses(k) bus])];
             end
-            if data.pmu(j, 1) == 1
-                nBranch = data.pmu(j, 2);
-                if data.pmu(j, 2) > 0
+            iCh = 1;
+            while data.pmu(j, 2) == -1 || iCh <= data.pmu(j, 2)
+                % - Branch current
+                if branches(iCh) <= data.nBranches
+                    nBranch = branches(iCh);
                     Ibranch = (result.branch(nBranch, 14)./mpc.baseMVA - 1i * ...
-                        result.branch(nBranch, 15)./mpc.baseMVA)/(conj(Ubus(result.branch(nBranch, 1))));
+                               result.branch(nBranch, 15)./mpc.baseMVA)/...
+                               (conj(Ubus(result.branch(nBranch, 1))));
                 else
-                    nBranch = abs(nBranch);
+                    nBranch = branches(iCh) - data.nBranches;
                     Ibranch = (result.branch(nBranch, 16)./mpc.baseMVA - ...
-                        1i * result.branch(nBranch, 17)./mpc.baseMVA)/(conj(Ubus(result.branch(nBranch, 2))));
+                               1i * result.branch(nBranch, 17)./mpc.baseMVA)...
+                               /(conj(Ubus(result.branch(nBranch, 2))));
                 end
-                % Measured values (exact + gaussian white noise)
-                measurements.pmu((i - 1) * size(data.pmu, 1) + j, 4) = ...
-                    abs(Ibranch) * (1 + randn * data.pmu(j, 3)/100);
-                measurements.pmu((i - 1) * size(data.pmu, 1) + j, 5) = ...
-                    angle(Ibranch) + randn * data.pmu(j, 4) * pi/180;
-                % Exact values
-                measurements.pmu((i - 1) * size(data.pmu, 1) + j, 6) = abs(Ibranch);
-                measurements.pmu((i - 1) * size(data.pmu, 1) + j, 7) = angle(Ibranch);               
-            elseif data.pmu(j, 1) == 2
-                Ij = I(data.pmu(j, 2));
-                % Measured values (exact + gaussian white noise)
-                measurements.pmu((i - 1) * size(data.pmu, 1) + j, 4) = ...
-                    abs(Ij) * (1 + randn * data.pmu(j, 3)/100);
-                measurements.pmu((i - 1) * size(data.pmu, 1) + j, 5) = ...
-                    angle(Ij) + randn * data.pmu(j, 4) * pi/180;
-                % Exact values
-                measurements.pmu((i - 1) * size(data.pmu, 1) + j, 6) = abs(Ij);
-                measurements.pmu((i - 1) * size(data.pmu, 1) + j, 7) = angle(Ij);                
-            else
-                Vj = Ubus(data.pmu(j, 2));
-                % Measured values (exact + gaussian white noise)
-                measurements.pmu((i - 1) * size(data.pmu, 1) + j, 4) = ...
-                    abs(Vj) * (1 + randn * data.pmu(j, 3)/100);
-                measurements.pmu((i - 1) * size(data.pmu, 1) + j, 5) = ...
-                    angle(Vj) + randn * data.pmu(j, 4) * pi/180;
-                % Exact values
-                measurements.pmu((i - 1) * size(data.pmu, 1) + j, 6) = abs(Vj);
-                measurements.pmu((i - 1) * size(data.pmu, 1) + j, 7) = angle(Vj);
+                measurements.synpmu(isynPMU, 1) = i;
+                measurements.synpmu(isynPMU, 2) = bus;
+                measurements.synpmu(isynPMU, 3) = 1;
+                measurements.synpmu(isynPMU, 4) = branches(iCh);
+                measurements.synpmu(isynPMU, 5:8) = [ abs(Ibranch) * (1 + randn...
+                                  * data.pmu(j, 3)/100) angle(Ibranch) + randn...
+                                  * data.pmu(j, 4) abs(Ibranch) angle(Ibranch)];
+                isynPMU = isynPMU + 1;              
+                if iCh == numel(branches)
+                    break
+                end
+                iCh = iCh + 1;
             end
         end
     end
 end
-% Delete empty rows
-measurements.pmu(measurements.pmu(:, 1) == 0, :) = [];
-measurements.scada(measurements.scada(:, 1) == 0, :) = [];
+% 0 - indexed time
+measurements.scada(:, 1) = measurements.scada(:, 1) - 1;
+measurements.synpmu(:, 1) = measurements.synpmu(:, 1) - 1;
+measurements.fpmu(:, 1) = measurements.fpmu(:, 1) - 1;
 
 % Save results
 measurements.exactVals = U_all .* exp(1i * theta_all);
