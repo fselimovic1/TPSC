@@ -5,6 +5,8 @@ fPM = 1;
 if ~isempty(data.pmu)
     fPM = max(data.pmu(:, 7));
 end
+nPMUs = size(data.pmu, 1);
+nSCADA = size(data.scada, 1);
 buses = size(data.bus, 1);
 gens = mpc.gen(:, 1);
 mpopt = mpoption('out.all', 0);
@@ -14,7 +16,7 @@ if strcmp(data.mode, 'static')
     data.load = [];
     data.f = fn;
 else
-    samples = tSE * fPM;
+    samples = tSE * fPM + 1;
 end
 tstep = 1/fPM;
 
@@ -24,10 +26,15 @@ Qgen = zeros(buses, 1);
 phase_shift = 0;
 U_all = zeros(buses, samples);
 theta_all = zeros(buses, samples);
+fBus = ones(buses, 2);
+pmuidx = data.pmu(:, 1);
 
 % Meausred values
-measurements.pmu = zeros(samples * size(data.pmu, 1), 6);
-measurements.scada = zeros(samples * size(data.scada, 1), 5);
+measurements.pmu = []; % zeros(samples * size(data.pmu, 1), 6);
+mpmu = [];
+iPMU = 1;
+measurements.scada = zeros(samples * nSCADA, 5);
+
 if strcmp(data.mode, 'tracking')
     if strcmp(data.dynamics, 'const')
         data.f = repmat(data.fVal, 1, samples);
@@ -48,9 +55,11 @@ if strcmp(data.mode, 'tracking')
         end
     end
 end
+% Adjacency list is needed.
+if ~isfield(data, 'adj')
+    data.adj = adjacencylist(data);
+end
 
-% NOTE: when ti = k*20 + n*10 [ms] (n in N)-> angle shift is neglected for the sake
-% of simplicity
 freqProfile = data.f;
 for i = 1:samples
     if strcmp(data.mode, 'tracking')
@@ -65,16 +74,25 @@ for i = 1:samples
             mpc.branch(:, 5) = mpc.branch(:, 5).*(freqProfile(i)/fn);
             mpc.bus(:, 6) = mpc.bus(:, 6) .* (freqProfile(i)/fn);
         else
-            fI = freqProfile(i); % mean([freqProfile(i - 1), freqProfile(i)]);
-            phase_shift = phase_shift + 360 * fn/fPM + 360 * fn/fPM * (fI/fn - 1);
-            mpc.branch(:, 4) = mpc.branch(:, 4).*(freqProfile(i)/freqProfile(i - 1));
-            mpc.branch(:, 5) = mpc.branch(:, 5).*(freqProfile(i)/freqProfile(i - 1));
-            mpc.bus(:, 6) = mpc.bus(:, 6).*(freqProfile(i)/freqProfile(i - 1));
+            fI = freqProfile(i);
+            phase_shift = phase_shift + 360 * fI/fPM;
+            mpc.branch(:, 4) = mpc.branch(:, 4) .* (freqProfile(i)/freqProfile(i - 1));
+            mpc.branch(:, 5) = mpc.branch(:, 5) .* (freqProfile(i)/freqProfile(i - 1));
+            mpc.bus(:, 6) = mpc.bus(:, 6) .* (freqProfile(i)/freqProfile(i - 1));
         end
     end
     % Calculations
     result = ext2int(runpf(mpc, mpopt));
-  
+    % Frequency and RoCoF measurements
+    if i == 1
+        rocof = (freqProfile(i) - fn) * fPM;
+    else
+        rocof = (freqProfile(i) - freqProfile(i - 1)) * fPM;
+    end
+    fBus(pmuidx, 1) = ones(nPMUs, 1) .* freqProfile(i) + ...
+                      randn(nPMUs, 1) .* data.pmu(:, 5);
+    fBus(pmuidx, 2) = ones(nPMUs, 1) .* rocof + ...
+                      randn(nPMUs, 1) .* data.pmu(:, 6);
     % Data
     U = result.bus(:, 8);
     U_all(:, i) = U;
@@ -83,7 +101,7 @@ for i = 1:samples
     theta(theta > 180) = theta(theta > 180) - 360;
     theta = theta.*pi/180;
     theta_all(:, i) = theta;
-    Ubus= U.*cos(theta) + 1i*U.*sin(theta);
+    Ubus = U.*cos(theta) + 1i*U.*sin(theta);
     Pgen(gens) = result.gen(:, 2)./mpc.baseMVA;
     Qgen(gens) = result.gen(:, 3)./mpc.baseMVA;
     Pload = result.bus(:, 3)./mpc.baseMVA;
@@ -97,53 +115,54 @@ for i = 1:samples
     ti = (i - 1)/(fPM);
     % Measuring 
     % SCADA
-    for j = 1:size(data.scada, 1)
-        measurements.scada((i - 1) * size(data.scada, 1) + j, 1) = i;
-        measurements.scada((i - 1) * size(data.scada, 1) + j, 2) = data.scada(j, 1);
-        measurements.scada((i - 1) * size(data.scada, 1) + j, 3) = data.scada(j, 2);
-        if data.scada(j, 1) == 1
-            nBranch = data.scada(j, 2);
-            if data.scada(j, 2) > 0
+    for j = 1:nSCADA
+        measurements.scada((i - 1) * nSCADA + j, 1) = i;
+        measurements.scada((i - 1) * nSCADA + j, 2) = data.scada(j, 1);
+        measurements.scada((i - 1) * nSCADA + j, 3) = data.scada(j, 2);
+        measurements.scada((i - 1) * nSCADA + j, 4) = data.scada(j, 3);
+        if data.scada(j, 2) == 1
+            nBranch = data.scada(j, 3);
+            if data.scada(j, 3) > 0
                 Pbranch = result.branch(nBranch, 14)./mpc.baseMVA;
             else
                 nBranch = abs(nBranch);
                 Pbranch = result.branch(nBranch, 16)./mpc.baseMVA;
             end
             % Measured values (exact + gaussian white noise)
-            measurements.scada((i - 1) * size(data.pmu, 1) + j, 4) =...
-                Pbranch + (randn * data.scada(j, 3));
+            measurements.scada((i - 1) * nSCADA + j, 5) =...
+                Pbranch + (randn * data.scada(j, 4));
             % Exact values
-            measurements.scada((i - 1) * size(data.pmu, 1) + j, 5) = Pbranch;   
-        elseif data.scada(j, 1) == 2
-            nBranch = data.scada(j, 2);
-            if data.scada(j, 2) > 0
+            measurements.scada((i - 1) * nSCADA + j, 6) = Pbranch;   
+        elseif data.scada(j, 2) == 2
+            nBranch = data.scada(j, 3);
+            if data.scada(j, 3) > 0
                 Qbranch = result.branch(nBranch, 15)./mpc.baseMVA;
             else
                 nBranch = abs(nBranch);
                 Qbranch = result.branch(nBranch, 17)./mpc.baseMVA;
             end
             % Measured values (exact + gaussian white noise)
-            measurements.scada((i - 1) * size(data.pmu, 1) + j, 4) = ...
-                Qbranch + (randn * data.scada(j, 3));
+            measurements.scada((i - 1) * nSCADA + j, 5) = ...
+                Qbranch + (randn * data.scada(j, 4));
             % Exact values
-            measurements.scada((i - 1) * size(data.pmu, 1) + j, 5) = Qbranch;
-        elseif data.scada(j, 1) == 3
+            measurements.scada((i - 1) * nSCADA + j, 6) = Qbranch;
+        elseif data.scada(j, 2) == 3
             % Measured values (exact + gaussian white noise)
-            measurements.scada((i - 1) * size(data.pmu, 1) + j, 4) = ...
-                P(data.scada(j, 2))  + randn * data.scada(j, 3);
+            measurements.scada((i - 1) * nSCADA + j, 5) = ...
+                P(data.scada(j, 3))  + randn * data.scada(j, 4);
             % Exact values
-            measurements.scada((i - 1) * size(data.pmu, 1) + j, 5) = ...
-                P(data.scada(j, 2));
-        elseif data.scada(j, 1) == 4
+            measurements.scada((i - 1) * nSCADA + j, 6) = ...
+                P(data.scada(j, 3));
+        elseif data.scada(j, 2) == 4
             % Measured values (exact + gaussian white noise)
-            measurements.scada((i - 1) * size(data.pmu, 1) + j, 4) = ...
-                Q(data.scada(j, 2))  + randn * data.scada(j, 3);
+            measurements.scada((i - 1) * nSCADA + j, 5) = ...
+                Q(data.scada(j, 3))  + randn * data.scada(j, 4);
             % Exact values
-            measurements.scada((i - 1) * size(data.pmu, 1) + j, 5) = ...
-                Q(data.scada(j, 2));  
-        elseif data.scada(j, 1) == 5
-            nBranch = data.scada(j, 2);
-            if data.scada(j, 2) > 0
+            measurements.scada((i - 1) * nSCADA + j, 6) = ...
+                Q(data.scada(j, 3));  
+        elseif data.scada(j, 2) == 5
+            nBranch = data.scada(j, 3);
+            if data.scada(j, 3) > 0
                 Ibranch = (result.branch(nBranch, 14)./mpc.baseMVA - 1i *... 
                     result.branch(nBranch, 15)./mpc.baseMVA)/(conj(Ubus(result.branch(nBranch, 1))));
             else
@@ -152,16 +171,16 @@ for i = 1:samples
                     result.branch(nBranch, 17)./mpc.baseMVA)/(conj(Ubus(result.branch(nBranch, 2))));
             end
             % Measured values (exact + gaussian white noise)
-            measurements.scada((i - 1) * size(data.pmu, 1) + j, 4) = ...
-                abs(Ibranch) + randn * data.scada(j, 3);
+            measurements.scada((i - 1) * nSCADA + j, 5) = ...
+                abs(Ibranch) + randn * data.scada(j, 4);
             % Exact values
-            measurements.scada((i - 1) * size(data.pmu, 1) + j, 5) = abs(Ibranch);
-        elseif data.scada(j, 1) == 6
+            measurements.scada((i - 1) * nSCADA + j, 6) = abs(Ibranch);
+        elseif data.scada(j, 2) == 6
             % Measured values (exact + gaussian white noise)
-            measurements.scada((i - 1) * size(data.pmu, 1) + j, 4) = ...
-                U(data.scada(j, 2)) + randn * data.scada(j, 3);
+            measurements.scada((i - 1) * nSCADA + j, 5) = ...
+                U(data.scada(j, 3)) + randn * data.scada(j, 4);
             % Exact values
-            measurements.scada((i - 1) * size(data.pmu, 1) + j, 5) = U(data.scada(j, 2));
+            measurements.scada((i - 1) * nSCADA + j, 6) = U(data.scada(j, 3));
         end
     end
     
@@ -169,11 +188,12 @@ for i = 1:samples
     for j = 1:size(data.pmu, 1)
         mPeriod = 1/data.pmu(j, 7);
         if  mod(ti, mPeriod) == 0
+            bus = data.pmu(j, 1);
             measurements.pmu((i - 1) * size(data.pmu, 1) + j, 1) = i;
             measurements.pmu((i - 1) * size(data.pmu, 1) + j, 2) = data.pmu(j, 1);
             measurements.pmu((i - 1) * size(data.pmu, 1) + j, 3) = data.pmu(j, 2);
-            measurements.pmu((i - 1) * size(data.pmu, 1) + j, 9) = ...
-                freqProfile(i) + randn * data.pmu(j, 5);
+            measurements.pmu((i - 1) * size(data.pmu, 1) + j, [9, 10]) = ...
+                                                   fBus(data.pmu(j, 1), :);
             if i == 1
                 measurements.pmu((i - 1) * size(data.pmu, 1) + j, 10) = ...
                     (freqProfile(i) - fn) * fPM + randn * data.pmu(j, 6);
