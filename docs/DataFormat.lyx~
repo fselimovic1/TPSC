@@ -2261,6 +2261,33 @@ measurement type (1-active power flow, 2-reactive power flow, 3-active power
 
 \begin_layout Plain Layout
 line number (type 1, 2 and 6) or bus number (type 3, 4 and 5 )
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+Line number corresponds to a row number of the given line in 
+\emph on
+data
+\emph default
+.
+\emph on
+branches
+\emph default
+ matrix.
+ When a measurement device is on a 
+\begin_inset Quotes eld
+\end_inset
+
+to
+\begin_inset Quotes erd
+\end_inset
+
+ side of a line, its number is given with a minus sign.
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \end_inset

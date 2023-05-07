@@ -21,9 +21,14 @@ data.mode = 'tracking';
 
 %---------------------------Tracking SE options----------------------------
 data.t = 5;
-data.dynamics = 'const';
-data.fVal = 50;
-data.lPerc = 0.001;
+data.dynamics = 'polyfreq';
+% - Constant frequency
+% -            fValue
+data.fParams = 50.2;
+% - Curves for polynomial frequency estimation
+% -              tS    A/B   fMin
+data.fParams = [ 1      1    49.5 ];
+data.lPerc = 0.00001;
 data.occursOfLoad = 2;
 
 %-----------------------PMU dynamic response model-------------------------

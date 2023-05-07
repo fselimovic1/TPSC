@@ -41,14 +41,14 @@ pmu.dens = 30;
 pmu.nCurrCh = -1; 
 % - Standard deviations of PMU measurements
 pmu.sd = [ ...
- %         mag[%]     phase[angle]   freq[Hz]   RoCoF[%]  
-            0.05         0.01         0.002       0.04 ];
+ %         mag[%]     phase[rad]   freq[Hz]   RoCoF[%]  
+            0.05         0         0.002       0.04 ];
 % 1 - Share of devices from P10
 % 2 - Share of devices from P25
 % 3 - Share of devices from P50
 % 4 - Share of devices from P100
 %                      1     2     3    4
-pmu.percDiffRepRates = [  0.15  0.15  0.5  0.2  ];
+pmu.percDiffRepRates = [  0.1  0.1  0.8  0  ];
 %--------------------------------------------------------------------------
 
 data = distribute_devices(name, scada, pmu);

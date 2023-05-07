@@ -36,7 +36,13 @@ measurements.scada = zeros(samples * nSCADA, 5);
 
 if strcmp(data.mode, 'tracking')
     if strcmp(data.dynamics, 'const')
-        data.f = repmat(data.fVal, 1, samples);
+        data.f = repmat(data.fParams, 1, samples);
+        load = loadrandomwalk(samples, data.lPerc);
+    elseif strcmp(data.dynamics, 'polyfreq')
+        tS = data.fParams(1);
+        fType = data.fParams(2);
+        fMin = data.fParams(3);
+        data.f = get_predefined_curve(fPM, tSE, tS, fn, 3, fType, fMin);
         load = loadrandomwalk(samples, data.lPerc);
     end
     
@@ -60,7 +66,7 @@ if ~isfield(data, 'adj')
 end
 
 freqProfile = data.f;
-for i = 0:samples
+for i = 1:samples
     if strcmp(data.mode, 'tracking')
         % Dynamic Load
         mpc.bus(dybuses, 3) = active_dy_load(:, i);
@@ -74,7 +80,7 @@ for i = 0:samples
             mpc.bus(:, 6) = mpc.bus(:, 6) .* (freqProfile(i)/fn);
         else
             fI = freqProfile(i);
-            phase_shift = phase_shift + 360 * fI/fPM;
+            phase_shift = phase_shift + 360 * fn/fPM + 360 * fn/fPM * (fI/fn - 1);
             mpc.branch(:, 4) = mpc.branch(:, 4) .* (freqProfile(i)/freqProfile(i - 1));
             mpc.branch(:, 5) = mpc.branch(:, 5) .* (freqProfile(i)/freqProfile(i - 1));
             mpc.bus(:, 6) = mpc.bus(:, 6) .* (freqProfile(i)/freqProfile(i - 1));
@@ -219,12 +225,12 @@ for i = 0:samples
                     nBranch = branches(iCh);
                     Ibranch = (result.branch(nBranch, 14)./mpc.baseMVA - 1i * ...
                                result.branch(nBranch, 15)./mpc.baseMVA)/...
-                               (conj(Ubus(result.branch(nBranch, 1))));
+                               (conj(Ubus(bus)));
                 else
                     nBranch = branches(iCh) - data.nBranches;
                     Ibranch = (result.branch(nBranch, 16)./mpc.baseMVA - ...
                                1i * result.branch(nBranch, 17)./mpc.baseMVA)...
-                               /(conj(Ubus(result.branch(nBranch, 2))));
+                               /(conj(Ubus(bus)));
                 end
                 measurements.synpmu(isynPMU, 1) = i;
                 measurements.synpmu(isynPMU, 2) = bus;

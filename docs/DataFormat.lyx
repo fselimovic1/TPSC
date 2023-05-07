@@ -90,6 +90,24 @@ Toolbox for Power System Computations - TPSC
 \end_layout
 
 \begin_layout Section
+Next Steps
+\end_layout
+
+\begin_layout Itemize
+Adjust data filter to the psat based disturbance location algorithm after
+ I finsih its implementation.
+\end_layout
+
+\begin_layout Itemize
+Updata static state estimation in complex variables algorithm with respect
+ to the new data format.
+\end_layout
+
+\begin_layout Itemize
+State estimation in real variables.
+\end_layout
+
+\begin_layout Section
 DATA
 \end_layout
 
