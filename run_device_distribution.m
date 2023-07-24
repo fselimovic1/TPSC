@@ -8,8 +8,8 @@ clear
 
 %--------------------Distribute Measurement Devices------------------------
 %----------------------------Power System----------------------------------
-name = 'case300';
-version = 'Dyn';
+name = 'case9241pegase';
+version = 'A';
 %--------------------------------------------------------------------------
 
 %---------------------------Legacy measurements----------------------------
@@ -21,7 +21,7 @@ version = 'Dyn';
 %               5 - Branch current magnitude
 %               6 - Bus voltage magnitude 
 %                     1   2   3   4   5   6
-scada.freqOfOccur = [ -1,  1,  1,  1,  0,  1 ];
+scada.freqOfOccur = [ 1,  1,  0,  0,  0,  4 ];
 %                      1     2     3     4     5     6 
 scada.sd =          [ 0.02  0.02  0.02  0.02  0.02  0.02  ];
 scada.repRate = 1;
@@ -37,7 +37,7 @@ scada.repRate = 1;
 %               2 - Injected current phasor
 %               3 - Bus voltage phasor  
 %                  1  2  3
-pmu.dens = 30;
+pmu.dens = 50;
 pmu.nCurrCh = -1; 
 % - Standard deviations of PMU measurements
 pmu.sd = [ ...
@@ -47,8 +47,8 @@ pmu.sd = [ ...
 % 2 - Share of devices from P25
 % 3 - Share of devices from P50
 % 4 - Share of devices from P100
-%                      1     2     3    4
-pmu.percDiffRepRates = [  0.1  0.1  0.8  0  ];
+%                        1     2     3    4
+pmu.percDiffRepRates =[ 0.1   0.1   0.6  0.2  ];
 %--------------------------------------------------------------------------
 
 data = distribute_devices(name, scada, pmu);

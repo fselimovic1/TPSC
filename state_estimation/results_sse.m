@@ -4,7 +4,7 @@ function results_sse(solver, measurements, results)
  fprintf('\tMethod: %s\n', results.method);
  fprintf('\tPower System: %s\n', results.sys);
  fprintf('\tMeasurement recived from SCADA (legacy): %d\n', size(measurements.scada, 1))
- fprintf('\tMeasurement recived from WAMS (PMU): %d\n', size(measurements.pmu, 1))
+ fprintf('\tMeasurement recived from WAMS (PMU): %d\n', size(measurements.synpmu, 1))
  fprintf('\tNumber of non-zeros in H: %d\n', results.nonZerosInH)
  fprintf('\tPower system redundancy: %f\n', results.redundancy)
  disp(' ')

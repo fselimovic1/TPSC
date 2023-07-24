@@ -94,16 +94,6 @@ Next Steps
 \end_layout
 
 \begin_layout Itemize
-Adjust data filter to the psat based disturbance location algorithm after
- I finsih its implementation.
-\end_layout
-
-\begin_layout Itemize
-Updata static state estimation in complex variables algorithm with respect
- to the new data format.
-\end_layout
-
-\begin_layout Itemize
 State estimation in real variables.
 \end_layout
 
@@ -1949,7 +1939,7 @@ bus number
 \begin_inset Text
 
 \begin_layout Plain Layout
-number of current channels
+number of current channels, -1 for all incident branches
 \end_layout
 
 \end_inset
@@ -3248,13 +3238,6 @@ Measurements Generator
 
 \begin_layout Subsection
 Static State Estimation
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-\color red
-Not up to date with new data formats!
 \end_layout
 
 \begin_layout Subsection

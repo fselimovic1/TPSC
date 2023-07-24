@@ -11,7 +11,7 @@
 %--------------------------------------------------------------------------
 
 %----------------------------About Solver----------------------------------
-solver.domain = 'real';
+solver.domain = 'complex';
 solver.method = 'sgn_sse';
 solver.fc = 10;
 solver.maxNumberOfIter = 20;
@@ -19,8 +19,8 @@ solver.eps = 1e-6;
 %--------------------------------------------------------------------------
 
 %---------------------Load Power System & Measurements---------------------
-name = 'case39';
-version = 'E';
+name = 'case9241pegase';
+version = 'A';
 
 load(strcat('SG', name, 'D_', version));
 load(strcat('SG', name, 'M_', version));

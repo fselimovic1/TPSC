@@ -90,6 +90,14 @@ Toolbox for Power System Computations - TPSC
 \end_layout
 
 \begin_layout Section
+Next Steps
+\end_layout
+
+\begin_layout Itemize
+State estimation in real variables.
+\end_layout
+
+\begin_layout Section
 DATA
 \end_layout
 
@@ -1931,7 +1939,7 @@ bus number
 \begin_inset Text
 
 \begin_layout Plain Layout
-number of current channels
+number of current channels, -1 for all incident branches
 \end_layout
 
 \end_inset

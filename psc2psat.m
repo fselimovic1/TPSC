@@ -13,7 +13,7 @@ close
 name = 'case300';
 version = 'Dyn';
 
-load(strcat('SG', name));
+load(strcat('SG', name, 'D_', version));
 load(strcat('SG', name, 'M_', version))
 %--------------------------------------------------------------------------
 
@@ -26,8 +26,9 @@ dataPSAT.fpmu = measurements.fpmu;
 dataPSAT.favg = measurements.f;
 dataPSAT.nT = length(measurements.f);
 dataPSAT.pert.time = 1; 
+dataPSAT.pert.node = 233;
 dataPSAT.freq = dataPSAT.fn';
-dataPSAT.tstep = 1/50;
+dataPSAT.tstep = 1/max(data.pmu(:, 7));
 
 %------------------------------Save data-----------------------------------
 home = getenv('USERPROFILE');

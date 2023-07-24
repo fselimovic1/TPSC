@@ -231,11 +231,12 @@ for i = 1:samples
                     Ibranch = (result.branch(nBranch, 16)./mpc.baseMVA - ...
                                1i * result.branch(nBranch, 17)./mpc.baseMVA)...
                                /(conj(Ubus(bus)));
+                    nBranch = -nBranch;
                 end
                 measurements.synpmu(isynPMU, 1) = i;
                 measurements.synpmu(isynPMU, 2) = bus;
                 measurements.synpmu(isynPMU, 3) = 1;
-                measurements.synpmu(isynPMU, 4) = branches(iCh);
+                measurements.synpmu(isynPMU, 4) = nBranch;
                 measurements.synpmu(isynPMU, 5:8) = [ abs(Ibranch) * (1 + randn...
                                   * data.pmu(j, 3)/100) angle(Ibranch) + randn...
                                   * data.pmu(j, 4) abs(Ibranch) angle(Ibranch)];
