@@ -3240,13 +3240,6 @@ Measurements Generator
 Static State Estimation
 \end_layout
 
-\begin_layout Standard
-
-\series bold
-\color red
-Not up to date with new data formats!
-\end_layout
-
 \begin_layout Subsection
 Dynamic State Estimation
 \end_layout

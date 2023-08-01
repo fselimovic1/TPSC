@@ -1,0 +1,5 @@
+function results = run_cnr_pf(solver, data)
+% compute admittance bus matr
+data.powerSystemAC = admittance_matrix(data);
+end
+
