@@ -19,7 +19,7 @@ solver.eps = 1e-6;
 %--------------------------------------------------------------------------
 
 %---------------------Load Power System & Measurements---------------------
-name = 'case9241pegase';
+name = 'case118';
 version = 'A';
 
 load(strcat('SG', name, 'D_', version));

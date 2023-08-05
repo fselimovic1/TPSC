@@ -228,7 +228,7 @@ if ~isempty(mpc.bus)
         end
 
         %% initial state
-        % V0    = ones(size(bus, 1), 1);            %% flat start
+%         V0    = ones(size(bus, 1), 1);            %% flat start
         V0  = bus(:, VM) .* exp(1j * pi/180 * bus(:, VA));
         vcb = ones(size(V0));           %% create mask of voltage-controlled buses
         vcb(pq) = 0;                    %% exclude PQ buses
