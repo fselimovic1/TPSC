@@ -146,8 +146,8 @@ if solver.postprocess
     results = postprocess_acpf(data.powerSystemAC, x(1:data.nBuses));
     results.Pload = data.bus(:, 3);
     results.Qload = data.bus(:, 4);
-    results.Pgen(genbuses) = data.generator(:, 2);
-    results.Qgen(genbuses) = results.Qi(genbuses)  + results.Qload(genbuses);
+    results.Pgen = results.Pinj results.Pload ;
+    results.Qgen = data.bus(:, 4);
     results.ppt = toc;
 end
 results.at = algtime;

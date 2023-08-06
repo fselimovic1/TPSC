@@ -1,5 +1,6 @@
 function results_sse(solver, measurements, results)
- fprintf(['\tDate: ', datestr(now, 'dd.mm.yyyy HH:MM:SS \n')])
+fprintf('\tTOOLBOX FOR POWER SYSTEM COMPUTATIONS\n')
+fprintf(['\tDate: ', datestr(now, 'dd.mm.yyyy HH:MM:SS \n\n')])
  disp(' ')
  fprintf('\tMethod: %s\n', results.method);
  fprintf('\tPower System: %s\n', results.sys);
@@ -7,7 +8,6 @@ function results_sse(solver, measurements, results)
  fprintf('\tMeasurement recived from WAMS (PMU): %d\n', size(measurements.synpmu, 1))
  fprintf('\tNumber of non-zeros in H: %d\n', results.nonZerosInH)
  fprintf('\tPower system redundancy: %f\n', results.redundancy)
- disp(' ')
  if results.converged
      fprintf('\tExecution time: %f [ms]\n', results.t*1000) 
  else

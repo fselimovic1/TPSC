@@ -13,10 +13,7 @@ results.Iia = angle(Ii);
 Si = v .* conj(Ii);
 results.Pi = real(Si);
 results.Qi = imag(Si);
-results.Pgen = zeros(numel(Si), 1);
-results.Qgen = results.Pgen;
-results.Pload = results.Pgen;
-results.Qload = results.Pgen;
+P
 
 % current flows
 results.Iijm = zeros(nBranches, 1);

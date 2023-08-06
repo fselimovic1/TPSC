@@ -12,7 +12,7 @@ clearvars
 %----------------------------About Solver----------------------------------
 solver.domain = 'complex';
 solver.method = 'cgn_pf';
-solver.start = 'flat';
+solver.start = '';
 solver.maxNumberOfIter = 20;
 solver.eps = 1e-6;
 solver.postprocess = 1;
@@ -27,6 +27,6 @@ load(strcat('SG', name));
 [ results ] = run_power_flows(solver, data);
 %--------------------------------------------------------------------------
 
-%--------------------------- Postprocessing -------------------------------
-results_pf(solver, results)
+%----------------------- Command Line Results Print -----------------------
+results_pf(data, solver, results)
 %--------------------------------------------------------------------------
