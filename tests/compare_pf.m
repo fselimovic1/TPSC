@@ -12,20 +12,19 @@ clearvars
 %----------------------------About Solver----------------------------------
 solver.domain = 'complex';
 solver.method = 'cgn_pf';
-solver.start = 'flat';
+solver.start = '';
 solver.maxNumberOfIter = 20;
 solver.eps = 1e-8;
+solver.postprocess = 1;
 %--------------------------------------------------------------------------
 
 %------------------------- Load Power System ------------------------------
-name = 'case300';
+name = 'case9241pegase';
 load(strcat('SG', name));
 %--------------------------------------------------------------------------
 
 %------------------ Complex Newton Raphson - Power Flows ------------------
 [ results ] = run_power_flows(solver, data);
-Vm = abs(results.x);
-Va = angle(results.x) * 180 / pi;
 %--------------------------------------------------------------------------
 %--------------------------- Matpower solution ----------------------------
 [ mp_results] = runpf(name);
@@ -33,7 +32,7 @@ Va = angle(results.x) * 180 / pi;
 
 %------------------------ Comparison indices ------------------------------
 fprintf("Voltage magnitude deviation. Max: %f, Average: %f\n", ...
-        max(abs(Vm - mp_results.bus(:, 8))), mean(abs(Vm - mp_results.bus(:, 8))));
+        max(abs(results.Vm - mp_results.bus(:, 8))), mean(abs(results.Vm - mp_results.bus(:, 8))));
 fprintf("Voltage angle deviation. Max: %f, Average: %f\n", ...
-        max(abs(Va - mp_results.bus(:, 9))), mean(abs(Va - mp_results.bus(:, 9))));    
+        max(abs(results.Va * 180 / pi - mp_results.bus(:, 9))), mean(abs(results.Va * 180 / pi - mp_results.bus(:, 9))));    
 %--------------------------------------------------------------------------    
