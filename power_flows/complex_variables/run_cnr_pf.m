@@ -25,7 +25,8 @@ Si(genbuses) = Si(genbuses) + (data.generator(:, 2) + 1i * data.generator(:, 3))
 % Regulated voltages
 Vr = data.bus(:, 8);
 Vr(genbuses) = data.generator(:, 6);
-
+% Vsl = data.bus(data.slackNo, 8) * exp(1i * data.bus(data.slackNo, 9));
+Vsl = data.bus(data.slackNo, 8) * exp(1i * pi/18);
 nNonZero = 0;
 nInc = zeros(data.nBuses, 1);
 for i = 1:data.nBuses
@@ -74,7 +75,7 @@ for i = 1:data.nBuses
         cnt = cnt + nNew + 2;
     else
          % calculate g
-         g([2 * i - 1, 2 * i]) = [ real(x(i)) - Vr(i), imag(x(i)) ];
+         g([2 * i - 1, 2 * i]) = [ real(x(i)) - real(Vsl), imag(x(i)) - imag(Vsl) ];
          % set indices
          rows(cnt:cnt + 3) = [ 2 * i - 1, 2 * i - 1, 2 * i, 2 * i ];
          cols(cnt:cnt + 3) = [ i, i + data.nBuses, i , i + data.nBuses ];
@@ -95,9 +96,6 @@ while k < solver.maxNumberOfIter
             J(2 * i, cols(cnt:cnt + nNew - 1)) = [ Ik(i); nonzeros(x(i + data.nBuses) .* ...
                                      data.powerSystemAC.nodalMatrixTranspose(:, i)) ];
             cnt = cnt + nNew;
-%             vals(cnt:cnt + 2 * nNew - 1) = [ conj(Ik(i)); nonzeros(x(i) .* ...
-%                         conj(data.powerSystemAC.nodalMatrixTranspose(:, i))); ...
-%                         ];
         elseif data.bus(i, 2) == 2
             nNew =  2 * nInc(i);
             idx = find(data.powerSystemAC.nodalMatrix(i, :));
@@ -132,7 +130,7 @@ while k < solver.maxNumberOfIter
             g([2 * i - 1, 2 * i]) = [ real(x(i) * conj(Ik(i)))...
                                       - real(Si(i)), x(i) * x(i + data.nBuses) - Vr(i)^2 ];
         else
-            g([2 * i - 1, 2 * i]) = [ real(x(i)) - Vr(i), imag(x(i)) ];
+            g([2 * i - 1, 2 * i]) = [ real(x(i)) - real(Vsl), imag(x(i)) - imag(Vsl) ];
         end
     end
     

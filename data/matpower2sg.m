@@ -3,7 +3,7 @@
 
 clear
 clc
-caseName = 'case_ACTIVSg500';
+caseName = 'case1354pegase';
 data = ext2int(loadcase(caseName));
 
 % DATA BUS

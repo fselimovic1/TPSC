@@ -10,7 +10,6 @@ clear
 name = 'case9241pegase';
 version = 'A';
 load(strcat('SG', name, 'D_', version));
-mpc = ext2int(loadcase(name));
 %--------------------------------------------------------------------------
 
 %-----------------------------State Estimation mode------------------------
@@ -19,20 +18,12 @@ mpc = ext2int(loadcase(name));
 data.mode = 'static';
 %--------------------------------------------------------------------------
 
-%---------------------------Tracking SE options----------------------------
+%------------------------- Tracking SE options ----------------------------
 data.t = 5;
-data.dynamics = 'polyfreq';
-% - Constant frequency
-% -            fValue
-data.fParams = 50.2;
-% - Curves for polynomial frequency estimation
-% -              tS    A/B   fMin
-data.fParams = [ 1      1    49.5 ];
-data.lPerc = 0.0001;
-data.occursOfLoad = 3;
-
+data.fdynamics = [ "UD1", 0.001 ];
+data.ldynamics = [ "random", 0.002 ];
 %----------------------------Generate Data---------------------------------
-[ measurements ] = data_acquisition(data, mpc);
+[ measurements ] = generatemeasurements(data);
 %--------------------------------------------------------------------------
 
 %------------------------------Save Case-----------------------------------

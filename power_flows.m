@@ -12,14 +12,14 @@ clearvars
 %----------------------------About Solver----------------------------------
 solver.domain = 'complex';
 solver.method = 'cgn_pf';
-solver.start = '';
+solver.start = 'flat';
 solver.maxNumberOfIter = 20;
 solver.eps = 1e-6;
 solver.postprocess = 1;
 %--------------------------------------------------------------------------
 
 %------------------------- Load Power System ------------------------------
-name = 'case9241pegase';
+name = 'case1354pegase';
 load(strcat('SG', name));
 %--------------------------------------------------------------------------
 
