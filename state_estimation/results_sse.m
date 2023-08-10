@@ -1,4 +1,4 @@
-function results_sse(solver, measurements, results)
+function results_sse(sesettings, measurements, results)
 fprintf('\tTOOLBOX FOR POWER SYSTEM COMPUTATIONS\n')
 fprintf(['\tDate: ', datestr(now, 'dd.mm.yyyy HH:MM:SS \n\n')])
  disp(' ')
@@ -11,7 +11,7 @@ fprintf(['\tDate: ', datestr(now, 'dd.mm.yyyy HH:MM:SS \n\n')])
  if results.converged
      fprintf('\tExecution time: %f [ms]\n', results.t*1000) 
  else
-     fprintf('\tThe algortihm did not converged after: %d iterations!\n \t :( :( :(\n', solver.maxNumberOfIter)
+     fprintf('\tThe algortihm did not converged after: %d iterations!\n \t :( :( :(\n', sesettings.maxNumberOfIter)
      return;
  end
  fprintf('\tNumber of iterations: %d\n', results.iter) 

@@ -11,11 +11,11 @@
 %--------------------------------------------------------------------------
 
 %----------------------------About Solver----------------------------------
-solver.domain = 'complex';
-solver.method = 'sgn_sse';
-solver.fc = 10;
-solver.maxNumberOfIter = 20;
-solver.eps = 1e-6;
+sesettings.domain = 'complex';
+sesettings.method = 'sgn_sse';
+sesettings.fc = 10;
+sesettings.maxNumberOfIter = 20;
+sesettings.eps = 1e-6;
 %--------------------------------------------------------------------------
 
 %---------------------Load Power System & Measurements---------------------
@@ -27,9 +27,9 @@ load(strcat('SG', name, 'M_', version));
 %--------------------------------------------------------------------------
 
 %--------------------------Static State Estimation-------------------------
-[ results ] = run_state_estimator(solver, data, measurements);
+[ results ] = run_state_estimator(sesettings, data, measurements);
 %--------------------------------------------------------------------------
 
 %----------------------------State Variables-------------------------------
-results_sse(solver, measurements, results)
+results_sse(sesettings, measurements, results)
 %--------------------------------------------------------------------------

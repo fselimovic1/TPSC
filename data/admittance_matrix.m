@@ -1,4 +1,4 @@
-function powerSystemAC = admittance_matrix(data)
+function powerSystemAC = admittance_matrix(data, varargin)
 complexVector = complex(zeros(data.nBranches, 1));
 
 powerSystemAC.transformerRatio = complexVector;
@@ -10,11 +10,11 @@ powerSystemAC.nodalToFrom = complexVector;
 powerSystemAC.from = data.branch(:, 1);
 powerSystemAC.to = data.branch(:, 2);
 nodalDiagonals = complex(zeros(data.nBuses, 1));
-if isfield(data, 'fc') && abs(data.fn - data.fc) < eps
-     for i = 1:data.nBranches
+if nargin == 2
+     for i =  1:data.nBranches
         % if the branch is IN-SERVICE:
         if data.branch(i, 11)
-            powerSystemAC.admittance(i) = 1 / (data.branch(i, 3) + 1i * data.branch(i, 4) * data.fc / data.fn);
+            powerSystemAC.admittance(i) = 1 / (data.branch(i, 3) + 1i * data.branch(i, 4) * varargin{1}.f / data.fn);
         
             if  ~data.branch(i, 9)
                 powerSystemAC.transformerRatio(i) = exp(1i * data.branch(i, 10));
@@ -24,7 +24,7 @@ if isfield(data, 'fc') && abs(data.fn - data.fc) < eps
             transformerRatioConj = conj(powerSystemAC.transformerRatio(i));
         
             % Branch PI model elements:
-            powerSystemAC.nodalToTo(i) =  powerSystemAC.admittance(i) + 1i / 2 * (data.branch(i, 5) * data.fn / data.fc);
+            powerSystemAC.nodalToTo(i) =  powerSystemAC.admittance(i) + 1i / 2 * (data.branch(i, 5) * (data.fn / varargin{1}.f));
             powerSystemAC.nodalFromFrom(i) =  powerSystemAC.nodalToTo(i) / (transformerRatioConj * powerSystemAC.transformerRatio(i));
             powerSystemAC.nodalFromTo(i) = -powerSystemAC.admittance(i) / transformerRatioConj;
             powerSystemAC.nodalToFrom(i) = -powerSystemAC.admittance(i) / powerSystemAC.transformerRatio(i);
@@ -35,7 +35,7 @@ if isfield(data, 'fc') && abs(data.fn - data.fc) < eps
     end
 
     for i = 1:data.nBuses
-        nodalDiagonals(i) = nodalDiagonals(i) + data.bus(i, 5) + 1i * data.bus(i, 6) * (data.fn / data.fc) ;
+        nodalDiagonals(i) = nodalDiagonals(i) + data.bus(i, 5) + 1i * data.bus(i, 6) * (data.fn / varargin{1}.f) ;
     end
 else
     for i = 1:data.nBranches

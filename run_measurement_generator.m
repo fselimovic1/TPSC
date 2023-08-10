@@ -12,18 +12,28 @@ version = 'A';
 load(strcat('SG', name, 'D_', version));
 %--------------------------------------------------------------------------
 
-%-----------------------------State Estimation mode------------------------
+%---------------------------- State Estimation mode -----------------------
 % 'tracking' - measurements will be taken for a specific time period
 % 'static' - measurements will be taken for a single, distinct moment in time.
-data.mode = 'static';
+mgsettings.mode = 'static';
 %--------------------------------------------------------------------------
 
 %------------------------- Tracking SE options ----------------------------
-data.t = 5;
-data.fdynamics = [ "UD1", 0.001 ];
-data.ldynamics = [ "random", 0.002 ];
+mgsettings.t = 5;
+mgsettings.fdynamics = [ "UD1", 0.001 ];
+mgsettings.ldynamics = [ "random", 0.002 ];
+
+%--------------------------- Power Flow options ---------------------------
+pfsettings.domain = 'complex';
+pfsettings.method = 'cgn_pf';
+pfsettings.start = '';
+pfsettings.maxNumberOfIter = 20;
+pfsettings.eps = 1e-6;
+pfsettings.postprocess = 1;
+%--------------------------------------------------------------------------
+
 %----------------------------Generate Data---------------------------------
-[ measurements ] = generatemeasurements(data);
+[ measurements ] = generatemeasurements(mgsettings, pfsettings, data);
 %--------------------------------------------------------------------------
 
 %------------------------------Save Case-----------------------------------

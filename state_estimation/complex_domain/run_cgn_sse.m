@@ -1,4 +1,4 @@
-function [results] = run_cgn_sse(solver, data, measurements)
+function [results] = run_cgn_sse(sesettings, data, measurements)
 tic;
 
 anySCADA = ~isempty(measurements.scada);
@@ -88,7 +88,7 @@ rowInD = zeros(nNonZeroInD, 1);
 colInD = zeros(nNonZeroInD, 1);
 
 % Iterating:
-while k < solver.maxNumberOfIter
+while k < sesettings.maxNumberOfIter
     for i = 1:mPMU
        if measurements.synpmu(i, 3) == 1
            c(i) = cF_current_flow_phasor(...
@@ -158,7 +158,7 @@ while k < solver.maxNumberOfIter
     g = transpConjH * W * r;
     dx = G \ g;
     state = state + dx; 
-    if ~anySCADA || max(abs(dx)) < solver.eps
+    if ~anySCADA || max(abs(dx)) < sesettings.eps
         break
     else
         k = k + 1;
@@ -174,7 +174,7 @@ results.t = tEst;
 results.voltage = state(1:data.nBuses);
 results.iter = k;
 results.sys = data.case;
-if k < solver.maxNumberOfIter
+if k < sesettings.maxNumberOfIter
     results.converged = 1;
 else
     results.converged = 0;

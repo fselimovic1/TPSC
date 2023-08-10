@@ -1,10 +1,15 @@
-function results = run_cnr_pf(solver, data)
+function results = run_cnr_pf(pfsettings, data, varargin)
+trackingmode = 0;
+if nargin - 2 > 0
+    trackingmode = 1;
+    dynsettings = varargin{1};
+end
 k = 1;
 converged = 0;
 
 tic
 % Initialization
-if strcmp(solver.start, 'flat')
+if strcmp(pfsettings.start, 'flat')
     x = ones(2 * data.nBuses, 1);
 else
     x = [ data.bus(:, 8) .* exp(1i * data.bus(:, 9)); ...
@@ -12,21 +17,38 @@ else
 end
   
 % Compute admittance bus matrix
-data.powerSystemAC = admittance_matrix(data);
+if trackingmode && dynsettings.f ~= -data.fn
+    data.powerSystemAC = admittance_matrix(data, dynsettings);
+else
+    data.powerSystemAC = admittance_matrix(data);
+end
 
 % Injected current in kth iteration
 Ik = complex(data.nBuses, 1);
 
 % Bus complex power injection
 Si = - (data.bus(:, 3) + 1i * data.bus(:, 4));
+if trackingmode && dynsettings.loadNo 
+    if dynsettings.loadNo == -1
+        Si = Si .* (1 + dynsettings.load);
+    else
+        Si(dynsettings.loadNo) = Si(dynsettings.loadNo) + ...
+                                 complex(load(1), load(2));  
+    end
+end
 genbuses = data.generator(:, 1);
 Si(genbuses) = Si(genbuses) + (data.generator(:, 2) + 1i * data.generator(:, 3));
 
 % Regulated voltages
 Vr = data.bus(:, 8);
 Vr(genbuses) = data.generator(:, 6);
-% Vsl = data.bus(data.slackNo, 8) * exp(1i * data.bus(data.slackNo, 9));
-Vsl = data.bus(data.slackNo, 8) * exp(1i * pi/18);
+if trackingmode && dynsettings.f == -data.fn
+    Vsl = data.bus(data.slackNo, 8) * exp(1i * data.bus(data.slackNo, 9));
+else
+	Vsl = data.bus(data.slackNo, 8) * exp(1i * dynsettings.thetaslack);
+end
+
+
 nNonZero = 0;
 nInc = zeros(data.nBuses, 1);
 for i = 1:data.nBuses
@@ -84,7 +106,7 @@ for i = 1:data.nBuses
 end
 J = sparse(rows, cols, zeros(nNonZero, 1), 2 * data.nBuses, 2 * data.nBuses);
 
-while k < solver.maxNumberOfIter
+while k < pfsettings.maxNumberOfIter
     % compute nonzeros of J
     cnt = 1;
     for i = 1:data.nBuses
@@ -135,7 +157,7 @@ while k < solver.maxNumberOfIter
     end
     
     % check convergence
-    if max(abs(g)) < solver.eps
+    if max(abs(g)) < pfsettings.eps
         converged = 1;
         break;
     end
@@ -143,7 +165,7 @@ while k < solver.maxNumberOfIter
 end
 algtime = toc;
 % post-processing
-if solver.postprocess
+if pfsettings.postprocess
     tic
     results = postprocess_acpf(data.powerSystemAC, x(1:data.nBuses));
     results.Pload = data.bus(:, 3);

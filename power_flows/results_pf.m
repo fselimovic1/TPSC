@@ -1,4 +1,4 @@
-function results_pf(data, solver, results)
+function results_pf(data, pfsettings, results)
 fprintf('\tTOOLBOX FOR POWER SYSTEM COMPUTATIONS\n')
 fprintf(['\tDate: ', datestr(now, 'dd.mm.yyyy HH:MM:SS \n\n')])
  fprintf('\tMethod: %s\n', results.method);
@@ -6,7 +6,7 @@ fprintf(['\tDate: ', datestr(now, 'dd.mm.yyyy HH:MM:SS \n\n')])
  if results.converged
      fprintf('\tExecution time: %.2f [ms]\n', results.at * 1000) 
  else
-     fprintf('\tThe algortihm did not converged after: %d iterations!\n \t :( :( :(\n', solver.maxNumberOfIter)
+     fprintf('\tThe algortihm did not converged after: %d iterations!\n \t :( :( :(\n', pfsettings.maxNumberOfIter)
      return;
  end
  fprintf('\tNumber of iterations: %d\n', results.iter) 
