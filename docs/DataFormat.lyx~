@@ -86,19 +86,23 @@
 \begin_body
 
 \begin_layout Title
-Toolbox for Power System Computations - TPSC
+Toolbox for Power System Computing - TPSC
 \end_layout
 
 \begin_layout Section
-Next Steps
+Next Steps (Instead of Introduction)
 \end_layout
 
 \begin_layout Itemize
-AC power flows implementation.
+Power flow - check and documentation.
 \end_layout
 
 \begin_layout Itemize
-State estimation in real variables.
+Device distribution - check and documentations
+\end_layout
+
+\begin_layout Itemize
+Use information if a generator is in-service or out-of-service.
 \end_layout
 
 \begin_layout Section
@@ -112,10 +116,20 @@ General Data of Power Systems
 \begin_layout Standard
 The power system is represented as a structure within the Matlab software
  package.
- When loading a specific power system, a variable of structural type named
- "data" is loaded into the workspace.
- The names and descriptions of the structure's fields are displayed in the
- table below.
+ When loading a power system, the variable of structural type named "data"
+ is loaded into the workspace.
+ The names and descriptions of the structure's fields are displayed in Table
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Fields-of-the"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
 \begin_inset Float table
 placement H
 wide false
@@ -132,6 +146,13 @@ Fields of the structure used to describe the power system (
 data
 \emph default
 ).
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Fields-of-the"
+
+\end_inset
+
  
 \end_layout
 
@@ -425,8 +446,18 @@ in the system from an economic perspective
 \begin_layout Standard
 The matrix containing information about the nodes of the corresponding power
  system consists of fifteen columns.
- The column number, description, and unit of measurement are shown in the
- table below.
+ The column number, description, and unit of the quantitiy are shown in
+ Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Bus-data-(data.bus)."
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
 \begin_inset Float table
 placement H
 wide false
@@ -443,6 +474,14 @@ Bus data (
 data.bus
 \emph default
 ).
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Bus-data-(data.bus)."
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -933,8 +972,18 @@ p.u.
 \begin_layout Standard
 The matrix containing information about the branches of the corresponding
  power system consists of thirteen columns.
- The column number, description, and unit of measurement are shown in the
- table below.
+ The column number, description, and unit of the quantitiy are shown in
+ Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Branch-data-(data.branch)."
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
@@ -954,6 +1003,14 @@ Branch data (
 data.branch
 \emph default
 ).
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Branch-data-(data.branch)."
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1431,8 +1488,18 @@ rad
 \begin_layout Standard
 The matrix containing information about the generators of the corresponding
  power system consists of ten columns.
- The column number, description, and unit of measurement are shown in the
- table below.
+ The column number, description, and unit of the quantitiy are shown in
+ Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Generator-data-(data.generator)."
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Standard
@@ -1452,6 +1519,14 @@ Generator data (
 data.generator
 \emph default
 ).
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Generator-data-(data.generator)."
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -1792,6 +1867,23 @@ p.u.
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+Several power systems are already available in the directory 'data/power_systems
+'.
+ To define a new power system, a user has to write a script with the structure
+ and fields as previously defined.
+ In the case that a user wants to use one of the cases available in the
+ Matpower package, the script "data/matpower2tpsc" can be employed.
+ For example, a user needs to place a Matpower case 'caseName.m' in the current
+ working directory or in one of the directories defined in a list of Matlab
+ search paths.
+ Subsequently, the power system will be saved in the 'data/power_systems'
+ directory, and the prefix "TPSC" will be added to specify that this structure
+ is part of the TPSC package.
+ However, users do not have to worry about this because the only requirement
+ in every routine is to enter a 'caseName'.
 \end_layout
 
 \begin_layout Subsection
@@ -3234,6 +3326,159 @@ Routines
 
 \begin_layout Subsection
 Power Flows
+\end_layout
+
+\begin_layout Subsubsection
+Basics
+\end_layout
+
+\begin_layout Standard
+Power flows, also known as load flow analysis, are fundamental calculations
+ in electrical power systems engineering.
+ They involve solving a set of equations to determine the steady-state operating
+ conditions of an electrical network.
+ The goal of power flow computations is to find the voltages, currents,
+ and power flows at various nodes and branches of the network under given
+ load and generation conditions.
+\end_layout
+
+\begin_layout Standard
+Key aspects of power flow computations include:
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Voltage Magnitudes and Angles
+\series default
+: Power flow calculations determine the magnitude and phase angle of voltages
+ at each node in the network.
+ These values indicate the electrical potential and phase relationship at
+ different points in the system.
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Active and Reactive Power Flows
+\series default
+: Power flow computations calculate the active (real) and reactive power
+ flows in each transmission line, transformer, and generator.
+ This information is essential for maintaining the proper balance between
+ generation and consumption in the system.
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Load Balancing
+\series default
+: Power flow analysis ensures that the supply of power from generators matches
+ the demand from loads, resulting in a balanced system.
+ Deviations from this balance can lead to voltage instability and other
+ issues.
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Voltage Stability Assessment
+\series default
+: Power flow computations help assess voltage stability by identifying voltage
+ limits that should not be exceeded to prevent voltage collapse.
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Contingency Analysis
+\series default
+: Power flow analysis can be extended to evaluate the impact of potential
+ network failures, such as line outages or equipment failures, to understand
+ their effects on power flows and system stability.
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Generator Dispatch
+\series default
+: Power flow calculations assist in determining the optimal settings for
+ generator output to minimize losses and improve overall system efficiency.
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+Optimal Power Flow (OPF)
+\series default
+: Advanced versions of power flow analysis, such as optimal power flow,
+ optimize the generator outputs and other control variables to meet various
+ objectives while satisfying network constraints.
+\end_layout
+
+\begin_layout Standard
+Power flow computations are critical for planning, designing, and operating
+ power systems effectively and reliably.
+ They help ensure that the system operates within acceptable limits, avoids
+ overloads, maintains voltage stability, and meets load demands while efficientl
+y utilizing available generation resources.
+\end_layout
+
+\begin_layout Subsubsection
+Run Settings
+\end_layout
+
+\begin_layout Standard
+To run power flow analysis in TPSC package a user is equipped with the function:
+ 
+\begin_inset listings
+lstparams "language=Matlab"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+[ results ] = run_power_flows(pfsettings, data);
+\end_layout
+
+\end_inset
+
+ Function arguments are structures: 'pfsettings' whose fileds are user-defined
+ and used to set the computations, and 'data' which presents a power system
+ data from Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Fields-of-the"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+'pfsettings' contains the following fields:
+\end_layout
+
+\begin_layout Description
+domain field used to determain whether the computations will be done in
+ 'complex' or 'real' domain.
+ State variables in power flow analysis are complex nodal voltages.
+ Classical approach is to present complex numbers in their polar or rectangular
+ form and perform computations in real domain.
+ Recently introduced alternative is to take use of the Wirtinger calculus
+ and calculate with complex numbers.
+\end_layout
+
+\begin_layout Description
+method used to specify the method for conducting power flow computations.
+\end_layout
+
+\begin_layout Description
+start 
 \end_layout
 
 \begin_layout Subsection

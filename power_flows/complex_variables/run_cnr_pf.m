@@ -42,7 +42,7 @@ Si(genbuses) = Si(genbuses) + (data.generator(:, 2) + 1i * data.generator(:, 3))
 % Regulated voltages
 Vr = data.bus(:, 8);
 Vr(genbuses) = data.generator(:, 6);
-if trackingmode && dynsettings.f == -data.fn
+if ~trackingmode
     Vsl = data.bus(data.slackNo, 8) * exp(1i * data.bus(data.slackNo, 9));
 else
 	Vsl = data.bus(data.slackNo, 8) * exp(1i * dynsettings.thetaslack);

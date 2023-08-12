@@ -9,7 +9,7 @@ clearvars
  addpath(genpath(fileparts(which(mfilename))));
 %--------------------------------------------------------------------------
 
-%----------------------------About Solver----------------------------------
+%---------------------- Power Flows Solver - Settings ---------------------
 pfsettings.domain = 'complex';
 pfsettings.method = 'cgn_pf';
 pfsettings.start = 'flat';
@@ -19,8 +19,8 @@ pfsettings.postprocess = 1;
 %--------------------------------------------------------------------------
 
 %------------------------- Load Power System ------------------------------
-name = 'case1354pegase';
-load(strcat('SG', name));
+name = 'case300';
+load(strcat('TPSC', name));
 %--------------------------------------------------------------------------
 
 %--------------------------- Power Flows ----------------------------------

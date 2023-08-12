@@ -22,8 +22,8 @@ sesettings.eps = 1e-6;
 name = 'case118';
 version = 'A';
 
-load(strcat('SG', name, 'D_', version));
-load(strcat('SG', name, 'M_', version));
+load(strcat('TPSC', name, 'D_', version));
+load(strcat('TPSC', name, 'M_', version));
 %--------------------------------------------------------------------------
 
 %--------------------------Static State Estimation-------------------------

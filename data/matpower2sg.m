@@ -1,10 +1,24 @@
 % Builds the power system data form Matpower7.1. and process data to make
 % it usable.
-
-clear
 clc
-caseName = 'case1354pegase';
-data = ext2int(loadcase(caseName));
+clear
+
+% insert the name of Matpower case 
+caseName = 'case9';
+
+data = eval(caseName);
+
+% potential renumbering
+data.nBuses = size(data.bus, 1);
+toReNumber = false;
+for i = 1:data.nBuses
+    if i ~= data.nBuses
+        toReNumber = true;
+    end
+end
+if toReNumber
+    data = renumbering(data);
+end
 
 % DATA BUS
 data.bus(:, 3:6) = data.bus(:, 3:6)./data.baseMVA;
@@ -33,10 +47,9 @@ data.nBuses = size(data.bus, 1);
 data.nBranches = size(data.branch, 1);
 data.nGens = size(data.generator, 1);
 data.fn = 50;
-data = rmfield(data, 'order');
 data.case = caseName;
 
 home = getenv('USERPROFILE');
-path = strcat(home, '\PowerSystemComputations\data\power_systems\SG', caseName);
+path = strcat(home, '\PowerSystemComputations\data\power_systems\TPSC', caseName);
 save(path,'data')
 

@@ -9,7 +9,7 @@ clear
 %--------------------Power system with measurement deiveces----------------
 name = 'case9241pegase';
 version = 'A';
-load(strcat('SG', name, 'D_', version));
+load(strcat('TPSC', name, 'D_', version));
 %--------------------------------------------------------------------------
 
 %---------------------------- State Estimation mode -----------------------
