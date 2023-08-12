@@ -1909,7 +1909,17 @@ data.pmu
 \series default
 \emph default
  data about phasore measurement units installed in a power system, and it
- is presented in detail in Table.
+ is presented in detail in Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:PMUs-data-(data.pmu)."
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
 \end_layout
 
 \begin_layout Labeling
@@ -1921,18 +1931,17 @@ data.scada
 \series default
 \emph default
  data about conventional SCADA measurements, and it is presented in detail
- in Table.
-\end_layout
+ in Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:SCADA-data-(data.scada)."
+plural "false"
+caps "false"
+noprefix "false"
 
-\begin_layout Labeling
-\labelwidthstring 00.00.0000
+\end_inset
 
-\series bold
-\emph on
-data.zi 
-\series default
-\emph default
-vector of nodes with no load nor generation, i.e., zero injection buses.
+.
 \end_layout
 
 \begin_layout Standard
@@ -1952,6 +1961,14 @@ PMUs data (
 data.pmu
 \emph default
 ).
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:PMUs-data-(data.pmu)."
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -2205,6 +2222,9 @@ Hz
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float table
 placement H
 wide false
@@ -2221,6 +2241,14 @@ SCADA data (
 data.scada
 \emph default
 ).
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:SCADA-data-(data.scada)."
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -2474,6 +2502,41 @@ Hz
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+Similarly to power system data (structured as 'data'), users can input informati
+on about power system measurement devices while adhering to the format outlined
+ in Tables 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:PMUs-data-(data.pmu)."
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:SCADA-data-(data.scada)."
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+On the other hand, a recommended approach involves utilizing the 'run_device_dis
+tribution.m' script.
+ This script offers various options for configuring measurement devices,
+ considering their type, standard deviation, and reporting frequency (important
+ for tracking and dynamic modes).
+ Detailed information is available in the Section about routines.
 \end_layout
 
 \begin_layout Subsection
@@ -3430,8 +3493,8 @@ Run Settings
 \end_layout
 
 \begin_layout Standard
-To run power flow analysis in TPSC package a user is equipped with the function:
- 
+To run a power flow analysis in TPSC package a user is provided with the
+ function: 
 \begin_inset listings
 lstparams "language=Matlab"
 inline false
@@ -3445,7 +3508,7 @@ status open
 \end_inset
 
  Function arguments are structures: 'pfsettings' whose fileds are user-defined
- and used to set the computations, and 'data' which presents a power system
+ and used to set the computations, and 'data', which presents power system
  data from Table 
 \begin_inset CommandInset ref
 LatexCommand ref
@@ -3457,28 +3520,245 @@ noprefix "false"
 \end_inset
 
 .
+ The function's output 'results' is already described in the section about
+ data.
 \end_layout
 
 \begin_layout Standard
 'pfsettings' contains the following fields:
 \end_layout
 
-\begin_layout Description
-domain field used to determain whether the computations will be done in
- 'complex' or 'real' domain.
- State variables in power flow analysis are complex nodal voltages.
- Classical approach is to present complex numbers in their polar or rectangular
- form and perform computations in real domain.
- Recently introduced alternative is to take use of the Wirtinger calculus
- and calculate with complex numbers.
+\begin_layout Enumerate
+
+\series bold
+domain:
+\series default
+ a field used to determain whether the computations will be done in 'complex'
+ or 'real' domain.
+ In power flow analysis, state variables are complex nodal voltages.
+ The classical approach involves presenting complex numbers in either their
+ polar or rectangular forms and conducting computations in the real domain.
+ A recently introduced alternative is to utilize Wirtinger calculus and
+ perform calculations with complex numbers.
 \end_layout
 
-\begin_layout Description
-method used to specify the method for conducting power flow computations.
+\begin_layout Enumerate
+
+\series bold
+method:
+\series default
+ used to specify the method for conducting power flow computations.
 \end_layout
 
-\begin_layout Description
-start 
+\begin_layout Enumerate
+
+\series bold
+start:
+\series default
+ used to select whether the inital values of state variables will be set
+ to 
+\begin_inset Formula $1\angle0$
+\end_inset
+
+[p.u.], or they will be assigned predefiend values (columns 8 and 9 from data.bus).
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+maxNumberOfIter
+\series default
+: used to select the maximum number of iterations that can be conducted
+ before convergence.
+ If this limit is reached, TPSC notifies the user that the power flow analysis
+ did not converge.
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+eps
+\series default
+: tolerance value when checking convergence.
+\end_layout
+
+\begin_layout Enumerate
+
+\series bold
+postprocess:
+\series default
+ used to determine whether postprocessing of power flow results needs to
+ be performed (=1) or not (=0).
+\end_layout
+
+\begin_layout Standard
+Currently available power flows solvers are shown in Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Power-flow-solvers."
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Power flow solvers.
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Power-flow-solvers."
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="2" columns="4">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+No.
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+domain
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+method
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+description
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+'complex'
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+'cnr_pf'
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+...
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+TPSC provides a specialized script for conducting power flow anaysis in
+ the root directory of package called 'power_flows.m'.
+ Users input the name of the desired power system (which must be stored
+ in 'src
+\backslash
+power_systems'), and they can customize computation specifics using the
+ 'pfsettings' structure.
+\end_layout
+
+\begin_layout Standard
+In addition, TPCS implements the function:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+lstparams "language=Matlab"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+results_pf(data, pfsettings, results); 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This function is used to display the results of power flow computations.
+ It is interactive, allowing the user to decide what information to print
+ to the terminal.
 \end_layout
 
 \begin_layout Subsection
