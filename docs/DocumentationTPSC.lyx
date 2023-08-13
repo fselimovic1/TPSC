@@ -3528,13 +3528,10 @@ noprefix "false"
 'pfsettings' contains the following fields:
 \end_layout
 
-\begin_layout Enumerate
-
-\series bold
-domain:
-\series default
- a field used to determain whether the computations will be done in 'complex'
- or 'real' domain.
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+domain a field used to determain whether the computations will be done in
+ 'complex' or 'real' domain.
  In power flow analysis, state variables are complex nodal voltages.
  The classical approach involves presenting complex numbers in either their
  polar or rectangular forms and conducting computations in the real domain.
@@ -3542,53 +3539,38 @@ domain:
  perform calculations with complex numbers.
 \end_layout
 
-\begin_layout Enumerate
-
-\series bold
-method:
-\series default
- used to specify the method for conducting power flow computations.
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+method used to specify the method for conducting power flow computations.
 \end_layout
 
-\begin_layout Enumerate
-
-\series bold
-start:
-\series default
- used to select whether the inital values of state variables will be set
- to 
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+start used to select whether the inital values of state variables will be
+ set to 
 \begin_inset Formula $1\angle0$
 \end_inset
 
 [p.u.], or they will be assigned predefiend values (columns 8 and 9 from data.bus).
 \end_layout
 
-\begin_layout Enumerate
-
-\series bold
-maxNumberOfIter
-\series default
-: used to select the maximum number of iterations that can be conducted
- before convergence.
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+maxNumberOfIter used to select the maximum number of iterations that can
+ be conducted before convergence.
  If this limit is reached, TPSC notifies the user that the power flow analysis
  did not converge.
 \end_layout
 
-\begin_layout Enumerate
-
-\series bold
-eps
-\series default
-: tolerance value when checking convergence.
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+eps tolerance value when checking convergence.
 \end_layout
 
-\begin_layout Enumerate
-
-\series bold
-postprocess:
-\series default
- used to determine whether postprocessing of power flow results needs to
- be performed (=1) or not (=0).
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+postprocess used to determine whether postprocessing of power flow results
+ needs to be performed (=1) or not (=0).
 \end_layout
 
 \begin_layout Standard
@@ -3759,6 +3741,428 @@ results_pf(data, pfsettings, results);
 This function is used to display the results of power flow computations.
  It is interactive, allowing the user to decide what information to print
  to the terminal.
+\end_layout
+
+\begin_layout Subsection
+Device Distribution
+\end_layout
+
+\begin_layout Subsubsection
+Basics
+\end_layout
+
+\begin_layout Standard
+
+\color red
+To be done!
+\end_layout
+
+\begin_layout Subsubsection
+Run Settings
+\end_layout
+
+\begin_layout Standard
+This routines present the initial point when it comes to investigating state
+ estimation applications.
+ Hence, to run Information about measurement devices, as presented in Section
+ II, are stored in two matrices, namely data.scada (Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:SCADA-data-(data.scada)."
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and data.pmu (Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:PMUs-data-(data.pmu)."
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ A user distributes devices by running a script named 'run_device_distribution.m'.
+ Two parameters two be inserted on the beginning are (example below):
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+name a sequence of characters that denotes the corresponding power system.
+ It is important to emphasize that a prerequisite for running this function
+ is that the suitable power system is already entered and stored.
+ If the case is generated from the Matpower base (using 'matpower2tpsc.m'),
+ a name of the case will be exactly the same.
+ 
+\end_layout
+
+\begin_layout Labeling
+\labelwidthstring 00.00.0000
+version enables a user to generates multiple different measurement schemas
+ on the same power system case.
+ It is recommenden to label versions with capital letters of the alphabet.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+\align center
+
+name = 'case118'; version = 'A';
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+TPSC is equipped with a lot of different possibilities when it comes to
+ distributing measurement devices.
+ A user specifies the features by means of a structure called 'ddsettings'.
+ 
+\end_layout
+
+\begin_layout Paragraph
+data.scada
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Scada measurements.
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Scada-measurements."
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Tabular
+<lyxtabular version="3" rows="7" columns="3">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+measurement type
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+notation
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+maximum number
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+active power flow
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Pij
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $2\cdot data.nBranches$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+reactive power flow
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Qij
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $2\cdot data.nBranches$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+active power injection
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Pi
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $data.nBuses$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+reactive power injection
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Qi
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $data.nBuses$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+current magnitude
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Iij
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $2\cdot data.nBranches$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+voltage magnitude
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Vi
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $data.nBuses$
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Set of scada measurements consists of six types whose marks and maximum
+ possible numbers in a power system are represented in Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Scada-measurements."
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+To specify the types and amount of SCADA measurements a user uses a field
+ 'scadaset'.
+ In order to use all possible scada mesurements, 'scadaset' has to have
+ only one member 
+\begin_inset Quotes eld
+\end_inset
+
+complete
+\begin_inset Quotes erd
+\end_inset
+
+.
+ To indiviudally define a number of measurements of a certain type, a user
+ has to insert pairs of type marks and numbers.
+ This configurations has to options from the aspect how will the number
+ of devices be entered.
+ The first possibility is to enter exactly the number of devices.
+ This solution requires that the first member of 'scadaset' is a string
+ 
+\begin_inset Quotes eld
+\end_inset
+
+num
+\begin_inset Quotes erd
+\end_inset
+
+.
+ The second option is to specify a percentage of deivces from the maximum
+ number.
+ In this case, the first member of the string has to be 
+\begin_inset Quotes eld
+\end_inset
+
+perc
+\begin_inset Quotes erd
+\end_inset
+
+.
+ Hence, if user wants to enter a number of devices per measurement type,
+ the first element of 'scadaset' must be 'num' or 'perc'.
+ In the following, examples of entering the field 'scadaset' and description
+ of expected consequences are given.
 \end_layout
 
 \begin_layout Subsection

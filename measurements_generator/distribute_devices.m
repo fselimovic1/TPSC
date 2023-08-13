@@ -1,6 +1,6 @@
 function data = distribute_devices(name, ddsettings)
 % load power system
-load(strcat('SG', name));
+load(strcat('TPSC', name));
 
 % SCADA measurements
 
@@ -165,7 +165,7 @@ end
 busidx = randperm(data.nBuses);
 busidx = busidx(1:nPerType(4))';
 data.scada(nextStart:nextStart + nPerType(4) - 1, :) = [busidx, 4 * ones(nPerType(4), 1), busidx,...
-sdPerType(4) * ones(nPerType(4), 1),  freqPerType(4) * ones(nPerType(4), 1)];
+devs,  freqPerType(4) * ones(nPerType(4), 1)];
 nextStart = nextStart + nPerType(4);
 % Iij
 if isRand
@@ -215,7 +215,7 @@ while i <= nSet
     i = i + toAdd;
 end
 
-pmunames = containers.Map({'Magnitude', 'Angle', 'Frequency', 'RoCoF'}, ...
+pmunames = containers.Map({'magnitude', 'angle', 'frequency', 'rocof'}, ...
                             {1, 2, 3, 4});
 nSD = numel(ddsettings.pmusd);                        
 isRand = 0;

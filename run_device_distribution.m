@@ -12,7 +12,7 @@ clear
 % multiple different measurement sets on for a power system. All settings
 % are contained as field of the structure 'ddsettings'.
 %----------------------------Power System----------------------------------
-name = 'case118';
+name = 'case300';
 version = 'A';
 %--------------------------------------------------------------------------
 
@@ -27,7 +27,7 @@ version = 'A';
 
 % Using the field "scadaset", a user determines SCADA measurement devices
 % (RTUs) which are deployed in a grid. 
-ddsettings.scadaset = [ "num", "Vi", 50, "complete"];
+ddsettings.scadaset = [ "complete" ];
 
 % Using the field "scadavar", a user determines the variances of measurement devices
 % (RTUs) which are deployed in a grid.
