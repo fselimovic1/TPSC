@@ -7,6 +7,11 @@
 \textclass IEEEtran
 \begin_preamble
 \renewcommand{\arraystretch}{1.5} % stretching row height
+\usepackage{listings}
+\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
+\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
+\definecolor{mylilas}{RGB}{170,55,241}
+\definecolor{mygray}{rgb}{.95, 0.95, 0.95}
 \end_preamble
 \options onecolumn
 \use_default_options true
@@ -3495,8 +3500,11 @@ Run Settings
 \begin_layout Standard
 To run a power flow analysis in TPSC package a user is provided with the
  function: 
+\end_layout
+
+\begin_layout Standard
 \begin_inset listings
-lstparams "language=Matlab"
+lstparams "language=Matlab,numbers=left,breaklines=true,showstringspaces=false,backgroundcolor={\color{mygray}},basicstyle={\color{red}},morekeywords={matlab2tikz},keywordstyle={\color{blue}},morekeywords={[2]{1}},keywordstyle={[2]{\color{black}}},identifierstyle={\color{black}},stringstyle={\color{mylilas}},commentstyle={\color{mygreen}},numbersep=9pt,emph={[1]{for,end,break}},emphstyle={[1]\color{red}},emph={[2]{word1,word2}},emphstyle={[2]{style}}"
 inline false
 status open
 
@@ -3723,13 +3731,13 @@ In addition, TPCS implements the function:
 
 \begin_layout Standard
 \begin_inset listings
-lstparams "language=Matlab"
+lstparams "language=Matlab,numbers=left,breaklines=true,showstringspaces=false,backgroundcolor={\color{mygray}},basicstyle={\color{red}},morekeywords={matlab2tikz},keywordstyle={\color{blue}},morekeywords={[2]{1}},keywordstyle={[2]{\color{black}}},identifierstyle={\color{black}},stringstyle={\color{mylilas}},commentstyle={\color{mygreen}},numbersep=9pt,emph={[1]{for,end,break}},emphstyle={[1]\color{red}},emph={[2]{word1,word2}},emphstyle={[2]{style}}"
 inline false
 status open
 
 \begin_layout Plain Layout
 
-results_pf(data, pfsettings, results); 
+results_pf(data, pfsettings, results);
 \end_layout
 
 \end_inset
@@ -3762,10 +3770,8 @@ Run Settings
 \end_layout
 
 \begin_layout Standard
-This routines present the initial point when it comes to investigating state
- estimation applications.
- Hence, to run Information about measurement devices, as presented in Section
- II, are stored in two matrices, namely data.scada (Table 
+Information about measurement devices, as presented in Section II, are stored
+ in two matrices, namely data.scada (Table 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "tab:SCADA-data-(data.scada)."
@@ -3787,35 +3793,40 @@ noprefix "false"
 
 ).
  A user distributes devices by running a script named 'run_device_distribution.m'.
- Two parameters two be inserted on the beginning are (example below):
+ Two parameters to be inserted on the beginning are (example below):
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
 name a sequence of characters that denotes the corresponding power system.
  It is important to emphasize that a prerequisite for running this function
- is that the suitable power system is already entered and stored.
+ is that the suitable power system has already been entered and stored.
  If the case is generated from the Matpower base (using 'matpower2tpsc.m'),
- a name of the case will be exactly the same.
+ the name of the case will be exactly the same.
  
 \end_layout
 
 \begin_layout Labeling
 \labelwidthstring 00.00.0000
-version enables a user to generates multiple different measurement schemas
+vrs enables a user to generates multiple different measurement scenarios
  on the same power system case.
  It is recommenden to label versions with capital letters of the alphabet.
 \end_layout
 
 \begin_layout Standard
 \begin_inset listings
+lstparams "language=Matlab,numbers=left,breaklines=true,showstringspaces=false,backgroundcolor={\color{mygray}},basicstyle={\color{red}},morekeywords={matlab2tikz},keywordstyle={\color{blue}},morekeywords={[2]{1}},keywordstyle={[2]{\color{black}}},identifierstyle={\color{black}},stringstyle={\color{mylilas}},commentstyle={\color{mygreen}},numbersep=9pt,emph={[1]{for,end,break}},emphstyle={[1]\color{red}},emph={[2]{word1,word2}},emphstyle={[2]{style}}"
 inline false
 status open
 
 \begin_layout Plain Layout
-\align center
 
-name = 'case118'; version = 'A';
+name = 'case118'; 
+\end_layout
+
+\begin_layout Plain Layout
+
+vrs = 'A';
 \end_layout
 
 \end_inset
@@ -3824,10 +3835,11 @@ name = 'case118'; version = 'A';
 \end_layout
 
 \begin_layout Standard
-TPSC is equipped with a lot of different possibilities when it comes to
- distributing measurement devices.
+TPSC is equipped with many different possibilities when it comes to distributing
+ measurement devices.
  A user specifies the features by means of a structure called 'ddsettings'.
- 
+ This routine present the initial point when it comes to investigating the
+ state estimation applications.
 \end_layout
 
 \begin_layout Paragraph
@@ -4106,8 +4118,8 @@ Vi
 \end_layout
 
 \begin_layout Standard
-Set of scada measurements consists of six types whose marks and maximum
- possible numbers in a power system are represented in Table 
+The set of SCADA measurements consists of six types, the labels and maximum
+ possible quantities of which in a power system are presented in Table 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "tab:Scada-measurements."
@@ -4120,49 +4132,301 @@ noprefix "false"
 .
 \end_layout
 
-\begin_layout Standard
-To specify the types and amount of SCADA measurements a user uses a field
- 'scadaset'.
- In order to use all possible scada mesurements, 'scadaset' has to have
- only one member 
-\begin_inset Quotes eld
-\end_inset
-
-complete
-\begin_inset Quotes erd
-\end_inset
-
-.
- To indiviudally define a number of measurements of a certain type, a user
- has to insert pairs of type marks and numbers.
- This configurations has to options from the aspect how will the number
- of devices be entered.
- The first possibility is to enter exactly the number of devices.
- This solution requires that the first member of 'scadaset' is a string
+\begin_layout Itemize
+To specify the types and quantity of SCADA measurements, a user utilizes
+ a field called 'scadaset'.
+ To include all possible SCADA measurements, the 'scadaset' should only
+ have one entry: "complete".
+ To individually define the number of measurements for a specific type,
+ a user needs to input pairs of type labels and corresponding numbers.
+ This configuration has two options concerning how the device count is entered.
+ The first option is to input the exact number of devices.
+ This approach requires that the first element of 'scadaset' is the string
+ "num".
+ The second option involves specifying a percentage of devices based on
+ the maximum number available.
+ In this case, the first element of 'scadaset' must be "perc"In essence,
+ if a user wishes to input the number of devices per measurement type, the
+ first element of 'scadaset' must be either 'num' or 'perc'.
+ In both cases, positions of the measurement devices are randomly chosen.
+ The following examples illustrate how to use the 'scadaset' field and describe
+ the expected outcomes.
  
-\begin_inset Quotes eld
+\begin_inset listings
+lstparams "language=Matlab,numbers=left,breaklines=true,showstringspaces=false,backgroundcolor={\color{mygray}},basicstyle={\color{red}},morekeywords={matlab2tikz},keywordstyle={\color{blue}},morekeywords={[2]{1}},keywordstyle={[2]{\color{black}}},identifierstyle={\color{black}},stringstyle={\color{mylilas}},commentstyle={\color{mygreen}},numbersep=9pt,emph={[1]{for,end,break}},emphstyle={[1]\color{red}},emph={[2]{word1,word2}},emphstyle={[2]{style}}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddsettings.scadaset = [ "complete" ] % deploys all possible measurements
+\end_layout
+
+\begin_layout Plain Layout
+
+ddsettings.scadaset = [ "num", "Pij", 150, "Qij", 150, "Vi", 200 ]; % deploys
+ 150 devices for measuring both active and reactive power flow, and 200
+ devices for measuring voltage magnitude
+\end_layout
+
+\begin_layout Plain Layout
+
+ddsettings.scadaset = [ "perc", "Pi", 40, "Qi", 40, "Iij", 60, "complete"
+ ]; % deploys 40% of both active and reactive power injection measurement
+ devices, 60% of current flow magnitude measurement devices, and all possible
+ measurement devices (100%) for the remaining measurement types.
+\end_layout
+
 \end_inset
 
-num
-\begin_inset Quotes erd
+
+\end_layout
+
+\begin_layout Itemize
+Standard deviations of measurement devices are configured using a field
+ called 'scadasd'.
+ This field follows a somewhat similar behavior to the previous one.
+ The standard deviations can be set for all devices using the identifier
+ "complete", or individually for specific measurement types using the labels
+ from Table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Scada-measurements."
+plural "false"
+caps "false"
+noprefix "false"
+
 \end_inset
 
 .
- The second option is to specify a percentage of deivces from the maximum
- number.
- In this case, the first member of the string has to be 
-\begin_inset Quotes eld
+ TPSC offers two options for inputting standard deviations: using a single
+ fixed number (identified as "fix"), or specifying a range between two numbers
+ from which the value will be randomly chosen (identified as "rand").
+ One of these options (identifiers) must be the initial entry in the field.
+ The standard deviation for all SCADA measurements is given in per units.
+\begin_inset listings
+lstparams "language=Matlab,numbers=left,breaklines=true,showstringspaces=false,backgroundcolor={\color{mygray}},basicstyle={\color{red}},morekeywords={matlab2tikz},keywordstyle={\color{blue}},morekeywords={[2]{1}},keywordstyle={[2]{\color{black}}},identifierstyle={\color{black}},stringstyle={\color{mylilas}},commentstyle={\color{mygreen}},numbersep=9pt,emph={[1]{for,end,break}},emphstyle={[1]\color{red}},emph={[2]{word1,word2}},emphstyle={[2]{style}}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddsettings.scadasd = [ "fix", "Pij", 0.01, "Vi", 0.005 ]; % assigns a standard
+ deviation value of 0.01 to active power flow measurements and a value of
+ 0.05 to active power injection measurements
+\end_layout
+
+\begin_layout Plain Layout
+
+ddsettings.scadasd = [ "rand", "Qij", 0.01, 0.02, "Vi", 0.005, 0.1, "complete"
+ 0.01, 0.03 ]; % assigns random values of standard deviation in the range
+ between 0.01 and 0.02 for reactive power flow measurements, between 0.005
+ and 0.1 for voltage magnitude measurements, and between 0.01 and 0.03 to measureme
+nt devices of the remaining types
+\end_layout
+
 \end_inset
 
-perc
-\begin_inset Quotes erd
+Standard deviation must be attached to all devices which are deployed using
+ 'scadaset'.
+\end_layout
+
+\begin_layout Itemize
+The reporting frequency, denoted as the number of measurements conducted
+ in one second (with a unit of 
+\begin_inset Formula $s^{-1}=Hz$
+\end_inset
+
+), for devices is established using a field called 'scadafreq'.
+ The identifiers remain consistent: "complete" or the labels of measurement
+ types.
+\begin_inset listings
+lstparams "language=Matlab,numbers=left,breaklines=true,showstringspaces=false,backgroundcolor={\color{mygray}},basicstyle={\color{red}},morekeywords={matlab2tikz},keywordstyle={\color{blue}},morekeywords={[2]{1}},keywordstyle={[2]{\color{black}}},identifierstyle={\color{black}},stringstyle={\color{mylilas}},commentstyle={\color{mygreen}},numbersep=9pt,emph={[1]{for,end,break}},emphstyle={[1]\color{red}},emph={[2]{word1,word2}},emphstyle={[2]{style}}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddsettings.scadafreq = [ "Pij", 0.2, "Vi", 1 ]; % assigns a reporting frequency
+ value of 0.2 [Hz] to active power flow measurement devices and a value of
+ 1 [Hz] to voltage magnitude measurement devices
+\end_layout
+
+\begin_layout Plain Layout
+
+ddsettings.scadafreq = [ "Iij", 0.5, "complete", 2 ];  % assigns a reporting
+ frequency value of 0.5 [Hz] to current magnitude measurement devices and
+ a value of 2 [Hz] to measurement devices of the remaining types
+\end_layout
+
+\end_inset
+
+Reasonably, the reporting frequency must be defined for all device from
+ 'scadaset'.
+\end_layout
+
+\begin_layout Paragraph
+data.pmu
+\end_layout
+
+\begin_layout Standard
+As previously mentioned, PMUs measure voltage and current synchrophasors,
+ as well as frequency and rate of change of frequency at the connected bus.
+ Given the fact that power systems are sparsely connected, i.e.
+ each bus has only a limited number of neighbors irrespective of the system
+ size, channel limits on PMUs may be assumed to be sufficient to monitor
+ as many signals as needed at a given bus.
+ Assuming that a PMU is placed at bus 
+\begin_inset Formula $k$
+\end_inset
+
+, the following quantities are usally assumed to be available: voltage phasor
+ at bus 
+\begin_inset Formula $k$
+\end_inset
+
+, current phasors along all lines/branches incident to bus 
+\begin_inset Formula $k$
 \end_inset
 
 .
- Hence, if user wants to enter a number of devices per measurement type,
- the first element of 'scadaset' must be 'num' or 'perc'.
- In the following, examples of entering the field 'scadaset' and description
- of expected consequences are given.
+ Hence, TPSC does not provide an option for a user to specify the number
+ of measurements from a specific category (such as nodal voltage magnitude/phase
+ or branch current magnitude/phase).
+ Instead, a user only specifies the number of PMUs deployed in the power
+ system.
+\end_layout
+
+\begin_layout Itemize
+• The number of PMUs and the number of available current channels per PMU
+ are defined by a field called 'pmuset'.
+ A user can use the identifier "complete" to deploy PMUs on all buses in
+ the power system.
+ Alternatively, the number of PMUs can be determined by entering a single
+ number preceding the identifier "num," representing the desired number
+ of PMUs.
+ Another option is to enter the percentage of buses equipped with a PMU
+ using the identifier "perc".
+ In most cases, PMU has the ability to measure current flow on all incident
+ branches, and this is a default option.
+ Alternatively, TPSC allows a user to set an upper limit to number of current
+ channels of PMUs.
+ This number is entered after the identifier "currCh".
+ 
+\begin_inset listings
+lstparams "language=Matlab,numbers=left,breaklines=true,showstringspaces=false,backgroundcolor={\color{mygray}},basicstyle={\color{red}},morekeywords={matlab2tikz},keywordstyle={\color{blue}},morekeywords={[2]{1}},keywordstyle={[2]{\color{black}}},identifierstyle={\color{black}},stringstyle={\color{mylilas}},commentstyle={\color{mygreen}},numbersep=9pt,emph={[1]{for,end,break}},emphstyle={[1]\color{red}},emph={[2]{word1,word2}},emphstyle={[2]{style}}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddsettings.pmuset = [ "num", 120 ]; % deploys the PMUs on 120 randomly chosen
+ buses in the power system, and each PMU measures nodal voltage phasor and
+ current flow phasor on all incident branches
+\end_layout
+
+\begin_layout Plain Layout
+
+ddsettings.pmuset = [ "perc", 55, 
+\begin_inset Quotes eld
+\end_inset
+
+currCh
+\begin_inset Quotes erd
+\end_inset
+
+, 4 ];  % deploys the PMUs on 55% randomly chosen buses in the power system,
+ and each PMU measures nodal voltage phasor and current flow phasor on up
+ to four incident branches
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+The standard deviation of PMUs is set up using a field called 'pmusd'.
+ It should be defined for all types of quantities that a PMU measures independen
+tly: "magnitude" in percentages, "angle" in degrees, "frequency" in mHz,
+ and "rocof" in Hz/s.
+ Similar to the SCADA set, TPSC allows a user to choose it with a single
+ number ("fix") or a random number from a provided range ("rand").
+\begin_inset listings
+lstparams "language=Matlab,numbers=left,breaklines=true,showstringspaces=false,backgroundcolor={\color{mygray}},basicstyle={\color{red}},morekeywords={matlab2tikz},keywordstyle={\color{blue}},morekeywords={[2]{1}},keywordstyle={[2]{\color{black}}},identifierstyle={\color{black}},stringstyle={\color{mylilas}},commentstyle={\color{mygreen}},numbersep=9pt,emph={[1]{for,end,break}},emphstyle={[1]\color{red}},emph={[2]{word1,word2}},emphstyle={[2]{style}}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddsettings.pmusd = [  "fix", "magnitude", 0.01, "angle", 0.2, "frequency",
+ 5, "rocof",  0.4];
+\end_layout
+
+\begin_layout Plain Layout
+
+ % the standard deviation for magnitude measurements is 0.01%, for angle
+ measurements is 0.2 degrees, for frequency measurements is 5 mHz, and for
+ rate of change of frequency (rocof) is 0.4 Hz/s.
+\end_layout
+
+\begin_layout Plain Layout
+
+ddsettings.pmusd = [  "rand", "magnitude", 0.01, 0.02, "angle", 0.2, 0.3,  "frequency
+", 5, 5, "rocof",  0.4, 0.4 ];  % the standard deviation for magnitude measurement
+s is a randomly selected number from the range between 0.01% and 0.02%, for
+ angle measurements it is from the range between 0.2 and 0.3 degrees; for
+ frequency measurements, it is 5 mHz, and for the rate of change of frequency
+ (rocof), it is 0.4 Hz/s.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+In order to specify the repoting frequency of PMUs, a user should use a
+ field called 'pmufreq'.
+ To set that all PMUs has the equal reporting frequency a user is supposed
+ to use the following syntax:
+\begin_inset listings
+lstparams "language=Matlab,numbers=left,breaklines=true,showstringspaces=false,backgroundcolor={\color{mygray}},basicstyle={\color{red}},morekeywords={matlab2tikz},keywordstyle={\color{blue}},morekeywords={[2]{1}},keywordstyle={[2]{\color{black}}},identifierstyle={\color{black}},stringstyle={\color{mylilas}},commentstyle={\color{mygreen}},numbersep=9pt,emph={[1]{for,end,break}},emphstyle={[1]\color{red}},emph={[2]{word1,word2}},emphstyle={[2]{style}}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddsettings.pmufreq = [ "complete", 25 ]; % all pmus have the reporting frequency
+ equal to 50 Hz
+\end_layout
+
+\end_inset
+
+The substitute approach is to specify the percentage of devices included
+ in a set of one of the four standard reporting frequencies according to
+ the latest IEEE standard for PMUs: 100, 50, 25 and 10 [Hz].
+ 
+\begin_inset listings
+lstparams "language=Matlab,numbers=left,breaklines=true,showstringspaces=false,backgroundcolor={\color{mygray}},basicstyle={\color{red}},morekeywords={matlab2tikz},keywordstyle={\color{blue}},morekeywords={[2]{1}},keywordstyle={[2]{\color{black}}},identifierstyle={\color{black}},stringstyle={\color{mylilas}},commentstyle={\color{mygreen}},numbersep=9pt,emph={[1]{for,end,break}},emphstyle={[1]\color{red}},emph={[2]{word1,word2}},emphstyle={[2]{style}}"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddsettings.pmufreq = [ 50, 20, 10, 20 ]; % 50% of PMUs report 100 times per
+ second, 20% report 50 times per second, 10% report 25 times per second,
+ and the remaining 20% report 10 times per second
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The dependable performance of these features is anticipated only when input
+ parameters fall within permissible ranges; otherwise, the program may crash.
 \end_layout
 
 \begin_layout Subsection

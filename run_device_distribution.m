@@ -27,24 +27,23 @@ version = 'A';
 
 % Using the field "scadaset", a user determines SCADA measurement devices
 % (RTUs) which are deployed in a grid. 
-ddsettings.scadaset = [ "complete" ];
-
+ddsettings.scadaset = [ "num", "Pi", 40, "Qi", 40, "Iij", 60 ];
 % Using the field "scadavar", a user determines the variances of measurement devices
 % (RTUs) which are deployed in a grid.
-ddsettings.scadasd = [ "random", "complete", 0.01, 0.04, "Pij", 0.02, 0.05 ];
+ddsettings.scadasd = [ "rand", "Qij", 0.01, 0.02, "Vi", 0.005, 0.1, "complete" 0.01, 0.03 ];
 
-ddsettings.scadafreq = [ "complete", 2, "Iij", 0.5 ];
+ddsettings.scadafreq = [ "Iij", 0.5, "complete", 2 ];
 %--------------------------------------------------------------------------
 
 %---------------------------Phasor Measurements----------------------------
 % Using the field "pmuset", a user determines PMU measurement devices
 % (PMUs) which are installed in a grid. 
-ddsettings.pmuset = [ "density", 85, "currCh", 3 ];
+ddsettings.pmuset = [ "perc", 10, 'currCh' 2 ];
 
-ddsettings.pmusd = [  "fixed", "magnitude", 0.01, "angle", 0.1, ...
-                     "frequency", 0.005, "rocof",  0.4];
+ddsettings.pmusd = [  "rand", "magnitude", 0.01, 0.02, "angle", 0.2, 0.3, ...
+                     "frequency", 5, 5, "rocof",  0.4, 0.4 ];
 
-ddsettings.pmufreq = [ "complete", 10 ];
+ddsettings.pmufreq = [ "complete", 25 ];
 %--------------------------------------------------------------------------
 
 data = distribute_devices(name, ddsettings);

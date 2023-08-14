@@ -2,8 +2,7 @@ function data = distribute_devices(name, ddsettings)
 % load power system
 load(strcat('TPSC', name));
 
-% SCADA measurements
-
+%------------------------ SCADA MEASUREMENTS ------------------------------
 % maximum number of measurements per type
 maxPerType = [ 2 * data.nBranches, 2 * data.nBranches, data.nBuses, ...
                data.nBuses, 2 * data.nBranches, data.nBuses ];
@@ -18,7 +17,7 @@ scadanames = containers.Map({'Pij', 'Qij', 'Pi', 'Qi', 'Iij', 'Vi'}, ...
 nSet = numel(ddsettings.scadaset);
 i = 1;
 perType = false;
-if strcmp(ddsettings.scadaset(1), "density") || strcmp(ddsettings.scadaset(1), "num")
+if strcmp(ddsettings.scadaset(1), "perc") || strcmp(ddsettings.scadaset(1), "num")
     perType = true;
 end
 while i <= nSet
@@ -38,22 +37,33 @@ while i <= nSet
             throw(ME);
         end
         nType = scadanames(ddsettings.scadaset(i));
-        if strcmp(ddsettings.scadaset(1), "density")
-            nPerType(nType) = fix(str2double(ddsettings.scadaset(i + 1)) * maxPerType(nType) / 100);
+        val = str2double(ddsettings.scadaset(i + 1));
+        if strcmp(ddsettings.scadaset(1), "perc")
+            if val < 0 || val > 100
+               ME = MException('MyComponent:notDefinedBehaviour', ...
+                            'A percentage must be in the range from 0 to 100.');
+               throw(ME); 
+            end
+            nPerType(nType) = fix(val * maxPerType(nType) / 100);
         else
+            if val < 0 || val > maxPerType(nType)
+               ME = MException('MyComponent:notDefinedBehaviour', ...
+                            'Number of devices cannot be less than zero or bigger than the maximum possible number.');
+               throw(ME); 
+            end
             nPerType(nType) = str2double(ddsettings.scadaset(i + 1));
         end
         toAdd = toAdd + 1;
     end
     i = i + toAdd;
 end
-
+nPerType(nPerType < 0) = 0;
 % scada devices standard deviations
 i = 2;
 nSD = numel(ddsettings.scadasd);
 isRand = 0;
 isFixed = 0;
-if strcmp(ddsettings.scadasd(1), "random")
+if strcmp(ddsettings.scadasd(1), "rand")
     sdPerType = -1 * ones(6, 2);
     isRand = 1;
 elseif strcmp(ddsettings.scadasd(1), "fixed")
@@ -189,9 +199,10 @@ data.scada(nextStart:nextStart + nPerType(6) - 1, :) = [busidx, 6 * ones(nPerTyp
 devs,  freqPerType(6) * ones(nPerType(6), 1)];
 
 
-% pmu measurements
+% ------------------------ PMU MEASUREMENTS -------------------------------
 nSet = numel(ddsettings.pmuset);
 i = 1;
+nCurrCh = -1;
 while i <= nSet
     toAdd = 1;
     if strcmp(ddsettings.pmuset(i), "optimal")
@@ -201,7 +212,7 @@ while i <= nSet
         data.nPmu = str2double(ddsettings.pmuset(i + 1));
         toAdd = toAdd + 1;
     end
-    if strcmp(ddsettings.pmuset(i), "density")
+    if strcmp(ddsettings.pmuset(i), "perc")
         data.nPmu = fix(str2double(ddsettings.pmuset(i + 1)) * data.nBuses / 100);
         toAdd = toAdd + 1;
     end
@@ -220,10 +231,10 @@ pmunames = containers.Map({'magnitude', 'angle', 'frequency', 'rocof'}, ...
 nSD = numel(ddsettings.pmusd);                        
 isRand = 0;
 isFixed = 0;
-if strcmp(ddsettings.pmusd(1), "random")
+if strcmp(ddsettings.pmusd(1), "rand")
     sdPerType = -1 * ones(4, 2);
     isRand = 1;
-elseif strcmp(ddsettings.pmusd(1), "fixed")
+elseif strcmp(ddsettings.pmusd(1), "fix")
     sdPerType = -1 * ones(4, 1);
     isFixed = 1;
 else
@@ -251,7 +262,7 @@ if any(sdPerType == -1)
                   'Standard variance has to be insert for all quantites that a PMU measures.');
     throw(ME);
 end
-
+sdPerType(3, :) = sdPerType(3, :) ./ 1000;
 pmurr = containers.Map({'P100', 'P50', 'P25', 'P10'}, ...
                             {1, 2, 3, 4});
 numInSetPMU = zeros(4, 1);
@@ -290,8 +301,42 @@ else
 end
 data.pmu = [ pmubuses, nCurrCh * ones(data.nPmu, 1), pmudevs, [ 100 * ones(numInSetPMU(1), 1); 50 * ones(numInSetPMU(2), 1); ...
         25 * ones(numInSetPMU(3), 1); 10 * ones(numInSetPMU(4), 1)] ];
-
-
- 
-% make ajdacency list
+    
+    
+ % make ajdacency list
 data.adj = adjacencylist(data);
+
+% pmu current channels - priority is given to connections to 
+hasPmu = zeros(data.nBuses, 1);
+hasPmu(pmubuses) = 1;
+data.pmucurrch = cell(data.nPmu, 1);
+for i = 1:data.nPmu
+    connBuses = data.adj{pmubuses(i)};
+    if nCurrCh ~= -1
+        toThrow = numel(connBuses) - nCurrCh;
+        if toThrow > 0
+            j = 1;
+            while j <= numel(connBuses) && toThrow
+                if hasPmu(connBuses(j))
+                   connBuses(j) = [];
+                   j = j - 1;
+                   toThrow = toThrow - 1;
+                end
+                j = j + 1;
+            end
+            if toThrow
+                connBuses(end - toThrow:end) = [];
+            end
+        end
+    end
+    for j = 1:numel(connBuses)
+        nLine = [];
+        nLine = find(data.branch(:, 1) == pmubuses(i) & data.branch(:, 2) == connBuses(j));
+        if isempty(nLine)
+            nLine = -find(data.branch(:, 2) == pmubuses(i) & data.branch(:, 1) == connBuses(j));
+        end
+        nLine = nLine(1);
+        data.pmucurrch{i} = [ data.pmucurrch{i}, nLine];
+    end
+end
+ 
