@@ -18,12 +18,12 @@ end
 trackingmode = 0;
 if strcmp(mgsettings.mode, 'tracking')
     trackingmode = 1;
-    if ~nPMU
+    if nPMU
         calcfreq = max(data.pmu(:, 7)); 
     else
         calcfreq = max(data.scada(:, 5));
     end
-    tstamps = data.t * calcfreq;
+    tstamps = mgsettings.t * calcfreq;
     if round(tstamps) ~= tstamps
         tstamps = round(tstamps); 
     else
@@ -36,17 +36,17 @@ if strcmp(mgsettings.mode, 'tracking')
     hasPMU = zeros(data.nBuses, 1);
     for i = 1:nPMU
         hasPMU(data.bus(i, 1)) = 1;
-        mfreqPMU = mfreqPMU + fix(tstamps * data.pmu(i, 7) * calcfreq);
-        if data.pmu ~= - 1
-            msynPMU = msynPMU + fix(tstamps * data.pmu(i, 7) * calcfreq)...
+        mfreqPMU = mfreqPMU + fix(tstamps * data.pmu(i, 7) / calcfreq);
+        if data.pmu(i, 2) ~= - 1
+            msynPMU = msynPMU + fix(tstamps * data.pmu(i, 7) / calcfreq)...
                     * (1 + data.pmu(i, 2));
         else
-            msynPMU = msynPMU + fix(tstamps * data.pmu(i, 7) * calcfreq)...
+            msynPMU = msynPMU + fix(tstamps * data.pmu(i, 7) / calcfreq)...
                     * (1 + nAdj(i));
         end
     end
     for i = 1:nSCADA
-        mSCADA = mSCADA + fix(tstamps * data.scada(i, 5) * calcfreq);
+        mSCADA = mSCADA + fix(tstamps * data.scada(i, 5) / calcfreq);
     end
     measurements.synpmu = zeros(msynPMU, 8);
     measurements.fpmu = zeros(msynPMU, 6);
@@ -55,29 +55,29 @@ if strcmp(mgsettings.mode, 'tracking')
     fmode = mgsettings.fdynamics(1);
     lmode = mgsettings.ldynamics(1);
     if strcmp(fmode, "random") || strcmp(lmode, "random")
-        walk = randomwalk(samples);
+        walk = randomwalk(tstamps);
     end
     
     % frequency dynamics
     if strcmp(fmode, "const")
        f = -data.fn; 
     elseif strcmp(fmode, "random")
-       f = data.fn * ones(samples, 1) + ...
+       f = data.fn * ones(tstamps, 1) + ...
                        str2double(mgsettings.fdynamics(2)) * walk;
-    elseif strcmp(fmode(1:end-1), "UD")
-       v = str2double(fmode(numel(fmode)));
-       f = get_predefined_curve(calcfreq, data.t, data.t * ...
-                       1/5, fn, 3, v, str2double(mgsettings.fdynamics(2)));
+    elseif strcmp(extractBefore(fmode, 3), "UD")
+       v = str2double(extractAfter(fmode, 2));
+       f = get_predefined_curve(calcfreq, mgsettings.t, mgsettings.t * ...
+                       1/5, data.fn, 3, v, str2double(mgsettings.fdynamics(2)));
     end
-    if ~f == -data.fn
-       thetaslack = zeros(samples, 1);
+    if ~all(f == -data.fn)
+       thetaslack = zeros(tstamps, 1);
         ctheta = 0;
-        for i = 1:samples
+        for i = 1:tstamps
             ctheta = ctheta + 2 * pi * f(i) / calcfreq;
             thetaslack(i) = ctheta;
         end
     else
-        thetaslack(i) = fmode;
+        thetaslack(i) = 0;
     end
     
     % load dynamics
@@ -85,7 +85,7 @@ if strcmp(mgsettings.mode, 'tracking')
         loadNo = 0;
     elseif strcmp(lmode, "random")
         loadNo = -1;
-        load = ones(samples, 1) - str2double(mgsettings.ldynamics(2)) * walk;
+        load = ones(tstamps, 1) - str2double(mgsettings.ldynamics(2)) * walk;
     elseif strcmp(lmode, "loadon")
         while true
             loadNo = randi(data.nBuses);
@@ -120,7 +120,7 @@ end
 c_synpmu = 1;
 c_fpmu = 1;
 c_scada = 1;
-for i = 1:samples
+for i = 1:tstamps
     if trackingmode
         % dynamic settings
         dynsettings.thetaslack = thetaslack(i);

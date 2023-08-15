@@ -14,13 +14,13 @@ if fType == 3
         tE = 0;
         freq_profile = curve2(fM, tS, tE, tSE - tS - tE, fn, fMin);
     end
-    fc = 100; % cutoff frequency
-    fs = 1000; % sample rate
-    % Filter to achieve the smootheness
-    [b, a] = butter(6, fc/(fs/2), 'low'); % 6th order low-pass Butterworth filter
-    % Apply the filter
-    freq_profile = filter(b,a,freq_profile);
-    freq_profile(1:0.8 * fM) = fn;
+%     fc = 450; % cutoff frequency
+%     fs = 1000; % sample rate
+%     % Filter to achieve the smootheness
+%     [b, a] = butter(6, fc/(fs/2), 'low'); % 6th order low-pass Butterworth filter
+%     % Apply the filter
+%     freq_profile = filter(b,a,freq_profile);
+%     freq_profile(1:0.8 * fM) = fn;
 end
 end
 
