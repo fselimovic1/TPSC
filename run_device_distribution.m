@@ -43,7 +43,7 @@ ddsettings.pmuset = [ "perc", 10, 'currCh' 2 ];
 ddsettings.pmusd = [  "rand", "magnitude", 0.01, 0.02, "angle", 0.2, 0.3, ...
                      "frequency", 5, 5, "rocof",  0.4, 0.4 ];
 
-ddsettings.pmufreq = [ "complete", 25 ];
+ddsettings.pmufreq = [ "complete", 50 ];
 %--------------------------------------------------------------------------
 
 data = distribute_devices(name, ddsettings);

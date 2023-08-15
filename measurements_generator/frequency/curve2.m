@@ -17,7 +17,7 @@ f = interp1(tD, fD, t, 'spline');
 n = 20;
 c = polyfit(t, f, n);
 [~, f] = poly_fun(c, n, dT, tCon);
-fC = [repmat(fn, 1, (tS + tCon)/dT), repmat(fn + f(end), 1, tE/dT)];
-fC(tS/dT + 1:(tS + tCon + 1)/dT ) = fC(tS/dT + 1:(tS + tCon + 1)/dT) + f;
+fC = [repmat(fn, 1, (tS + tCon)/dT + 1), repmat(fn + f(end), 1, tE/dT)];
+fC(tS/dT + 1:(tS + tCon)/dT + 1 ) = fC(tS/dT + 1:(tS + tCon)/dT + 1) + f;
 end
 

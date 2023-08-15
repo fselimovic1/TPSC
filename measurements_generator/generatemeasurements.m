@@ -74,6 +74,10 @@ if strcmp(mgsettings.mode, 'tracking')
         ctheta = 0;
         for i = 1:tstamps
             ctheta = ctheta + 2 * pi * f(i) / calcfreq;
+            ctheta = mod(ctheta, 2 * pi);
+            if ctheta > pi
+                ctheta = ctheta - 2 * pi;
+            end
             thetaslack(i) = ctheta;
         end
     else
@@ -104,6 +108,7 @@ if strcmp(mgsettings.mode, 'tracking')
         load =  -[ str2double(mgsettings.ldynamics(2)), str2double(mgsettings.ldynamics(3)) ] / data.baseMVA;
     end        
 else
+    tstamps = 1;
     msynPMU = 0;
     for i = 1:nPMU
         if data.pmu ~= - 1
@@ -124,15 +129,15 @@ for i = 1:tstamps
     if trackingmode
         % dynamic settings
         dynsettings.thetaslack = thetaslack(i);
-        if dynsettings.f ~= -data.fn
+        if ~all(f == -data.fn)
             dynsettings.f = f(i);
         else
             dynsettings.f = f;
         end
         dynsettings.loadNo = loadNo;
-        if strcmp(loadNo, "all")
+        if loadNo == -1
             dynsettings.load = load(i);
-        elseif i / calcfreq == 1/5 * data.t
+        elseif i / calcfreq == 1/5 * mgsettings.t
             dynsettings.load = load;
         else
             dynsettings.loadNo = 0;
@@ -143,22 +148,102 @@ for i = 1:tstamps
     end
     for j = 1:nPMU
         bus = data.bus(j, 1);
-        if ~trackingmode || mod((i-1) / calcfreq, 1/data.pmu(j, 7))
-           % synpmu
-           measurements.pmu(c_synpmu, 1) = i - 1;
-           measurements.pmu(c_synpmu, 2) = bus;
-           measurements.pmu(c_synpmu, 3) = 3;
-           measurements.pmu(c_synpmu, 4) = bus;
-           measurements.pmu(c_synpmu, 5) = results.Vm(bus) * (1 + randn * data.pm(j, 3));
-           measurements.pmu(c_synpmu, 6) = results.Va(bus)  + randn * data.pm(j, 4);
-           measurements.pmu(c_synpmu, 7) = results.Vm(bus);
-           measurements.pmu(c_synpmu, 8) = results.Va(bus);
+        currFreq = f(i);
+        if i == 1
+            currRocof = f(i) - data.fn;
+        else
+            currRocof = f(i) - f(i - 1);
+        end
+        currRocof = currRocof * calcfreq;
+        if ~trackingmode || mod((i-1) / calcfreq, 1/data.pmu(j, 7)) == 0
+           % fpmu
+           measurements.fpmu(c_fpmu, 1) = i - 1;
+           measurements.fpmu(c_fpmu, 2) = bus;
+           measurements.fpmu(c_fpmu, 3) = currFreq + randn * data.pmu(j, 5);
+           measurements.fpmu(c_fpmu, 4) = currFreq;
+           measurements.fpmu(c_fpmu, 5) = currRocof + randn * data.pmu(j, 6);
+           measurements.fpmu(c_fpmu, 6) = currRocof;
+           c_fpmu = c_fpmu + 1;
+           
+           % synpmu - voltage
+           measurements.synpmu(c_synpmu, 1) = i - 1;
+           measurements.synpmu(c_synpmu, 2) = bus;
+           measurements.synpmu(c_synpmu, 3) = 3;
+           measurements.synpmu(c_synpmu, 4) = bus;
+           measurements.synpmu(c_synpmu, 5) = results.Vm(bus) * (1 + randn * data.pmu(j, 3));
+           measurements.synpmu(c_synpmu, 6) = results.Va(bus)  + randn * data.pmu(j, 4) * pi / 180;
+           measurements.synpmu(c_synpmu, 7) = results.Vm(bus);
+           measurements.synpmu(c_synpmu, 8) = results.Va(bus);
            c_synpmu = c_synpmu + 1;
            
-           % 
+           % synpmu - branch current(s)
+           for k = 1:numel(data.pmucurrch{j})
+               if data.pmucurrch{j}(k) > 0
+                   line = data.pmucurrch{j}(k);
+                   Iijm = results.Iijm(line);
+                   Iija = results.Iija(line);
+               else
+                   line = -data.pmucurrch{j}(k);
+                   Iijm = results.Ijim(line);
+                   Iija = results.Ijia(line);
+               end
+             measurements.synpmu(c_synpmu, 1) = i - 1;
+             measurements.synpmu(c_synpmu, 2) = bus;
+             measurements.synpmu(c_synpmu, 3) = 1;
+             measurements.synpmu(c_synpmu, 4) = data.pmucurrch{j}(k);
+             measurements.synpmu(c_synpmu, 5) = Iijm * (1 + randn * data.pmu(j, 3) / 100);
+             measurements.synpmu(c_synpmu, 6) = Iija  + randn * data.pmu(j, 4) * pi / 180;
+             measurements.synpmu(c_synpmu, 7) = Iijm;
+             measurements.synpmu(c_synpmu, 8) = Iija; 
+             c_synpmu = c_synpmu + 1;
+           end
         end
     end
     for j = 1:nSCADA
+        if ~trackingmode || mod((i-1) / calcfreq, 1/data.scada(j, 5)) == 0
+            measurements.scada(c_scada, 1) = i - 1;
+            measurements.scada(c_scada, 2) = data.scada(j, 1);
+            measurements.scada(c_scada, 3) = data.scada(j, 2);
+            measurements.scada(c_scada, 4) = data.scada(j, 3);
+            
+            % active power flow
+            switch measurements.scada(c_scada, 3)
+                case 1
+                    if measurements.scada(c_scada, 4) > 0
+                        measurements.scada(c_scada, 5) = results.Pij(measurements.scada(c_scada, 4)) + randn * data.scada(j, 4);
+                        measurements.scada(c_scada, 6) = results.Pij(measurements.scada(c_scada, 4));
+                    else
+                        measurements.scada(c_scada, 5) = results.Pji(-measurements.scada(c_scada, 4)) + randn * data.scada(j, 4);
+                        measurements.scada(c_scada, 6) = results.Pji(-measurements.scada(c_scada, 4));
+                    end
+                case 2
+                    if measurements.scada(c_scada, 4) > 0
+                        measurements.scada(c_scada, 5) = results.Qij(measurements.scada(c_scada, 4)) + randn * data.scada(j, 4);
+                        measurements.scada(c_scada, 6) = results.Qij(measurements.scada(c_scada, 4));
+                    else
+                        measurements.scada(c_scada, 5) = results.Qji(-measurements.scada(c_scada, 4)) + randn * data.scada(j, 4);
+                        measurements.scada(c_scada, 6) = results.Qji(-measurements.scada(c_scada, 4));
+                    end
+                case 3
+                    measurements.scada(c_scada, 5) = results.Pi(measurements.scada(c_scada, 4)) + randn * data.scada(j, 4);
+                    measurements.scada(c_scada, 6) = results.Pi(measurements.scada(c_scada, 4));
+                case 4
+                    measurements.scada(c_scada, 5) = results.Qi(measurements.scada(c_scada, 4)) + randn * data.scada(j, 4);
+                    measurements.scada(c_scada, 6) = results.Qi(measurements.scada(c_scada, 4));
+                case 5
+                    if measurements.scada(c_scada, 4) > 0
+                        measurements.scada(c_scada, 5) = results.Iijm(measurements.scada(c_scada, 4)) + randn * data.scada(j, 4);
+                        measurements.scada(c_scada, 6) = results.Iijm(measurements.scada(c_scada, 4));
+                    else
+                        measurements.scada(c_scada, 5) = results.Ijim(-measurements.scada(c_scada, 4)) + randn * data.scada(j, 4);
+                        measurements.scada(c_scada, 6) = results.Ijim(-measurements.scada(c_scada, 4));
+                    end
+                case 6
+                    measurements.scada(c_scada, 5) = results.Vi(measurements.scada(c_scada, 4)) + randn * data.scada(j, 4);
+                    measurements.scada(c_scada, 6) = results.Vi(measurements.scada(c_scada, 4));
+            end
+            c_scada = c_scada + 1;
+        end
     end
 end
 end

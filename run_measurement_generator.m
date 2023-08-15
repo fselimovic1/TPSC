@@ -16,11 +16,12 @@ load(strcat('TPSC', name, 'D_', version));
 % 'tracking' - measurements will be taken for a specific time period
 % 'static' - measurements will be taken for a single, distinct moment in time.
 mgsettings.mode = 'tracking';
+mgsettings.fpmu = 'off';
 %--------------------------------------------------------------------------
 
 %------------------------- Tracking SE options ----------------------------
-mgsettings.t = 5;
-mgsettings.fdynamics = [ "UD2", 49 ];
+mgsettings.t = 0.5;
+mgsettings.fdynamics = [ "random", 0.02 ];
 mgsettings.ldynamics = [ "random", 0.002 ];
 
 %--------------------------- Power Flow options ---------------------------
@@ -38,7 +39,7 @@ pfsettings.postprocess = 1;
 
 %------------------------------Save Case-----------------------------------
 home = getenv('USERPROFILE');
-path = strcat(home, '\PowerSystemComputations\data\measurements\SG', name, ...
+path = strcat(home, '\PowerSystemComputations\data\measurements\TPSC', name, ...
     'M_', version);
 save(path, 'measurements')
 %--------------------------------------------------------------------------

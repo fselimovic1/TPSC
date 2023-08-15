@@ -30,7 +30,7 @@ Ik = complex(data.nBuses, 1);
 Si = - (data.bus(:, 3) + 1i * data.bus(:, 4));
 if trackingmode && dynsettings.loadNo 
     if dynsettings.loadNo == -1
-        Si = Si .* (1 + dynsettings.load);
+        Si = Si .* dynsettings.load;
     else
         Si(dynsettings.loadNo) = Si(dynsettings.loadNo) + ...
                                  complex(load(1), load(2));  
