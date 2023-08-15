@@ -12,12 +12,12 @@ dT = 1/fM;
 % data from graph
 tD = [ 0, 5, 15, 20, 30,  40] .* (tCon/40); 
 fD = [ 0, -1, -0.73, -0.75, -0.4, -0.1] .* (fn - fMin);
-t = 0:dT:tCon - dT;
+t = 0:dT:tCon;
 f = interp1(tD, fD, t, 'spline');
 n = 20;
 c = polyfit(t, f, n);
 [~, f] = poly_fun(c, n, dT, tCon);
 fC = [repmat(fn, 1, (tS + tCon)/dT), repmat(fn + f(end), 1, tE/dT)];
-fC(tS/dT + 1:(tS + tCon)/dT) = fC(tS/dT + 1:(tS + tCon)/dT) + f;
+fC(tS/dT + 1:(tS + tCon + 1)/dT ) = fC(tS/dT + 1:(tS + tCon + 1)/dT) + f;
 end
 

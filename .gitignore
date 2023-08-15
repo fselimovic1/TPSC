@@ -35,3 +35,6 @@ octave-workspace
 
 # .git
 *.git
+
+# A directory for testing and fun
+Fun
