@@ -1,4 +1,4 @@
-function [ results ] = postprocess_acpf(ybus, v)
+function [ results ] = postprocess_acpf(ybus, branchi, branchj, v)
 nBranches = numel(ybus.admittance);
 % bus voltage
 results.Vm = abs(v);
@@ -33,9 +33,9 @@ results.Qloss = zeros(nBranches, 1);
 for i = 1:nBranches
     Iij = [ ybus.nodalFromFrom(i), ybus.nodalFromTo(i)
            ybus.nodalToFrom(i), ybus.nodalToTo(i)] *...
-           [ v(ybus.from(i)); v(ybus.to(i))];
-    Sij = v(ybus.from(i)) * conj(Iij(1));
-    Sji = v(ybus.to(i)) * conj(Iij(2));
+           [ v(branchi(i)); v(branchj(i))];
+    Sij = v(branchi(i)) * conj(Iij(1));
+    Sji = v(branchj(i)) * conj(Iij(2));
     results.Iijm(i) = abs(Iij(1));
     results.Ijim(i) = abs(Iij(2));
     results.Iija(i) = angle(Iij(1));
@@ -46,8 +46,8 @@ for i = 1:nBranches
     results.Qji(i)  = imag(Sji);
     
     % losses on the branch
-    Ib = ybus.admittance(i) * (v(ybus.from(i)) / ...
-        ybus.transformerRatio(i) - v(ybus.to(i)));
+    Ib = ybus.admittance(i) * (v(branchi(i)) / ...
+        ybus.transformerRatio(i) - v(branchj(i)));
     results.Ploss(i) = abs(Ib)^2 * real(1 / ybus.admittance(i));
     results.Qloss(i) = abs(Ib)^2 * imag(1 / ybus.admittance(i));
 end

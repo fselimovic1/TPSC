@@ -1,14 +1,14 @@
-function [h, col, val] = c_branch_current_magnitude(lineNo, data, state)
-if lineNo > 0
-    fromBus = data.branch(lineNo, 1);
-    toBus = data.branch(lineNo, 2);
-    iiBranch = data.powerSystemAC.nodalFromFrom(lineNo);
-    ijBranch = data.powerSystemAC.nodalFromTo(lineNo);
+function [h, col, val] = c_branch_current_magnitude(nLine, branchi, branchj, ybus, state)
+if nLine > 0
+    fromBus = branchi(nLine);
+    toBus = branchj(nLine);
+    iiBranch = ybus.nodalFromFrom(nLine);
+    ijBranch = ybus.nodalFromTo(nLine);
 else
-    fromBus = data.branch(-lineNo, 2);
-    toBus = data.branch(-lineNo, 1);
-    iiBranch = data.powerSystemAC.nodalToTo(-lineNo);
-    ijBranch = data.powerSystemAC.nodalToFrom(-lineNo);
+    fromBus = branchj(-nLine);
+    toBus = branchi(-nLine);
+    iiBranch = ybus.nodalToTo(-nLine);
+    ijBranch = ybus.nodalToFrom(-nLine);
 end
 ijPh = iiBranch * state(fromBus) + ijBranch * state(toBus);
 h = sqrt(ijPh * conj(ijPh));

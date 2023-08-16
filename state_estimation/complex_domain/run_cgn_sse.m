@@ -1,8 +1,18 @@
 function [results] = run_cgn_sse(sesettings, data, measurements)
 tic;
+% renumber data if needed
+bus = 1:data.nBuses;
+busi = data.bus(:, 1);
+branchi = data.branch(:, 1);
+branchj = data.branch(:, 2);
+toRenumber = any(data.bus(:, 1) ~= bus');
+if toRenumber
+    branchi = renumbering(branchi, busi, bus);
+    branchj = renumbering(branchj, busi, bus);
+end
 
 anySCADA = ~isempty(measurements.scada);
-data.powerSystemAC = admittance_matrix(data);
+data.powerSystemAC = admittance_matrix(data, branchi, branchj);
 
 state = ones( 2 * data.nBuses, 1);
 k = 1;
@@ -40,7 +50,7 @@ elemCounter = 1;
 for i = 1:mPMU
     if measurements.synpmu(i, 3) == 1
         [ colInC(elemCounter:elemCounter + 1), elemInC(elemCounter:...
-            elemCounter + 1) ] = cJ_current_flow_phasor(measurements.synpmu(i, 4), data);
+            elemCounter + 1) ] = cJ_current_flow_phasor(measurements.synpmu(i, 4), branchi, branchj, data.powerSystemAC);
         rowInC(elemCounter:elemCounter + 1) = [i, i];
         elemCounter = elemCounter + 2;
     elseif measurements.synpmu(i, 3) == 2
@@ -92,7 +102,7 @@ while k < sesettings.maxNumberOfIter
     for i = 1:mPMU
        if measurements.synpmu(i, 3) == 1
            c(i) = cF_current_flow_phasor(...
-               measurements.synpmu(i, 4), data, state);
+               measurements.synpmu(i, 4), branchi, branchj, data.powerSystemAC, state);
        elseif measurements.synpmu(i, 3) == 2
            c(i) = sum(transpose(data.powerSystemAC.nodalMatrix(...
                measurements.synpmu(i, 2), :)) .* state(1:data.nBuses));
@@ -105,33 +115,33 @@ while k < sesettings.maxNumberOfIter
        if measurements.scada(i, 3) == 1
            [ d(i), colInD(elemCounter:elemCounter + 1), ...
                elemInD(elemCounter:elemCounter + 1) ] = ...
-               c_active_power_flow(measurements.scada(i, 4), data, state);
+               c_active_power_flow(measurements.scada(i, 4), branchi, branchj, data.powerSystemAC, state);
            rowInD(elemCounter:elemCounter + 1) = [i, i];
            elemCounter = elemCounter + 2;
        elseif measurements.scada(i, 3) == 2
            [ d(i), colInD(elemCounter:elemCounter + 1), ...
                elemInD(elemCounter:elemCounter + 1) ] = ...
-               c_reactive_power_flow(measurements.scada(i, 4), data, state);
+               c_reactive_power_flow(measurements.scada(i, 4), branchi, branchj, data.powerSystemAC, state);
            rowInD(elemCounter:elemCounter + 1) = [i, i];
            elemCounter = elemCounter + 2;
        elseif measurements.scada(i, 3) == 3
            nNew = nnz(data.powerSystemAC.nodalMatrix(measurements.scada(i, 4), :));
            [ d(i), colInD(elemCounter:elemCounter + nNew - 1), ...
                elemInD(elemCounter:elemCounter + nNew - 1) ] = ...
-               c_active_power_injection(measurements.scada(i, 4), data, state);
+               c_active_power_injection(measurements.scada(i, 4), data.powerSystemAC, state);
            rowInD(elemCounter:elemCounter + nNew - 1) = repmat(i, 1, nNew);
            elemCounter = elemCounter + nNew;
        elseif measurements.scada(i, 3) == 4
            nNew = nnz(data.powerSystemAC.nodalMatrix(measurements.scada(i, 4), :));
            [ d(i), colInD(elemCounter:elemCounter + nNew - 1), ...
                elemInD(elemCounter:elemCounter + nNew - 1) ] = ...
-               c_reactive_power_injection(measurements.scada(i, 4), data, state);
+               c_reactive_power_injection(measurements.scada(i, 4), data.powerSystemAC, state);
            rowInD(elemCounter:elemCounter + nNew - 1) = repmat(i, 1, nNew);
            elemCounter = elemCounter + nNew;
        elseif measurements.scada(i, 3) == 5
            [ d(i), colInD(elemCounter:elemCounter + 1), ...
                elemInD(elemCounter:elemCounter + 1) ] = ...
-               c_branch_current_magnitude(measurements.scada(i, 4), data, state);
+               c_branch_current_magnitude(measurements.scada(i, 4), branchi, branchj, data.powerSystemAC, state);
            rowInD(elemCounter:elemCounter + 1) = [i, i];
            elemCounter = elemCounter + 2;
        elseif measurements.scada(i, 3) == 6

@@ -1,6 +1,6 @@
-function [h, col, val] = c_reactive_power_injection(bus, data, state)
-[~, col, nonZeros] = find(data.powerSystemAC.nodalMatrix(bus, :));
-nBuses = data.nBuses;
+function [h, col, val] = c_reactive_power_injection(bus, ybus, state)
+[~, col, nonZeros] = find(ybus.nodalMatrix(bus, :));
+nBuses = size(ybus, 1);
 % measurement function
 h = state(bus) * (sum(conj(nonZeros) .* state(nBuses + col).'));
 h = 1i * (conj(h) - h) / 2;

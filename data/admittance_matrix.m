@@ -1,4 +1,4 @@
-function powerSystemAC = admittance_matrix(data, varargin)
+function powerSystemAC = admittance_matrix(data, branchi, branchj, varargin)
 complexVector = complex(zeros(data.nBranches, 1));
 
 powerSystemAC.transformerRatio = complexVector;
@@ -7,10 +7,8 @@ powerSystemAC.nodalToTo = complexVector;
 powerSystemAC.nodalFromFrom = complexVector;
 powerSystemAC.nodalFromTo = complexVector;
 powerSystemAC.nodalToFrom = complexVector;
-powerSystemAC.from = data.branch(:, 1);
-powerSystemAC.to = data.branch(:, 2);
 nodalDiagonals = complex(zeros(data.nBuses, 1));
-if nargin == 2
+if nargin == 4
      for i =  1:data.nBranches
         % if the branch is IN-SERVICE:
         if data.branch(i, 11)
@@ -29,8 +27,8 @@ if nargin == 2
             powerSystemAC.nodalFromTo(i) = -powerSystemAC.admittance(i) / transformerRatioConj;
             powerSystemAC.nodalToFrom(i) = -powerSystemAC.admittance(i) / powerSystemAC.transformerRatio(i);
         
-            nodalDiagonals(data.branch(i, 1)) =  nodalDiagonals(data.branch(i, 1)) + powerSystemAC.nodalFromFrom(i);
-            nodalDiagonals(data.branch(i, 2)) =  nodalDiagonals(data.branch(i, 2)) + powerSystemAC.nodalToTo(i);
+            nodalDiagonals(branchi(i)) =  nodalDiagonals(branchi(i)) + powerSystemAC.nodalFromFrom(i);
+            nodalDiagonals(branchj(i)) =  nodalDiagonals(branchj(i)) + powerSystemAC.nodalToTo(i);
         end
     end
 
@@ -56,8 +54,8 @@ else
             powerSystemAC.nodalFromTo(i) = -powerSystemAC.admittance(i) / transformerRatioConj;
             powerSystemAC.nodalToFrom(i) = -powerSystemAC.admittance(i) / powerSystemAC.transformerRatio(i);
         
-            nodalDiagonals(data.branch(i, 1)) =  nodalDiagonals(data.branch(i, 1)) + powerSystemAC.nodalFromFrom(i);
-            nodalDiagonals(data.branch(i, 2)) =  nodalDiagonals(data.branch(i, 2)) + powerSystemAC.nodalToTo(i);
+            nodalDiagonals(branchi(i)) =  nodalDiagonals(branchi(i)) + powerSystemAC.nodalFromFrom(i);
+            nodalDiagonals(branchj(i)) =  nodalDiagonals(branchj(i)) + powerSystemAC.nodalToTo(i);
         end
     end
 
@@ -66,14 +64,14 @@ else
     end
 end
 % Compose sparse matrices:
-powerSystemAC.nodalMatrix = sparse([(1:data.nBuses)'; powerSystemAC.from;...
-                                    powerSystemAC.to], [(1:data.nBuses)'; ...
-                                    powerSystemAC.to; powerSystemAC.from], ...
+powerSystemAC.nodalMatrix = sparse([(1:data.nBuses)'; branchi;...
+                                    branchj], [(1:data.nBuses)'; ...
+                                   branchj; branchi], ...
                             [ nodalDiagonals; powerSystemAC.nodalFromTo; powerSystemAC.nodalToFrom], ...
                              data.nBuses, data.nBuses);
 powerSystemAC.nodalMatrixTranspose = transpose(powerSystemAC.nodalMatrix);  
-powerSystemAC.nodalMatrixOffDiag = sparse([powerSystemAC.from; powerSystemAC.to], ...
-                                [ powerSystemAC.to; powerSystemAC.from], ...
+powerSystemAC.nodalMatrixOffDiag = sparse([branchi; branchj], ...
+                                [ branchj; branchi], ...
                                 [ powerSystemAC.nodalFromTo; powerSystemAC.nodalToFrom], ...
                                 data.nBuses, data.nBuses);
 end

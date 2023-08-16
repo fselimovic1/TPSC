@@ -14,12 +14,12 @@
 sesettings.domain = 'complex';
 sesettings.method = 'sgn_sse';
 sesettings.fc = 10;
-sesettings.maxNumberOfIter = 20;
-sesettings.eps = 1e-6;
+sesettings.maxNumberOfIter = 50;
+sesettings.eps = 1e-8;
 %--------------------------------------------------------------------------
 
 %---------------------Load Power System & Measurements---------------------
-name = 'case118';
+name = 'case39';
 version = 'A';
 
 load(strcat('TPSC', name, 'D_', version));

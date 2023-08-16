@@ -30,11 +30,19 @@ codegen/
 # Octave session info
 octave-workspace
 
-# LyX backup files
+# LyX files
 *.lyx~
+*.lyx
 
 # .git
 *.git
 
 # A directory for testing and fun
 Fun/
+
+# matopower cases
+case*.m
+
+docs/DocumentationPSAT.pdf
+"docs/MATPOWER USER MANUAL.pdf"
+"docsAC Power Flow Data in MATPOWER and QCQP format_ iTesla, RTE Snapshots, and PEGASE.pdf"

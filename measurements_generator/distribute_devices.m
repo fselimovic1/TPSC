@@ -2,6 +2,17 @@ function data = distribute_devices(name, ddsettings)
 % load power system
 load(strcat('TPSC', name));
 
+% renumber buses if needed
+bus = 1:data.nBuses;
+busi = data.bus(:, 1);
+branchi = data.branch(:, 1);
+branchj = data.branch(:, 2);
+toRenumber = any(data.bus(:, 1) ~= bus);
+if toRenumber
+    branchi = renumbering(branchi, busi, bus);
+    branchj = renumbering(branchj, busi, bus);
+end
+
 %------------------------ SCADA MEASUREMENTS ------------------------------
 % maximum number of measurements per type
 maxPerType = [ 2 * data.nBranches, 2 * data.nBranches, data.nBuses, ...
@@ -15,9 +26,12 @@ scadanames = containers.Map({'Pij', 'Qij', 'Pi', 'Qi', 'Iij', 'Vi'}, ...
                             {1, 2, 3, 4, 5, 6});
 % scada devices set
 nSet = numel(ddsettings.scadaset);
+if nSet == 0
+    fprintf("No SCADA measurement devices specified.");
+end
 i = 1;
 perType = false;
-if strcmp(ddsettings.scadaset(1), "perc") || strcmp(ddsettings.scadaset(1), "num")
+if nSet && (strcmp(ddsettings.scadaset(1), "perc") || strcmp(ddsettings.scadaset(1), "num"))
     perType = true;
 end
 while i <= nSet
@@ -63,13 +77,13 @@ i = 2;
 nSD = numel(ddsettings.scadasd);
 isRand = 0;
 isFixed = 0;
-if strcmp(ddsettings.scadasd(1), "rand")
+if nSD && strcmp(ddsettings.scadasd(1), "rand")
     sdPerType = -1 * ones(6, 2);
     isRand = 1;
-elseif strcmp(ddsettings.scadasd(1), "fixed")
+elseif nSD && strcmp(ddsettings.scadasd(1), "fix")
     sdPerType = -1 * ones(6, 1);
     isFixed = 1;
-else
+elseif nSD
     ME = MException('MyComponent:notDefinedBehaviour', ...
                   'It is not specified a type of the standard deviation input.');
     throw(ME);
@@ -141,7 +155,7 @@ if isRand
 else
     devs = sdPerType(1) * ones(nPerType(1), 1);
 end
-[ busidx, branchidx ] = randombranch(data.branch, data.nBranches, nPerType(1));
+[ busidx, branchidx ] = randombranch(branchi, branchj, data.nBranches, nPerType(1));
 data.scada(1:nPerType(1), :) = [busidx, ones(nPerType(1), 1), branchidx,...
     devs,  freqPerType(1) * ones(nPerType(1), 1)];
 nextStart = 1 + nPerType(1);
@@ -151,7 +165,7 @@ if isRand
 else
     devs = sdPerType(2) * ones(nPerType(2), 1);
 end
-[ busidx, branchidx ] = randombranch(data.branch, data.nBranches, nPerType(2));
+[ busidx, branchidx ] = randombranch(branchi, branchj, data.nBranches, nPerType(2));
 data.scada(nextStart:nextStart + nPerType(2) - 1, :) = [busidx, 2 * ones(nPerType(2), 1), branchidx,...
         devs,  freqPerType(2) * ones(nPerType(2), 1)];
 nextStart = nextStart + nPerType(2);
@@ -183,7 +197,7 @@ if isRand
 else
     devs = sdPerType(5) * ones(nPerType(5), 1);
 end
-[ busidx, branchidx ] = randombranch(data.branch, data.nBranches, nPerType(5));
+[ busidx, branchidx ] = randombranch(branchi, branchj, data.nBranches, nPerType(5));
 data.scada(nextStart:nextStart + nPerType(5) - 1, :) = [busidx, 5 * ones(nPerType(5), 1), branchidx,...
     devs,  freqPerType(5) * ones(nPerType(5), 1)];
 nextStart = nextStart + nPerType(5);
@@ -203,6 +217,10 @@ devs,  freqPerType(6) * ones(nPerType(6), 1)];
 nSet = numel(ddsettings.pmuset);
 i = 1;
 nCurrCh = -1;
+if nSet == 0
+    fprintf("No PMU measurement devices specified.\n");
+    data.nPmu = 0;
+end
 while i <= nSet
     toAdd = 1;
     if strcmp(ddsettings.pmuset(i), "optimal")
@@ -226,18 +244,19 @@ while i <= nSet
     i = i + toAdd;
 end
 
+% pmu standard deviations
 pmunames = containers.Map({'magnitude', 'angle', 'frequency', 'rocof'}, ...
                             {1, 2, 3, 4});
 nSD = numel(ddsettings.pmusd);                        
 isRand = 0;
 isFixed = 0;
-if strcmp(ddsettings.pmusd(1), "rand")
+if nSD && strcmp(ddsettings.pmusd(1), "rand")
     sdPerType = -1 * ones(4, 2);
     isRand = 1;
-elseif strcmp(ddsettings.pmusd(1), "fix")
+elseif nSD && strcmp(ddsettings.pmusd(1), "fix")
     sdPerType = -1 * ones(4, 1);
     isFixed = 1;
-else
+elseif nSD
     ME = MException('MyComponent:notDefinedBehaviour', ...
                   'It is not specified a type of the standard deviation input.');
     throw(ME);
@@ -257,12 +276,13 @@ while i <= nSD
     end
     i = i + toAdd;
 end
-if any(sdPerType == -1)
+if nSD && any(sdPerType == -1)
     ME = MException('MyComponent:notDefinedBehaviour', ...
                   'Standard variance has to be insert for all quantites that a PMU measures.');
     throw(ME);
 end
 sdPerType(3, :) = sdPerType(3, :) ./ 1000;
+% pmu frequency
 pmurr = containers.Map({'P100', 'P50', 'P25', 'P10'}, ...
                             {1, 2, 3, 4});
 numInSetPMU = zeros(4, 1);
@@ -280,7 +300,7 @@ while i <= nFreq
     end
     i = i + toAdd;
 end
-if sum(numInSetPMU) ~= data.nPmu && ~strcmp(ddsettings.pmufreq(1), "complete")
+if nFreq && sum(numInSetPMU) ~= data.nPmu && ~strcmp(ddsettings.pmufreq(1), "complete")
    ME = MException('MyComponent:notDefinedBehaviour', ...
                    'Percentage of devices in reporting rate groups must add to 100%.');
    throw(ME);
@@ -304,7 +324,7 @@ data.pmu = [ pmubuses, nCurrCh * ones(data.nPmu, 1), pmudevs, [ 100 * ones(numIn
     
     
  % make ajdacency list
-data.adj = adjacencylist(data);
+data.adj = adjacencylist(data.nBuses, branchi, branchj);
 
 % pmu current channels - priority is given to connections to 
 hasPmu = zeros(data.nBuses, 1);
@@ -331,9 +351,9 @@ for i = 1:data.nPmu
     end
     for j = 1:numel(connBuses)
         nLine = [];
-        nLine = find(data.branch(:, 1) == pmubuses(i) & data.branch(:, 2) == connBuses(j));
+        nLine = find(branchi == pmubuses(i) & branchj == connBuses(j));
         if isempty(nLine)
-            nLine = -find(data.branch(:, 2) == pmubuses(i) & data.branch(:, 1) == connBuses(j));
+            nLine = -find(branchj == pmubuses(i) & branchi == connBuses(j));
         end
         nLine = nLine(1);
         data.pmucurrch{i} = [ data.pmucurrch{i}, nLine];

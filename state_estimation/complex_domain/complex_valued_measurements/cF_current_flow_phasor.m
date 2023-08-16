@@ -1,14 +1,14 @@
-function h = cF_current_flow_phasor(nLine, data, state)
+function h = cF_current_flow_phasor(nLine, branchi, branchj, ybus, state)
 if nLine > 0
-    fromBus = data.branch(nLine, 1);
-    toBus = data.branch(nLine, 2);
-    iiBranch = data.powerSystemAC.nodalFromFrom(nLine);
-    ijBranch = data.powerSystemAC.nodalFromTo(nLine);
+    fromBus = branchi(nLine);
+    toBus = branchj(nLine);
+    iiBranch = ybus.nodalFromFrom(nLine);
+    ijBranch = ybus.nodalFromTo(nLine);
 else
-    fromBus = data.branch(-nLine, 2);
-    toBus = data.branch(-nLine, 1);
-    iiBranch = data.powerSystemAC.nodalToTo(-nLine);
-    ijBranch = data.powerSystemAC.nodalToFrom(-nLine);
+    fromBus = branchj(-nLine);
+    toBus = branchi(-nLine);
+    iiBranch = ybus.nodalToTo(-nLine);
+    ijBranch = ybus.nodalToFrom(-nLine);
 end
 h = iiBranch * state(fromBus) + ijBranch * state(toBus);
 end

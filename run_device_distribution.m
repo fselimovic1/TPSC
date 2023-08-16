@@ -12,7 +12,7 @@ clear
 % multiple different measurement sets on for a power system. All settings
 % are contained as field of the structure 'ddsettings'.
 %----------------------------Power System----------------------------------
-name = 'case300';
+name = 'case39';
 version = 'A';
 %--------------------------------------------------------------------------
 
@@ -27,23 +27,23 @@ version = 'A';
 
 % Using the field "scadaset", a user determines SCADA measurement devices
 % (RTUs) which are deployed in a grid. 
-ddsettings.scadaset = [ "num", "Pi", 40, "Qi", 40, "Iij", 60 ];
+ddsettings.scadaset = ["perc", "Pij", 100, "Qij", 100, "Pi", 50, "Qi", 50, "Vi", 80 ];
 % Using the field "scadavar", a user determines the variances of measurement devices
 % (RTUs) which are deployed in a grid.
-ddsettings.scadasd = [ "rand", "Qij", 0.01, 0.02, "Vi", 0.005, 0.1, "complete" 0.01, 0.03 ];
+ddsettings.scadasd = [ "fix", "complete", 0.005 ];
 
-ddsettings.scadafreq = [ "Iij", 0.5, "complete", 2 ];
+ddsettings.scadafreq = [ "complete", 1 ];
 %--------------------------------------------------------------------------
 
 %---------------------------Phasor Measurements----------------------------
 % Using the field "pmuset", a user determines PMU measurement devices
 % (PMUs) which are installed in a grid. 
-ddsettings.pmuset = [ "perc", 10, 'currCh' 2 ];
+ddsettings.pmuset = []; %[ "perc", 95, "currCh" -1];
 
-ddsettings.pmusd = [  "rand", "magnitude", 0.01, 0.02, "angle", 0.2, 0.3, ...
-                     "frequency", 5, 5, "rocof",  0.4, 0.4 ];
+ddsettings.pmusd = []; %[  "rand", "magnitude", 0.01, 0.02, "angle", 0.2, 0.3, ...
+                     %     "frequency", 5, 5, "rocof",  0.4, 0.4 ];
 
-ddsettings.pmufreq = [ "complete", 50 ];
+ddsettings.pmufreq = []; % [ "complete", 10 ];
 %--------------------------------------------------------------------------
 
 data = distribute_devices(name, ddsettings);

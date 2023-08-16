@@ -15,15 +15,15 @@ fprintf(['\tDate: ', datestr(now, 'dd.mm.yyyy HH:MM:SS \n\n')])
      return;
  end
  fprintf('\tNumber of iterations: %d\n', results.iter) 
- fprintf('\tPerformance accuracy index: %s\n', sum(abs(results.voltage - measurements.exactVals) .^ 2));
+ fprintf('\tPerformance accuracy index: %s\n', sum(abs(results.voltage - measurements.trueVoltage) .^ 2));
  disp(' ')
  fprintf('\t')
  toShow = input('Show nodal phasor voltages (y/n)?', 's');
  if strcmp(toShow, 'y') || strcmp(toShow, 'Y')
      nBuses = size(results.voltage);
      A = [(1:nBuses)', abs(results.voltage), angle(results.voltage) * 180/pi,...
-          abs(measurements.exactVals), angle(measurements.exactVals) * 180/pi ...
-          abs(results.voltage - measurements.exactVals) ] ;
+          abs(measurements.trueVoltage), angle(measurements.trueVoltage) * 180/pi ...
+          abs(results.voltage - measurements.trueVoltage) ] ;
      disp(' ')
 	   disp('   ____________________________________________________________________')
 	   disp('  |                Voltage Phasors Estimation Results                  |')

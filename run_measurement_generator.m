@@ -7,7 +7,7 @@ clear
 
 %--------------------------Generate New Data-------------------------------
 %--------------------Power system with measurement deiveces----------------
-name = 'case300';
+name = 'case39';
 version = 'A';
 load(strcat('TPSC', name, 'D_', version));
 %--------------------------------------------------------------------------
@@ -15,8 +15,7 @@ load(strcat('TPSC', name, 'D_', version));
 %---------------------------- State Estimation mode -----------------------
 % 'tracking' - measurements will be taken for a specific time period
 % 'static' - measurements will be taken for a single, distinct moment in time.
-mgsettings.mode = 'tracking';
-mgsettings.fpmu = 'off';
+mgsettings.mode = 'static';
 %--------------------------------------------------------------------------
 
 %------------------------- Tracking SE options ----------------------------

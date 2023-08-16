@@ -4,21 +4,9 @@ clc
 clear
 
 % insert the name of Matpower case 
-caseName = 'case9';
+caseName = 'case9241pegase';
 
 data = eval(caseName);
-
-% potential renumbering
-data.nBuses = size(data.bus, 1);
-toReNumber = false;
-for i = 1:data.nBuses
-    if i ~= data.nBuses
-        toReNumber = true;
-    end
-end
-if toReNumber
-    data = renumbering(data);
-end
 
 % DATA BUS
 data.bus(:, 3:6) = data.bus(:, 3:6)./data.baseMVA;
@@ -30,10 +18,10 @@ data.generator = data.gen(:, 1:10);
 data.generator(:, [2:5, 9, 10]) = data.generator(:, [2:5, 9, 10])./data.baseMVA;
 data = rmfield(data, 'gen');
 
-for i = 1:size(data.generator, 1)
-    data.bus(data.generator(i, 1), 14) = data.bus(data.generator(i, 1), 14) + data.generator(i, 2);
-    data.bus(data.generator(i, 1), 15) = data.bus(data.generator(i, 1), 15) + data.generator(i, 3);
-end
+% for i = 1:size(data.generator, 1)
+%     data.bus(data.generator(i, 1), 14) = data.bus(data.generator(i, 1), 14) + data.generator(i, 2);
+%     data.bus(data.generator(i, 1), 15) = data.bus(data.generator(i, 1), 15) + data.generator(i, 3);
+% end
 % DATA BRANCH
 data.branch(:, 6:8) = data.branch(:, 6:8)./data.baseMVA;
 data.branch(:, [10, 12, 13]) = data.branch(:, [10, 12, 13]) .* pi/180;

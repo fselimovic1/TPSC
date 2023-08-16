@@ -1,15 +1,15 @@
-function [h, col, val] = c_reactive_power_flow(nLine, data, state)
-nBuses = data.nBuses;
+function [h, col, val] = c_reactive_power_flow(nLine, branchi, branchj, ybus, state)
+nBuses = size(ybus.nodalMatrix, 1);
 if nLine > 0
-    fromBus = data.branch(nLine, 1);
-    toBus = data.branch(nLine, 2);
-    iiBranch = data.powerSystemAC.nodalFromFrom(nLine);
-    ijBranch = data.powerSystemAC.nodalFromTo(nLine);
+    fromBus = branchi(nLine);
+    toBus = branchj(nLine);
+    iiBranch = ybus.nodalFromFrom(nLine);
+    ijBranch = ybus.nodalFromTo(nLine);
 else
-    fromBus = data.branch(-nLine, 2);
-    toBus = data.branch(-nLine, 1);
-    iiBranch = data.powerSystemAC.nodalToTo(-nLine);
-    ijBranch = data.powerSystemAC.nodalToFrom(-nLine);
+    fromBus = branchj(-nLine);
+    toBus = branchi(-nLine);
+    iiBranch = ybus.nodalToTo(-nLine);
+    ijBranch = ybus.nodalToFrom(-nLine);
 end
 
 

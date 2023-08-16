@@ -13,16 +13,10 @@ for i = 1:data.nBuses
     nAdj(i) = numel(data.adj{i});
 end
 
-% In tracking mode, calculating frequency is equal to the maximum reporting     
-% frequency of devices embedded in the grid.
 trackingmode = 0;
 if strcmp(mgsettings.mode, 'tracking')
     trackingmode = 1;
-    if nPMU
-        calcfreq = max(data.pmu(:, 7)); 
-    else
-        calcfreq = max(data.scada(:, 5));
-    end
+    calcfreq = 1 / arraygcd(1 ./ ([unique(data.pmu(:, 7)); unique(data.scada(:, 5))]));
     tstamps = mgsettings.t * calcfreq;
     if round(tstamps) ~= tstamps
         tstamps = round(tstamps); 
@@ -35,18 +29,17 @@ if strcmp(mgsettings.mode, 'tracking')
     mSCADA = 0;
     hasPMU = zeros(data.nBuses, 1);
     for i = 1:nPMU
-        hasPMU(data.bus(i, 1)) = 1;
-        mfreqPMU = mfreqPMU + fix(tstamps * data.pmu(i, 7) / calcfreq);
+        hasPMU(data.pmu(i, 1)) = 1;
+        measuringTimes = ceil((mgsettings.t + eps) * data.pmu(i, 7));
+        mfreqPMU = mfreqPMU + measuringTimes;
         if data.pmu(i, 2) ~= - 1
-            msynPMU = msynPMU + fix(tstamps * data.pmu(i, 7) / calcfreq)...
-                    * (1 + data.pmu(i, 2));
+            msynPMU = msynPMU + measuringTimes * (1 + numel(data.pmucurrch{i}));
         else
-            msynPMU = msynPMU + fix(tstamps * data.pmu(i, 7) / calcfreq)...
-                    * (1 + nAdj(i));
+            msynPMU = msynPMU + measuringTimes * (1 + nAdj(i));
         end
     end
     for i = 1:nSCADA
-        mSCADA = mSCADA + fix(tstamps * data.scada(i, 5) / calcfreq);
+        mSCADA = mSCADA + ceil((mgsettings.t + eps) * data.scada(i, 5));
     end
     measurements.synpmu = zeros(msynPMU, 8);
     measurements.fpmu = zeros(msynPMU, 6);
@@ -109,19 +102,20 @@ if strcmp(mgsettings.mode, 'tracking')
     end        
 else
     tstamps = 1;
+    f = data.fn;
+    loadNo = 0;
     msynPMU = 0;
     for i = 1:nPMU
         if data.pmu ~= - 1
-            msynPMU = msynPMU + 1 + data.pmu(i, 2);
+            msynPMU = msynPMU + 1 + numel(data.pmucurrch{i});
         else
             msynPMU = msynPMU + 1 + nAdj(i);
         end 
     end
     measurements.synpmu = zeros(msynPMU, 8);
-    measurements.fpmu = zeros(nPMU, 6);
     measurements.scada = zeros(nSCADA, 6);
 end
-
+measurements.trueVoltage = complex(zeros(data.nBuses, tstamps));
 c_synpmu = 1;
 c_fpmu = 1;
 c_scada = 1;
@@ -146,24 +140,31 @@ for i = 1:tstamps
     else
         results = run_power_flows(pfsettings, data);
     end
+    % write true values
+    measurements.trueVoltage(:, i) = results.Vm .* exp(1i * results.Va);
+
     for j = 1:nPMU
-        bus = data.bus(j, 1);
-        currFreq = f(i);
-        if i == 1
-            currRocof = f(i) - data.fn;
-        else
-            currRocof = f(i) - f(i - 1);
+        bus = data.pmu(j, 1);
+        if trackingmode
+            currFreq = f(i);
+            if i == 1
+                currRocof = f(i) - data.fn;
+            else
+                currRocof = f(i) - f(i - 1);
+            end
+            currRocof = currRocof * calcfreq;
         end
-        currRocof = currRocof * calcfreq;
         if ~trackingmode || mod((i-1) / calcfreq, 1/data.pmu(j, 7)) == 0
            % fpmu
-           measurements.fpmu(c_fpmu, 1) = i - 1;
-           measurements.fpmu(c_fpmu, 2) = bus;
-           measurements.fpmu(c_fpmu, 3) = currFreq + randn * data.pmu(j, 5);
-           measurements.fpmu(c_fpmu, 4) = currFreq;
-           measurements.fpmu(c_fpmu, 5) = currRocof + randn * data.pmu(j, 6);
-           measurements.fpmu(c_fpmu, 6) = currRocof;
-           c_fpmu = c_fpmu + 1;
+           if trackingmode
+            measurements.fpmu(c_fpmu, 1) = i - 1;
+            measurements.fpmu(c_fpmu, 2) = bus;
+            measurements.fpmu(c_fpmu, 3) = currFreq + randn * data.pmu(j, 5);
+            measurements.fpmu(c_fpmu, 4) = currFreq;
+            measurements.fpmu(c_fpmu, 5) = currRocof + randn * data.pmu(j, 6);
+            measurements.fpmu(c_fpmu, 6) = currRocof;
+            c_fpmu = c_fpmu + 1;
+           end
            
            % synpmu - voltage
            measurements.synpmu(c_synpmu, 1) = i - 1;
@@ -239,8 +240,8 @@ for i = 1:tstamps
                         measurements.scada(c_scada, 6) = results.Ijim(-measurements.scada(c_scada, 4));
                     end
                 case 6
-                    measurements.scada(c_scada, 5) = results.Vi(measurements.scada(c_scada, 4)) + randn * data.scada(j, 4);
-                    measurements.scada(c_scada, 6) = results.Vi(measurements.scada(c_scada, 4));
+                    measurements.scada(c_scada, 5) = results.Vm(measurements.scada(c_scada, 4)) + randn * data.scada(j, 4);
+                    measurements.scada(c_scada, 6) = results.Vm(measurements.scada(c_scada, 4));
             end
             c_scada = c_scada + 1;
         end

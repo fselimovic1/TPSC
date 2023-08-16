@@ -7,6 +7,20 @@ end
 k = 1;
 converged = 0;
 
+% renumber data if needed
+bus = 1:data.nBuses;
+busi = data.bus(:, 1);
+genbuses = data.generator(:, 1);
+branchi = data.branch(:, 1);
+branchj = data.branch(:, 2);
+toRenumber = any(data.bus(:, 1) ~= bus);
+if toRenumber
+    genbuses = renumbering(genbuses, busi, bus);
+    branchi = renumbering(branchi, busi, bus);
+    branchj = renumbering(branchj, busi, bus);
+end
+
+
 tic
 % Initialization
 if strcmp(pfsettings.start, 'flat')
@@ -18,9 +32,9 @@ end
   
 % Compute admittance bus matrix
 if trackingmode && dynsettings.f ~= -data.fn
-    data.powerSystemAC = admittance_matrix(data, dynsettings);
+    data.powerSystemAC = admittance_matrix(data, branchi, branchj, dynsettings);
 else
-    data.powerSystemAC = admittance_matrix(data);
+    data.powerSystemAC = admittance_matrix(data, branchi, branchj);
 end
 
 % Injected current in kth iteration
@@ -36,18 +50,12 @@ if trackingmode && dynsettings.loadNo
                                  complex(load(1), load(2));  
     end
 end
-genbuses = data.generator(:, 1);
 Si(genbuses) = Si(genbuses) + (data.generator(:, 2) + 1i * data.generator(:, 3));
 
 % Regulated voltages
 Vr = data.bus(:, 8);
 Vr(genbuses) = data.generator(:, 6);
-if ~trackingmode
-    Vsl = data.bus(data.slackNo, 8) * exp(1i * data.bus(data.slackNo, 9));
-else
-	Vsl = data.bus(data.slackNo, 8) * exp(1i * dynsettings.thetaslack);
-end
-
+Vsl = data.bus(data.slackNo, 8) * exp(1i * data.bus(data.slackNo, 9));
 
 nNonZero = 0;
 nInc = zeros(data.nBuses, 1);
@@ -167,7 +175,12 @@ algtime = toc;
 % post-processing
 if pfsettings.postprocess
     tic
-    results = postprocess_acpf(data.powerSystemAC, x(1:data.nBuses));
+    if trackingmode
+        v = abs(x(1:data.nBuses)) * exp(1i * (angle(x(data.nBuses)) + dynsettings.thetaslack));
+    else
+        v = x(1:data.nBuses);
+    end
+    results = postprocess_acpf(data.powerSystemAC, branchi, branchj, v);
     results.Pload = data.bus(:, 3);
     results.Qload = data.bus(:, 4);
     results.Pgen(genbuses) = data.generator(:, 2);
