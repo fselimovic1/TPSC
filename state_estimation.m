@@ -1,9 +1,8 @@
- clc
- close
- clearvars
+clc
+close
+clearvars
 
 %---------------------------State Estimation-------------------------------
-
 %--------------------------------------------------------------------------
 
 %-------------------------Generate Path Name-------------------------------
@@ -12,10 +11,10 @@
 
 %----------------------------About Solver----------------------------------
 sesettings.domain = 'complex';
-sesettings.method = 'sgn_sse';
+sesettings.method = 'cgn_sse';
 sesettings.fc = 10;
 sesettings.maxNumberOfIter = 50;
-sesettings.eps = 1e-8;
+sesettings.eps = 1e-6;
 %--------------------------------------------------------------------------
 
 %---------------------Load Power System & Measurements---------------------

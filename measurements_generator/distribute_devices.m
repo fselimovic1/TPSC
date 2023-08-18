@@ -27,7 +27,7 @@ scadanames = containers.Map({'Pij', 'Qij', 'Pi', 'Qi', 'Iij', 'Vi'}, ...
 % scada devices set
 nSet = numel(ddsettings.scadaset);
 if nSet == 0
-    fprintf("No SCADA measurement devices specified.");
+    fprintf("No SCADA measurement devices specified.\n");
 end
 i = 1;
 perType = false;
@@ -334,7 +334,9 @@ for i = 1:data.nPmu
     connBuses = data.adj{pmubuses(i)};
     if nCurrCh ~= -1
         toThrow = numel(connBuses) - nCurrCh;
-        if toThrow > 0
+        if toThrow == numel(connBuses)
+            connBuses = [ ];
+        elseif toThrow > 0
             j = 1;
             while j <= numel(connBuses) && toThrow
                 if hasPmu(connBuses(j))

@@ -19,7 +19,7 @@ mgsettings.mode = 'static';
 %--------------------------------------------------------------------------
 
 %------------------------- Tracking SE options ----------------------------
-mgsettings.t = 0.5;
+mgsettings.t = 5;
 mgsettings.fdynamics = [ "random", 0.02 ];
 mgsettings.ldynamics = [ "random", 0.002 ];
 
@@ -30,6 +30,7 @@ pfsettings.start = '';
 pfsettings.maxNumberOfIter = 20;
 pfsettings.eps = 1e-6;
 pfsettings.postprocess = 1;
+pfsettings.mg = 1;
 %--------------------------------------------------------------------------
 
 %----------------------------Generate Data---------------------------------

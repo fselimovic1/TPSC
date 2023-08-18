@@ -137,9 +137,11 @@ for i = 1:tstamps
             dynsettings.loadNo = 0;
         end
         results = run_power_flows(pfsettings, data, dynsettings);
+        
     else
         results = run_power_flows(pfsettings, data);
     end
+    results_pf(data, pfsettings, results);
     % write true values
     measurements.trueVoltage(:, i) = results.Vm .* exp(1i * results.Va);
 
