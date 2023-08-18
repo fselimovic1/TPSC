@@ -1,4 +1,6 @@
 function [ measurements ] = generatemeasurements(mgsettings, pfsettings, data)
+pfsettings.postprocess = 1;
+
 % number of devices
 nPMU = size(data.pmu, 1);
 nSCADA  = size(data.scada, 1);
@@ -53,7 +55,11 @@ if strcmp(mgsettings.mode, 'tracking')
     
     % frequency dynamics
     if strcmp(fmode, "const")
-       f = -data.fn; 
+        if numel(mgsettings.fdynamics) == 1
+            f = data.fn * ones(tstamps, 1); 
+        else
+            f = str2double(mgsettings.fdynamics(2)) * ones(tstamps, 1);
+        end
     elseif strcmp(fmode, "random")
        f = data.fn * ones(tstamps, 1) + ...
                        str2double(mgsettings.fdynamics(2)) * walk;
@@ -62,20 +68,18 @@ if strcmp(mgsettings.mode, 'tracking')
        f = get_predefined_curve(calcfreq, mgsettings.t, mgsettings.t * ...
                        1/5, data.fn, 3, v, str2double(mgsettings.fdynamics(2)));
     end
-    if ~all(f == -data.fn)
-       thetaslack = zeros(tstamps, 1);
-        ctheta = 0;
-        for i = 1:tstamps
-            ctheta = ctheta + 2 * pi * f(i) / calcfreq;
-            ctheta = mod(ctheta, 2 * pi);
-            if ctheta > pi
-                ctheta = ctheta - 2 * pi;
-            end
-            thetaslack(i) = ctheta;
-        end
-    else
-        thetaslack(i) = 0;
+
+    thetaslack = zeros(tstamps, 1);
+    ctheta = 0;
+    for i = 1:tstamps
+        ctheta = ctheta + 2 * pi * f(i) / calcfreq;
+        ctheta = mod(ctheta, 2 * pi);
+    if ctheta > pi
+        ctheta = ctheta - 2 * pi;
     end
+        thetaslack(i) = ctheta;
+    end
+    
     
     % load dynamics
     if strcmp(lmode, "const")
@@ -123,11 +127,8 @@ for i = 1:tstamps
     if trackingmode
         % dynamic settings
         dynsettings.thetaslack = thetaslack(i);
-        if ~all(f == -data.fn)
-            dynsettings.f = f(i);
-        else
-            dynsettings.f = f;
-        end
+        dynsettings.f = f(i);
+
         dynsettings.loadNo = loadNo;
         if loadNo == -1
             dynsettings.load = load(i);
@@ -141,7 +142,11 @@ for i = 1:tstamps
     else
         results = run_power_flows(pfsettings, data);
     end
-    results_pf(data, pfsettings, results);
+    if results.converged
+     fprintf('Power flow analysis converged in %d iterations (after: %.2f [ms]), using the %s.\n', results.iter, results.at * 1000, results.method); 
+    else
+     fprintf('The algortihm did not converged after: %d iterations!\n \t :( :( :(\n', pfsettings.maxNumberOfIter);
+    end
     % write true values
     measurements.trueVoltage(:, i) = results.Vm .* exp(1i * results.Va);
 
@@ -249,5 +254,6 @@ for i = 1:tstamps
         end
     end
 end
+measurements.f = f;
 end
 

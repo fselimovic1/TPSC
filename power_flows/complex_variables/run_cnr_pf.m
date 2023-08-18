@@ -47,7 +47,7 @@ if trackingmode && dynsettings.loadNo
         Si = Si .* dynsettings.load;
     else
         Si(dynsettings.loadNo) = Si(dynsettings.loadNo) + ...
-                                 complex(load(1), load(2));  
+                                 complex(dynsettings.load(1), dynsettings.load(2));  
     end
 end
 Si(genbuses) = Si(genbuses) + (data.generator(:, 2) + 1i * data.generator(:, 3));

@@ -16,7 +16,6 @@ pfsettings.start = 'flat';
 pfsettings.maxNumberOfIter = 20;
 pfsettings.eps = 1e-6;
 pfsettings.postprocess = 1;
-pfsettings.mg = 0;
 %--------------------------------------------------------------------------
 
 %------------------------- Load Power System ------------------------------

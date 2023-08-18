@@ -11,12 +11,8 @@ fprintf(['\tDate: ', datestr(now, 'dd.mm.yyyy HH:MM:SS \n\n')])
  end
  fprintf('\tNumber of iterations: %d\n', results.iter) 
  disp(' ')
- toShowBase = 'n';
- if ~pfsettings.mg
-    fprintf('\t') 
-    toShowBase = input('Show main bus data (y/n)?', 's');
- end
-     
+ fprintf('\t') 
+ toShowBase = input('Show main bus data (y/n)?', 's');    
  if strcmp(toShowBase, 'y') || strcmp(toShowBase, 'Y')
      nBuses = numel(results.Vm);
      A = [ (1:nBuses)', results.Vm, results.Va .* 180/pi] ;
@@ -55,11 +51,8 @@ fprintf(['\tDate: ', datestr(now, 'dd.mm.yyyy HH:MM:SS \n\n')])
         end
         disp('  |-------------------------------------------------------------------------------------|')   
  end
- toShowFlows = 'n';
- if ~pfsettings.mg
-    fprintf('\t') 
-    toShowFlows= input('Show power flows accross the branches (y/n)?', 's');
- end
+  fprintf('\t') 
+  toShowFlows= input('Show power flows accross the branches (y/n)?', 's');
 if strcmp(toShowFlows, 'y') || strcmp(toShowFlows, 'Y')
        disp(' ')
 	   disp('   __________________________________________________________________________________________')

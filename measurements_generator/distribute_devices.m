@@ -80,7 +80,7 @@ isFixed = 0;
 if nSD && strcmp(ddsettings.scadasd(1), "rand")
     sdPerType = -1 * ones(6, 2);
     isRand = 1;
-elseif nSD && strcmp(ddsettings.scadasd(1), "fix")
+elseif nSD && strcmp(ddsettings.scadasd(1), "fixed")
     sdPerType = -1 * ones(6, 1);
     isFixed = 1;
 elseif nSD
@@ -245,7 +245,7 @@ while i <= nSet
 end
 
 % pmu standard deviations
-pmunames = containers.Map({'magnitude', 'angle', 'frequency', 'rocof'}, ...
+pmunames = containers.Map({'magnitude', 'phase', 'frequency', 'rocof'}, ...
                             {1, 2, 3, 4});
 nSD = numel(ddsettings.pmusd);                        
 isRand = 0;
@@ -253,7 +253,7 @@ isFixed = 0;
 if nSD && strcmp(ddsettings.pmusd(1), "rand")
     sdPerType = -1 * ones(4, 2);
     isRand = 1;
-elseif nSD && strcmp(ddsettings.pmusd(1), "fix")
+elseif nSD && strcmp(ddsettings.pmusd(1), "fixed")
     sdPerType = -1 * ones(4, 1);
     isFixed = 1;
 elseif nSD

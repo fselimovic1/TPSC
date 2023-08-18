@@ -15,13 +15,13 @@ load(strcat('TPSC', name, 'D_', version));
 %---------------------------- State Estimation mode -----------------------
 % 'tracking' - measurements will be taken for a specific time period
 % 'static' - measurements will be taken for a single, distinct moment in time.
-mgsettings.mode = 'static';
+mgsettings.mode = 'tracking';
 %--------------------------------------------------------------------------
 
 %------------------------- Tracking SE options ----------------------------
 mgsettings.t = 5;
-mgsettings.fdynamics = [ "random", 0.02 ];
-mgsettings.ldynamics = [ "random", 0.002 ];
+mgsettings.fdynamics = [ "const", 49.95 ];
+mgsettings.ldynamics = [ "loadoff", 50, 20 ];
 
 %--------------------------- Power Flow options ---------------------------
 pfsettings.domain = 'complex';
@@ -29,8 +29,6 @@ pfsettings.method = 'cgn_pf';
 pfsettings.start = '';
 pfsettings.maxNumberOfIter = 20;
 pfsettings.eps = 1e-6;
-pfsettings.postprocess = 1;
-pfsettings.mg = 1;
 %--------------------------------------------------------------------------
 
 %----------------------------Generate Data---------------------------------
