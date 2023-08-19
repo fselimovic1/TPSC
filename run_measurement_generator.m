@@ -8,8 +8,8 @@ clear
 %--------------------------Generate New Data-------------------------------
 %--------------------Power system with measurement devices-----------------
 name = 'case39';
-version = 'A';
-load(strcat('TPSC', name, 'D_', version));
+vrs = 'A';
+load(strcat('TPSC', name, 'D_', vrs));
 %--------------------------------------------------------------------------
 
 %---------------------------- State Estimation mode -----------------------
@@ -38,7 +38,7 @@ pfsettings.eps = 1e-6;
 %------------------------------Save Case-----------------------------------
 home = getenv('USERPROFILE');
 path = strcat(home, '\PowerSystemComputations\data\measurements\TPSC', name, ...
-    'M_', version);
+    'M_', vrs);
 save(path, 'measurements')
 %--------------------------------------------------------------------------
 %--------------------------------------------------------------------------

@@ -19,10 +19,10 @@ sesettings.eps = 1e-6;
 
 %---------------------Load Power System & Measurements---------------------
 name = 'case39';
-version = 'A';
+vrs = 'A';
 
-load(strcat('TPSC', name, 'D_', version));
-load(strcat('TPSC', name, 'M_', version));
+load(strcat('TPSC', name, 'D_', vrs));
+load(strcat('TPSC', name, 'M_', vrs));
 %--------------------------------------------------------------------------
 
 %--------------------------Static State Estimation-------------------------

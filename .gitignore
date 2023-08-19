@@ -39,10 +39,11 @@ octave-workspace
 
 # A directory for testing and fun
 Fun/
+tests/
 
 # matopower cases
 case*.m
 
 docs/DocumentationPSAT.pdf
-"MATPOWER USER MANUAL.pdf"
-"AC Power Flow Data in MATPOWER and QCQP format_ iTesla, RTE Snapshots, and PEGASE.pdf"
+docs/MATPOWER USER MANUAL.pdf
+docs/AC Power Flow Data in MATPOWER and QCQP format_ iTesla, RTE Snapshots, and PEGASE.pdf
