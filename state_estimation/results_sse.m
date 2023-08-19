@@ -1,5 +1,5 @@
 function results_sse(sesettings, measurements, results)
-fprintf('\tTOOLBOX FOR POWER SYSTEM COMPUTATIONS\n')
+fprintf('\tTOOLBOX FOR POWER SYSTEM COMPUTATIONS - STATIC STATE ESTIMATION\n')
 fprintf(['\tDate: ', datestr(now, 'dd.mm.yyyy HH:MM:SS \n\n')])
  disp(' ')
  fprintf('\tMethod: %s\n', results.method);

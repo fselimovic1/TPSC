@@ -83,7 +83,12 @@ if strcmp(mgsettings.mode, 'tracking')
     
     % load dynamics
     if strcmp(lmode, "const")
-        loadNo = 0;
+        loadNo = -1;
+        if numel(mgsettings.ldynamics) == 1
+            load = ones(tstamps, 1);             
+        else
+            load = str2double(mgsettings.ldynamics(2)) .* ones(tstamps, 1);
+        end
     elseif strcmp(lmode, "random")
         loadNo = -1;
         load = ones(tstamps, 1) - str2double(mgsettings.ldynamics(2)) * walk;
@@ -104,7 +109,7 @@ if strcmp(mgsettings.mode, 'tracking')
         end
         load =  -[ str2double(mgsettings.ldynamics(2)), str2double(mgsettings.ldynamics(3)) ] / data.baseMVA;
     end        
-else
+elseif strcmp(mgsettings.mode, 'static')
     tstamps = 1;
     f = data.fn;
     loadNo = 0;
@@ -118,7 +123,13 @@ else
     end
     measurements.synpmu = zeros(msynPMU, 8);
     measurements.scada = zeros(nSCADA, 6);
+else
+    ME = MException('MyComponent:notDefinedBehaviour', ...
+                  'Mode must be static or dynamic.');
+    throw(ME);
 end
+pftime = zeros(tstamps, 1);
+pfiter = zeros(tstamps, 1);
 measurements.trueVoltage = complex(zeros(data.nBuses, tstamps));
 c_synpmu = 1;
 c_fpmu = 1;
@@ -142,10 +153,12 @@ for i = 1:tstamps
     else
         results = run_power_flows(pfsettings, data);
     end
-    if results.converged
-     fprintf('Power flow analysis converged in %d iterations (after: %.2f [ms]), using the %s.\n', results.iter, results.at * 1000, results.method); 
-    else
-     fprintf('The algortihm did not converged after: %d iterations!\n \t :( :( :(\n', pfsettings.maxNumberOfIter);
+    pftime(i) = results.at;
+    pfiter(i) = results.iter;
+    if ~results.converged
+        ME = MException('MyComponent:notDefinedBehaviour', ...
+                   'Power Flow Analysis did not converged. Measurement generation must be stopped.');
+        throw(ME);
     end
     % write true values
     measurements.trueVoltage(:, i) = results.Vm .* exp(1i * results.Va);
@@ -255,5 +268,22 @@ for i = 1:tstamps
     end
 end
 measurements.f = f;
+
+% Print messeage to a user
+% Print a message to a user
+fprintf('\tTOOLBOX FOR POWER SYSTEM COMPUTATIONS - MEASUREMENT GENERATOR\n')
+fprintf(['\tDate: ', datestr(now, 'dd.mm.yyyy HH:MM:SS \n\n')])
+fprintf('\tMeasurements are successfully generated for the %s in %s mode.', data.case, mgsettings.mode);
+if strcmp(mgsettings.mode, 'static')
+    fprintf(' Power flow calculations converged after %d iterations in %.2f seconds.\n', pfiter, pftime);
+    fprintf("\t%d SCADA measurements generated.\n", nSCADA);
+    fprintf("\t%d PMU (synchrophasor) measurements generated.\n", msynPMU);
+else
+    fprintf(' Power flow calculations converged after %.0f iterations in %.2f [ms] in average.\n', mean(pfiter), mean(pftime) * 1000);
+    fprintf("\tMeasurements are generated for a time interval with a duration of %d seconds.\n", mgsettings.t);
+    fprintf("\t%d SCADA measurements generated.\n", mSCADA);
+    fprintf("\t%d PMU (synchrophasor) measurements generated.\n", msynPMU);
+    fprintf("\t%d PMU (frequency and rocof) measurements generated.\n", mfreqPMU);
+end
 end
 

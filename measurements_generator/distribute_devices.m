@@ -26,9 +26,6 @@ scadanames = containers.Map({'Pij', 'Qij', 'Pi', 'Qi', 'Iij', 'Vi'}, ...
                             {1, 2, 3, 4, 5, 6});
 % scada devices set
 nSet = numel(ddsettings.scadaset);
-if nSet == 0
-    fprintf("No SCADA measurement devices specified.\n");
-end
 i = 1;
 perType = false;
 if nSet && (strcmp(ddsettings.scadaset(1), "perc") || strcmp(ddsettings.scadaset(1), "num"))
@@ -215,12 +212,11 @@ devs,  freqPerType(6) * ones(nPerType(6), 1)];
 
 % ------------------------ PMU MEASUREMENTS -------------------------------
 nSet = numel(ddsettings.pmuset);
-i = 1;
-nCurrCh = -1;
-if nSet == 0
-    fprintf("No PMU measurement devices specified.\n");
+if ~nSet
     data.nPmu = 0;
 end
+i = 1;
+nCurrCh = -1;
 while i <= nSet
     toAdd = 1;
     if strcmp(ddsettings.pmuset(i), "optimal")
@@ -360,5 +356,43 @@ for i = 1:data.nPmu
         nLine = nLine(1);
         data.pmucurrch{i} = [ data.pmucurrch{i}, nLine];
     end
+end
+% Print a message to a user
+fprintf('\tTOOLBOX FOR POWER SYSTEM COMPUTATIONS - DEVICE DISTRIBUTION\n')
+fprintf(['\tDate: ', datestr(now, 'dd.mm.yyyy HH:MM:SS \n\n')])
+fprintf('\tMeasurement devices are successfully distributed for the case: %s.\n\n', data.case);
+if ~sum(nPerType)
+	fprintf("\tNo SCADA measurement devices specified.\n");
+else
+    fprintf('\tSCADA measurement devices: \n')
+    for i = 1:numel(nPerType)
+        if ~nPerType(i)
+            continue
+        end
+        switch i
+            case 1
+                fprintf("\tActive Power Flow: %d measurement devices,\n", nPerType(i));
+            case 2
+                fprintf("\tReactive Power Flow: %d measurement devices,\n", nPerType(i));
+            case 3 
+                fprintf("\tActive Power Injection: %d measurement devices,\n", nPerType(i));
+            case 4
+                fprintf("\tReactive Power Injection: %d measurement devices,\n", nPerType(i));
+            case 5 
+                fprintf("\tBranch Current Magnitude: %d measurement devices,\n", nPerType(i));
+            case 6
+                fprintf("\tBus Voltage Magnitude: %d measurement devices.\n\n", nPerType(i));
+        end
+    end
+end
+if ~data.nPmu
+    fprintf("\tNo PMU measurement devices specified.\n");
+else
+    if data.nPmu == 1
+        fprintf('\t%d Phasor Measurement Unit (PMU) deployed in the grid.\n', data.nPmu);
+    else
+        fprintf('\t%d Phasor Measurement Units (PMUs) deployed in the grid.\n', data.nPmu);
+    end
+end
 end
  

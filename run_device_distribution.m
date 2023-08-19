@@ -5,7 +5,6 @@ clear
  addpath(genpath(fileparts(which(mfilename))));
 %--------------------------------------------------------------------------
 
-
 %--------------------Distribute Measurement Devices------------------------
 % This script enables a user to employ measurement devices into existing
 % power system (variable 'name'). The variable 'version' allows creation of
@@ -27,7 +26,7 @@ version = 'A';
 
 % Using the field "scadaset", a user determines SCADA measurement devices
 % (RTUs) which are deployed in a grid. 
-ddsettings.scadaset = ["perc", "Pij", 0, "Qij", 0, "Pi", 100, "Qi", 100, "Vi", 100 ];
+ddsettings.scadaset = ["perc", "Pij", 0, "Qij", 0, "Pi", 100, "Qi", 100, "Vi", 80 ];
 % Using the field "scadavar", a user determines the variances of measurement devices
 % (RTUs) which are deployed in a grid.
 ddsettings.scadasd = [ "fixed", "complete", 0.005 ];

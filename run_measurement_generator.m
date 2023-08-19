@@ -6,7 +6,7 @@ clear
 %--------------------------------------------------------------------------
 
 %--------------------------Generate New Data-------------------------------
-%--------------------Power system with measurement deiveces----------------
+%--------------------Power system with measurement devices-----------------
 name = 'case39';
 version = 'A';
 load(strcat('TPSC', name, 'D_', version));
@@ -15,13 +15,13 @@ load(strcat('TPSC', name, 'D_', version));
 %---------------------------- State Estimation mode -----------------------
 % 'tracking' - measurements will be taken for a specific time period
 % 'static' - measurements will be taken for a single, distinct moment in time.
-mgsettings.mode = 'tracking';
+mgsettings.mode = 'static';
 %--------------------------------------------------------------------------
 
 %------------------------- Tracking SE options ----------------------------
 mgsettings.t = 5;
 mgsettings.fdynamics = [ "const", 49.95 ];
-mgsettings.ldynamics = [ "loadoff", 50, 20 ];
+mgsettings.ldynamics = [ "const", 0.9 ];
 
 %--------------------------- Power Flow options ---------------------------
 pfsettings.domain = 'complex';

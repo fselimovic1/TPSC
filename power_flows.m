@@ -12,14 +12,14 @@ clearvars
 %---------------------- Power Flows Solver - Settings ---------------------
 pfsettings.domain = 'complex';
 pfsettings.method = 'cgn_pf';
-pfsettings.start = 'flat';
+pfsettings.start = '';
 pfsettings.maxNumberOfIter = 20;
 pfsettings.eps = 1e-6;
 pfsettings.postprocess = 1;
 %--------------------------------------------------------------------------
 
 %------------------------- Load Power System ------------------------------
-name = 'case39';
+name = 'case1888rte';
 load(strcat('TPSC', name));
 %--------------------------------------------------------------------------
 

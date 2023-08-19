@@ -1,5 +1,5 @@
 function results_pf(data, pfsettings, results)
-fprintf('\tTOOLBOX FOR POWER SYSTEM COMPUTATIONS\n')
+fprintf('\tTOOLBOX FOR POWER SYSTEM COMPUTATIONS - POWER FLOW ANALYSIS\n')
 fprintf(['\tDate: ', datestr(now, 'dd.mm.yyyy HH:MM:SS \n\n')])
  fprintf('\tMethod: %s\n', results.method);
  fprintf('\tPower System: %s\n', results.sys);
