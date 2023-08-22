@@ -21,7 +21,7 @@ sesettings.eps = 1e-6;
 name = 'case39';
 vrs = 'A';
 
-load(strcat('TPSC', name, 'D_', vrs));
+loadcase(name)
 load(strcat('TPSC', name, 'M_', vrs));
 %--------------------------------------------------------------------------
 

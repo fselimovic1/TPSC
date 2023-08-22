@@ -1,6 +1,6 @@
 function data = distribute_devices(name, ddsettings)
 % load power system
-load(strcat('TPSC', name));
+data = loadcase(name);
 
 % renumber buses if needed
 bus = 1:data.nBuses;

@@ -9,7 +9,7 @@ clear
 %--------------------Power system with measurement devices-----------------
 name = 'case39';
 vrs = 'A';
-load(strcat('TPSC', name, 'D_', vrs));
+data = loadcase(name, vrs);
 %--------------------------------------------------------------------------
 
 %---------------------------- State Estimation mode -----------------------
