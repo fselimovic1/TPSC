@@ -1,4 +1,13 @@
-function [ measurements ] = generatemeasurements(mgsettings, pfsettings, data)
+function generatemeasurements(casename, vrs, mgsettings)
+% load data
+data = loadcase(casename, vrs);
+
+% settings for power flows
+pfsettings.domain = 'complex';
+pfsettings.method = 'cgn_pf';
+pfsettings.flatStart = mgsettings.pfFlatStart;
+pfsettings.maxNumberOfIter = mgsettings.pfMaxNumOfIter;
+pfsettings.eps = pfsettings.pfEps;
 pfsettings.postprocess = 1;
 
 % number of devices
@@ -285,5 +294,11 @@ else
     fprintf("\t%d PMU (synchrophasor) measurements generated.\n", msynPMU);
     fprintf("\t%d PMU (frequency and rocof) measurements generated.\n", mfreqPMU);
 end
+%------------------------------Save Case-----------------------------------
+home = getenv('USERPROFILE');
+path = strcat(home, '\PowerSystemComputations\data\measurements\TPSC', casename, ...
+    'M_', vrs);
+save(path, 'measurements')
+%--------------------------------------------------------------------------
 end
 

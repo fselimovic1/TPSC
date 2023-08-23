@@ -12,7 +12,7 @@ clear
 % are contained as field of the structure 'ddsettings'.
 %----------------------------Power System----------------------------------
 name = 'case39';
-version = 'A';
+vrs = 'A';
 %--------------------------------------------------------------------------
 
 %---------------------------Legacy measurements----------------------------
@@ -45,11 +45,8 @@ ddsettings.pmusd = [ "fixed", "magnitude", 0.01, 0.02, "phase", 0.2, 0.3, ...
 ddsettings.pmufreq = [ "complete", 10 ];
 %--------------------------------------------------------------------------
 
-data = distribute_devices(name, ddsettings);
-%------------------------------Save case-----------------------------------
-home = getenv('USERPROFILE');
-path = strcat(home, '\PowerSystemComputations\data\power_system_with_devices\TPSC', name, 'D_', version);
-save(path, 'data')
+%------------------------- Run Device Distribution ------------------------
+distribute_devices(name, vrs, ddsettings);
 %--------------------------------------------------------------------------
 
       

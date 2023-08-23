@@ -23,7 +23,7 @@ end
 
 tic
 % Initialization
-if strcmp(pfsettings.start, 'flat')
+if pfsettings.flatStart
     x = ones(2 * data.nBuses, 1);
 else
     x = [ data.bus(:, 8) .* exp(1i * data.bus(:, 9)); ...

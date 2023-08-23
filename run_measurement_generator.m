@@ -7,9 +7,8 @@ clear
 
 %--------------------------Generate New Data-------------------------------
 %--------------------Power system with measurement devices-----------------
-name = 'case39';
+casename = 'case39';
 vrs = 'A';
-data = loadcase(name, vrs);
 %--------------------------------------------------------------------------
 
 %---------------------------- State Estimation mode -----------------------
@@ -22,23 +21,14 @@ mgsettings.mode = 'static';
 mgsettings.t = 5;
 mgsettings.fdynamics = [ "const", 49.95 ];
 mgsettings.ldynamics = [ "const", 0.9 ];
+%--------------------------------------------------------------------------
 
 %--------------------------- Power Flow options ---------------------------
-pfsettings.domain = 'complex';
-pfsettings.method = 'cgn_pf';
-pfsettings.start = '';
-pfsettings.maxNumberOfIter = 20;
-pfsettings.eps = 1e-6;
+mgsettings.pfFlatStart = 0; % recommended
+mgsettings.pfMaxNumOfIter = 20;
+pfsettings.pfEps = 1e-6; 
 %--------------------------------------------------------------------------
 
-%----------------------------Generate Data---------------------------------
-[ measurements ] = generatemeasurements(mgsettings, pfsettings, data);
-%--------------------------------------------------------------------------
-
-%------------------------------Save Case-----------------------------------
-home = getenv('USERPROFILE');
-path = strcat(home, '\PowerSystemComputations\data\measurements\TPSC', name, ...
-    'M_', vrs);
-save(path, 'measurements')
-%--------------------------------------------------------------------------
+%----------------------- Generate Measurements ----------------------------
+generatemeasurements(casename, vrs, mgsettings);
 %--------------------------------------------------------------------------

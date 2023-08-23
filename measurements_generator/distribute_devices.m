@@ -1,4 +1,4 @@
-function data = distribute_devices(name, ddsettings)
+function data = distribute_devices(name, vrs, ddsettings)
 % load power system
 data = loadcase(name);
 
@@ -394,5 +394,10 @@ else
         fprintf('\t%d Phasor Measurement Units (PMUs) deployed in the grid.\n', data.nPmu);
     end
 end
+%------------------------------Save case-----------------------------------
+home = getenv('USERPROFILE');
+path = strcat(home, '\PowerSystemComputations\data\power_system_with_devices\TPSC', name, 'D_', vrs);
+save(path, 'data')
+%--------------------------------------------------------------------------
 end
  
