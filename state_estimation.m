@@ -24,6 +24,6 @@ sesettings.showresults = 0;
 %--------------------------------------------------------------------------
 
 %--------------------------Static State Estimation-------------------------
-run_state_estimator(casename, vrs, sesettings);
+runsse(casename, vrs, sesettings);
 %--------------------------------------------------------------------------
 
