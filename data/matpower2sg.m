@@ -4,7 +4,7 @@ clc
 clear
 
 % insert the name of Matpower case 
-caseName = 'case9241pegase';
+caseName = 'case13659pegase';
 
 data = eval(caseName);
 
@@ -30,10 +30,6 @@ data.branch(:, [10, 12, 13]) = data.branch(:, [10, 12, 13]) .* pi/180;
 if sum(data.bus(:, 2) == 3) > 1
     assert(false)
 end
-data.slackNo =  find(data.bus(:, 2) == 3);
-data.nBuses = size(data.bus, 1);
-data.nBranches = size(data.branch, 1);
-data.nGens = size(data.generator, 1);
 data.fn = 50;
 data.case = caseName;
 
