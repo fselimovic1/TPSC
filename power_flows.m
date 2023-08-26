@@ -10,7 +10,7 @@ clearvars
 %--------------------------------------------------------------------------
 
 %------------------------- Power System Case ------------------------------
-casename = 'case9241pegase';
+casename = 'case1888rte';
 %--------------------------------------------------------------------------
 
 %---------------------- Power Flows Solver - Settings ---------------------
@@ -19,7 +19,6 @@ pfsettings.method = 'cgn_pf';
 pfsettings.flatStart = 0;
 pfsettings.maxNumberOfIter = 20;
 pfsettings.eps = 1e-6;
-pfsettings.postprocess = 1;
 pfsettings.showbus = 0;
 pfsettings.showbranch = 0;
 %--------------------------------------------------------------------------
