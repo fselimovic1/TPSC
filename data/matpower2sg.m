@@ -4,7 +4,7 @@ clc
 clear
 
 % insert the name of Matpower case 
-caseName = 'case13659pegase';
+caseName = 'case9';
 
 data = eval(caseName);
 

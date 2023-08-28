@@ -69,10 +69,10 @@ ybus = admittance_matrix(num, powersystem.bus, powersystem.branchi, powersystem.
     powersystem.resistance, powersystem.reactance, powersystem.charging,...
     powersystem.transturns, powersystem.transphase, powersystem.branchstatus, ...
     powersystem.Gshunt, powersystem.Bshunt);
-
+colsYbus = nnz_cols_ybus(num.bus, powersystem.branchi, powersystem.branchj);
 % Solve the power flows analysis problem
 if strcmp('complex', pfsettings.domain)
-	[ Vc, iter, converged, method ] = run_cnr_pf(pfsettings, powersystem, ybus, num);
+	[ Vc, iter, converged, method ] = run_cnr_pf(pfsettings, powersystem, ybus, colsYbus, num);
 end
 algtime = toc;
 % Post processing of results
