@@ -33,30 +33,47 @@ cols = zeros(nNonZero, 1);
 vals = zeros(nNonZero, 1);
 
 cnt = 1;
-% PQ buses
+% PQ buses - S
 for i = 1:nPQ
     pqbus = pq(i);
     % set indices
     nNew = nInc(pqbus) + 1;
-    rows(cnt:cnt + 2 * nNew - 1) = [ repmat(i, 1, nNew), ...
-                                     repmat(nPQ +  i, 1, nNew) ];
-    cols(cnt:cnt + 2 * nNew - 1) = [ pqbus; num.bus + colsYbus{pqbus}; pqbus + num.bus; colsYbus{pqbus} ];
-    cnt = cnt + 2 * nNew;
+    rows(cnt:cnt + nNew - 1) = repmat(i, 1, nNew) ;
+    cols(cnt:cnt + nNew - 1) = [ pqbus; num.bus + colsYbus{pqbus} ];
+    cnt = cnt + nNew;
 end
-jpq = cnt - 1;
-% PV buses
+jpqs = cnt - 1;
+% PQ buses - conj(S)
+for i = 1:nPQ
+    pqbus = pq(i);
+    % set indices
+    nNew = nInc(pqbus) + 1;
+    rows(cnt:cnt + nNew - 1) =  repmat(nPQ +  i, 1, nNew) ;
+    cols(cnt:cnt + nNew - 1) = [ colsYbus{pqbus}; pqbus + num.bus ];
+    cnt = cnt + nNew;
+end
+jpqcs = cnt - 1;
+% PV buses - P
 for i = 1:nPV
     pvbus = pv(i);
     % set indices
     nNew =  2 * nInc(pvbus);
-    rows(cnt:cnt + nNew + 1) = [ repmat(2 * nPQ + i, 1, nNew), ...
-                                 repmat(2 * nPQ + nPV + i, 1, 2) ];
-    cols(cnt:cnt + nNew + 1) = [colsYbus{pvbus}; num.bus + colsYbus{pvbus}; pvbus; num.bus + pvbus ];
-    cnt = cnt + nNew + 2;
+    rows(cnt:cnt + nNew - 1) = repmat(2 * nPQ + i, 1, nNew);
+    cols(cnt:cnt + nNew - 1) = [colsYbus{pvbus}; num.bus + colsYbus{pvbus} ];
+    cnt = cnt + nNew;
 end
+jpvp = cnt - 1;
+% PV buses - V
+for i = 1:nPV
+    pvbus = pv(i);
+    rows(cnt:cnt + 1) = repmat(2 * nPQ + nPV + i, 1, 2);
+    cols(cnt:cnt + 1) = [ pvbus; num.bus + pvbus ];
+    cnt = cnt + 2;
+end
+jpvv = cnt - 1;
 auxPV = zeros(nPV, num.bus);
 linpvidx = (pv - 1) * nPV + (1:nPV);
-jpv = cnt - jpq - 1;
+
 % SLACK bus
 rows(cnt:cnt + 3) = [ 2 * num.bus - 1, 2 * num.bus - 1, 2 * num.bus, 2 * num.bus ];
 cols(cnt:cnt + 3) = [ num.islack, num.islack + num.bus, num.islack , num.islack + num.bus ];
@@ -78,18 +95,18 @@ g(2 * nPQ + 2 * nPV + 1:end) = [ real(x(num.islack)) - real(Vsl),...
 while iter < pfsettings.maxNumberOfIter
 	% compute nonzeros of J
 	% PQ buses
-    vals(1:jpq/2) = nonzeros(reshape([conj(Ik(powersystem.isPQ)), x(powersystem.bus).' .* ...
-	conj(ybus.nodalMatrix(powersystem.isPQ, :))], [], 1));
-    vals(jpq/2 + 1:jpq) = nonzeros(reshape([x(powersystem.bus)' .* ...
-	ybus.nodalMatrix(powersystem.isPQ, :), Ik(powersystem.isPQ)], [], 1));
+    vals(1:jpqs) = nonzeros(reshape([conj(Ik(powersystem.isPQ)), x(powersystem.bus).' .* ...
+	conj(ybus.nodalMatrix(powersystem.isPQ, :))].', [], 1));
+    vals(jpqs + 1:jpqcs) = nonzeros(reshape([x(powersystem.bus)' .* ...
+	ybus.nodalMatrix(powersystem.isPQ, :), Ik(powersystem.isPQ)].', [], 1));
     % PV buses
 	auxPV(linpvidx) = Ik(pv); 
-    vals(jpq + 1:jpq + jpv - 2 * nPV) = nonzeros(reshape(1/2 .* ([conj(auxPV), x(powersystem.bus).' .* ...
+    vals(jpqcs + 1: + jpvp) = nonzeros(reshape((1/2 .* ([conj(auxPV), x(powersystem.bus).' .* ...
 	conj(ybus.nodalMatrix(powersystem.isPV, :))] + [ x(powersystem.bus)' .* ...
-	ybus.nodalMatrix(powersystem.isPV, :), auxPV]), [], 1));
-    vals(jpq + jpv - 2 * nPV + 1:jpq + jpv) = reshape([ conj(x(powersystem.bus(powersystem.isPV))), x(powersystem.bus(powersystem.isPV)) ], [], 1);
+	ybus.nodalMatrix(powersystem.isPV, :), auxPV])).', [], 1));
+    vals(jpvp + 1:jpvv) = reshape([ conj(x(powersystem.bus(powersystem.isPV))), x(powersystem.bus(powersystem.isPV)) ].', [], 1);
 	% SLACK bus
-    vals(jpq + jpv + 1:end) =  [ 1/2, 1/2, -1i/2, 1i/2 ];
+    vals(jpvv + 1:end) =  [ 1/2, 1/2, -1i/2, 1i/2 ];
     
     J(linidx) = vals;
     % calculate new iterates
