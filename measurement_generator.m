@@ -7,18 +7,18 @@ clear
 
 %--------------------------Generate New Data-------------------------------
 %--------------------Power system with measurement devices-----------------
-casename = 'case39';
+casename = 'case118';
 vrs = 'A';
 %--------------------------------------------------------------------------
 
 %---------------------------- State Estimation mode -----------------------
 % 'tracking' - measurements will be taken for a specific time period
 % 'static' - measurements will be taken for a single, distinct moment in time.
-mgsettings.mode = 'static';
+mgsettings.mode = 'tracking';
 %--------------------------------------------------------------------------
 
 %------------------------- Tracking SE options ----------------------------
-mgsettings.t = 5;
+mgsettings.t = 2;
 mgsettings.fdynamics = [ "random", 0.001 ];
 mgsettings.ldynamics = [ "random", 0.0005 ];
 %--------------------------------------------------------------------------

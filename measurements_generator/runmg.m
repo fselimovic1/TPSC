@@ -2,25 +2,28 @@ function runmg(casename, vrs, mgsettings)
 % load data
 data = loadcase(casename, vrs);
 
+% number of elements in power system
+num.bus = size(data.bus, 1);
+num.branch = size(data.branch, 1);
+num.gen = size(data.generator, 1);
+num.islack = find(data.bus(:, 2) == 3);
+
 % settings for power flows
 pfsettings.domain = 'complex';
 pfsettings.method = 'cgn_pf';
 pfsettings.flatStart = mgsettings.pfFlatStart;
 pfsettings.maxNumberOfIter = mgsettings.pfMaxNumOfIter;
 pfsettings.eps = mgsettings.pfEps;
-pfsettings.postprocess = 1;
-
-% number of devices
-nPMU = size(data.pmu, 1);
-nSCADA  = size(data.scada, 1);
-
+pfsettings.info = 0;
+pfsettings.showbus = 0;
+pfsettings.showbranch = 0;
 
 % Adjacency list is needed.
 if ~isfield(data, 'adj')
     data.adj = adjacencylist(data);
 end
-nAdj = zeros(data.nBuses, 1);
-for i = 1:data.nBuses
+nAdj = zeros(num.bus, 1);
+for i = 1:num.bus
     nAdj(i) = numel(data.adj{i});
 end
 
@@ -38,8 +41,8 @@ if strcmp(mgsettings.mode, 'tracking')
     msynPMU = 0;
     mfreqPMU = 0;
     mSCADA = 0;
-    hasPMU = zeros(data.nBuses, 1);
-    for i = 1:nPMU
+    hasPMU = zeros(num.bus, 1);
+    for i = 1:data.nPmu
         hasPMU(data.pmu(i, 1)) = 1;
         measuringTimes = ceil((mgsettings.t + eps) * data.pmu(i, 7));
         mfreqPMU = mfreqPMU + measuringTimes;
@@ -49,7 +52,7 @@ if strcmp(mgsettings.mode, 'tracking')
             msynPMU = msynPMU + measuringTimes * (1 + nAdj(i));
         end
     end
-    for i = 1:nSCADA
+    for i = 1:data.nScada
         mSCADA = mSCADA + ceil((mgsettings.t + eps) * data.scada(i, 5));
     end
     measurements.synpmu = zeros(msynPMU, 8);
@@ -103,7 +106,7 @@ if strcmp(mgsettings.mode, 'tracking')
         load = ones(tstamps, 1) - str2double(mgsettings.ldynamics(2)) * walk;
     elseif strcmp(lmode, "loadon")
         while true
-            loadNo = randi(data.nBuses);
+            loadNo = randi(num.bus);
             if data.bus(loadNo, 2) == 1
                 break;
             end
@@ -111,7 +114,7 @@ if strcmp(mgsettings.mode, 'tracking')
         load = [ str2double(mgsettings.ldynamics(2)), str2double(mgsettings.ldynamics(3)) ] / data.baseMVA;
     elseif strcmp(lmode, "loadoff")
         while true
-            loadNo = randi(data.nBuses);
+            loadNo = randi(num.bus);
             if data.bus(loadNo, 2) == 1
                 break;
             end
@@ -123,7 +126,7 @@ elseif strcmp(mgsettings.mode, 'static')
     f = data.fn;
     loadNo = 0;
     msynPMU = 0;
-    for i = 1:nPMU
+    for i = 1:data.nPmu
         if data.pmu ~= - 1
             msynPMU = msynPMU + 1 + numel(data.pmucurrch{i});
         else
@@ -131,7 +134,7 @@ elseif strcmp(mgsettings.mode, 'static')
         end 
     end
     measurements.synpmu = zeros(msynPMU, 8);
-    measurements.scada = zeros(nSCADA, 6);
+    measurements.scada = zeros(data.nScada, 6);
 else
     ME = MException('MyComponent:notDefinedBehaviour', ...
                   'Mode must be static or dynamic.');
@@ -139,7 +142,7 @@ else
 end
 pftime = zeros(tstamps, 1);
 pfiter = zeros(tstamps, 1);
-measurements.trueVoltage = complex(zeros(data.nBuses, tstamps));
+measurements.trueVoltage = complex(zeros(num.bus, tstamps));
 c_synpmu = 1;
 c_fpmu = 1;
 c_scada = 1;
@@ -157,12 +160,11 @@ for i = 1:tstamps
         else
             dynsettings.loadNo = 0;
         end
-        results = run_cnr_pf(pfsettings, data, dynsettings);
-        
+        [ results, ~ ] = runpf(casename, pfsettings, dynsettings); 
     else
-        results = run_cnr_pf(pfsettings, data);
+        [ results, ~ ] = runpf(casename, pfsettings);
     end
-    pftime(i) = results.at;
+    pftime(i) = results.algtime;
     pfiter(i) = results.iter;
     if ~results.converged
         ME = MException('MyComponent:notDefinedBehaviour', ...
@@ -172,7 +174,7 @@ for i = 1:tstamps
     % write true values
     measurements.trueVoltage(:, i) = results.Vm .* exp(1i * results.Va);
 
-    for j = 1:nPMU
+    for j = 1:data.nPmu
         bus = data.pmu(j, 1);
         if trackingmode
             currFreq = f(i);
@@ -185,51 +187,51 @@ for i = 1:tstamps
         end
         if ~trackingmode || mod((i-1) / calcfreq, 1/data.pmu(j, 7)) == 0
            % fpmu
-           if trackingmode
-            measurements.fpmu(c_fpmu, 1) = i - 1;
-            measurements.fpmu(c_fpmu, 2) = bus;
-            measurements.fpmu(c_fpmu, 3) = currFreq + randn * data.pmu(j, 5);
-            measurements.fpmu(c_fpmu, 4) = currFreq;
-            measurements.fpmu(c_fpmu, 5) = currRocof + randn * data.pmu(j, 6);
-            measurements.fpmu(c_fpmu, 6) = currRocof;
-            c_fpmu = c_fpmu + 1;
-           end
+            if trackingmode
+                measurements.fpmu(c_fpmu, 1) = i - 1;
+                measurements.fpmu(c_fpmu, 2) = bus;
+                measurements.fpmu(c_fpmu, 3) = currFreq + randn * data.pmu(j, 5);
+                measurements.fpmu(c_fpmu, 4) = currFreq;
+                measurements.fpmu(c_fpmu, 5) = currRocof + randn * data.pmu(j, 6);
+                measurements.fpmu(c_fpmu, 6) = currRocof;
+                c_fpmu = c_fpmu + 1;
+            end
            
-           % synpmu - voltage
-           measurements.synpmu(c_synpmu, 1) = i - 1;
-           measurements.synpmu(c_synpmu, 2) = bus;
-           measurements.synpmu(c_synpmu, 3) = 3;
-           measurements.synpmu(c_synpmu, 4) = bus;
-           measurements.synpmu(c_synpmu, 5) = results.Vm(bus) * (1 + randn * data.pmu(j, 3));
-           measurements.synpmu(c_synpmu, 6) = results.Va(bus)  + randn * data.pmu(j, 4) * pi / 180;
-           measurements.synpmu(c_synpmu, 7) = results.Vm(bus);
-           measurements.synpmu(c_synpmu, 8) = results.Va(bus);
-           c_synpmu = c_synpmu + 1;
+            % sydata.nPmu - voltage
+            measurements.synpmu(c_synpmu, 1) = i - 1;
+            measurements.synpmu(c_synpmu, 2) = bus;
+            measurements.synpmu(c_synpmu, 3) = 3;
+            measurements.synpmu(c_synpmu, 4) = bus;
+            measurements.synpmu(c_synpmu, 5) = results.Vm(bus) * (1 + randn * data.pmu(j, 3));
+            measurements.synpmu(c_synpmu, 6) = results.Va(bus)  + randn * data.pmu(j, 4) * pi / 180;
+            measurements.synpmu(c_synpmu, 7) = results.Vm(bus);
+            measurements.synpmu(c_synpmu, 8) = results.Va(bus);
+            c_synpmu = c_synpmu + 1;
            
-           % synpmu - branch current(s)
-           for k = 1:numel(data.pmucurrch{j})
-               if data.pmucurrch{j}(k) > 0
+            % sydata.nPmu - branch current(s)
+            for k = 1:numel(data.pmucurrch{j})
+                if data.pmucurrch{j}(k) > 0
                    line = data.pmucurrch{j}(k);
                    Iijm = results.Iijm(line);
                    Iija = results.Iija(line);
-               else
+                else
                    line = -data.pmucurrch{j}(k);
                    Iijm = results.Ijim(line);
                    Iija = results.Ijia(line);
-               end
-             measurements.synpmu(c_synpmu, 1) = i - 1;
-             measurements.synpmu(c_synpmu, 2) = bus;
-             measurements.synpmu(c_synpmu, 3) = 1;
-             measurements.synpmu(c_synpmu, 4) = data.pmucurrch{j}(k);
-             measurements.synpmu(c_synpmu, 5) = Iijm * (1 + randn * data.pmu(j, 3) / 100);
-             measurements.synpmu(c_synpmu, 6) = Iija  + randn * data.pmu(j, 4) * pi / 180;
-             measurements.synpmu(c_synpmu, 7) = Iijm;
-             measurements.synpmu(c_synpmu, 8) = Iija; 
-             c_synpmu = c_synpmu + 1;
-           end
+                end
+                measurements.synpmu(c_synpmu, 1) = i - 1;
+                measurements.synpmu(c_synpmu, 2) = bus;
+                measurements.synpmu(c_synpmu, 3) = 1;
+                measurements.synpmu(c_synpmu, 4) = data.pmucurrch{j}(k);
+                measurements.synpmu(c_synpmu, 5) = Iijm * (1 + randn * data.pmu(j, 3) / 100);
+                measurements.synpmu(c_synpmu, 6) = Iija  + randn * data.pmu(j, 4) * pi / 180;
+                measurements.synpmu(c_synpmu, 7) = Iijm;
+                measurements.synpmu(c_synpmu, 8) = Iija; 
+                c_synpmu = c_synpmu + 1;
+            end           
         end
     end
-    for j = 1:nSCADA
+    for j = 1:data.nScada
         if ~trackingmode || mod((i-1) / calcfreq, 1/data.scada(j, 5)) == 0
             measurements.scada(c_scada, 1) = i - 1;
             measurements.scada(c_scada, 2) = data.scada(j, 1);
@@ -288,11 +290,11 @@ fprintf(['\tDate: ', datestr(now, 'dd.mm.yyyy HH:MM:SS \n\n')])
 fprintf('\tMeasurements are successfully generated for the %s in %s mode.', data.case, mgsettings.mode);
 if strcmp(mgsettings.mode, 'static')
     fprintf(' Power flow calculations converged after %d iterations in %.2f seconds.\n', pfiter, pftime);
-    fprintf("\t%d SCADA measurements generated.\n", nSCADA);
+    fprintf("\t%d SCADA measurements generated.\n", data.nScada);
     fprintf("\t%d PMU (synchrophasor) measurements generated.\n", msynPMU);
 else
     fprintf(' Power flow calculations converged after %.0f iterations in %.2f [ms] in average.\n', mean(pfiter), mean(pftime) * 1000);
-    fprintf("\tMeasurements are generated for a time interval with a duration of %d seconds.\n", mgsettings.t);
+    fprintf("\tMeasurements are generated for a time interval with a duration of %.1f seconds.\n", mgsettings.t);
     fprintf("\t%d SCADA measurements generated.\n", mSCADA);
     fprintf("\t%d PMU (synchrophasor) measurements generated.\n", msynPMU);
     fprintf("\t%d PMU (frequency and rocof) measurements generated.\n", mfreqPMU);

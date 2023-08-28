@@ -2,8 +2,14 @@ function data = rundd(name, vrs, ddsettings)
 % load power system
 data = loadcase(name);
 
+% number of elements in power system
+num.bus = size(data.bus, 1);
+num.branch = size(data.branch, 1);
+num.gen = size(data.generator, 1);
+num.islack = find(data.bus(:, 2) == 3);
+
 % renumber buses if needed
-bus = 1:data.nBuses;
+bus = 1:num.bus;
 busi = data.bus(:, 1);
 branchi = data.branch(:, 1);
 branchj = data.branch(:, 2);
@@ -15,8 +21,8 @@ end
 
 %------------------------ SCADA MEASUREMENTS ------------------------------
 % maximum number of measurements per type
-maxPerType = [ 2 * data.nBranches, 2 * data.nBranches, data.nBuses, ...
-               data.nBuses, 2 * data.nBranches, data.nBuses ];
+maxPerType = [ 2 * num.branch, 2 * num.branch, num.bus, ...
+               num.bus, 2 * num.branch, num.bus ];
            
 nPerType = -1 * ones(6, 1);
 sdPerType = -1 * ones(6, 1);
@@ -152,7 +158,7 @@ if isRand
 else
     devs = sdPerType(1) * ones(nPerType(1), 1);
 end
-[ busidx, branchidx ] = randombranch(branchi, branchj, data.nBranches, nPerType(1));
+[ busidx, branchidx ] = randombranch(branchi, branchj, num.branch, nPerType(1));
 data.scada(1:nPerType(1), :) = [busidx, ones(nPerType(1), 1), branchidx,...
     devs,  freqPerType(1) * ones(nPerType(1), 1)];
 nextStart = 1 + nPerType(1);
@@ -162,7 +168,7 @@ if isRand
 else
     devs = sdPerType(2) * ones(nPerType(2), 1);
 end
-[ busidx, branchidx ] = randombranch(branchi, branchj, data.nBranches, nPerType(2));
+[ busidx, branchidx ] = randombranch(branchi, branchj, num.branch, nPerType(2));
 data.scada(nextStart:nextStart + nPerType(2) - 1, :) = [busidx, 2 * ones(nPerType(2), 1), branchidx,...
         devs,  freqPerType(2) * ones(nPerType(2), 1)];
 nextStart = nextStart + nPerType(2);
@@ -172,7 +178,7 @@ if isRand
 else
     devs = sdPerType(3) * ones(nPerType(3), 1);
 end
-busidx = randperm(data.nBuses);
+busidx = randperm(num.bus);
 busidx = busidx(1:nPerType(3))';
 data.scada(nextStart:nextStart + nPerType(3) - 1, :) = [busidx, 3 * ones(nPerType(3), 1), busidx,...
 devs,  freqPerType(3) * ones(nPerType(3), 1)];
@@ -183,7 +189,7 @@ if isRand
 else
     devs = sdPerType(4) * ones(nPerType(4), 1);
 end
-busidx = randperm(data.nBuses);
+busidx = randperm(num.bus);
 busidx = busidx(1:nPerType(4))';
 data.scada(nextStart:nextStart + nPerType(4) - 1, :) = [busidx, 4 * ones(nPerType(4), 1), busidx,...
 devs,  freqPerType(4) * ones(nPerType(4), 1)];
@@ -194,7 +200,7 @@ if isRand
 else
     devs = sdPerType(5) * ones(nPerType(5), 1);
 end
-[ busidx, branchidx ] = randombranch(branchi, branchj, data.nBranches, nPerType(5));
+[ busidx, branchidx ] = randombranch(branchi, branchj, num.branch, nPerType(5));
 data.scada(nextStart:nextStart + nPerType(5) - 1, :) = [busidx, 5 * ones(nPerType(5), 1), branchidx,...
     devs,  freqPerType(5) * ones(nPerType(5), 1)];
 nextStart = nextStart + nPerType(5);
@@ -204,7 +210,7 @@ if isRand
 else
     devs = sdPerType(6) * ones(nPerType(6), 1);
 end
-busidx = randperm(data.nBuses);
+busidx = randperm(num.bus);
 busidx = busidx(1:nPerType(6))';
 data.scada(nextStart:nextStart + nPerType(6) - 1, :) = [busidx, 6 * ones(nPerType(6), 1), busidx,...
 devs,  freqPerType(6) * ones(nPerType(6), 1)];
@@ -227,11 +233,11 @@ while i <= nSet
         toAdd = toAdd + 1;
     end
     if strcmp(ddsettings.pmuset(i), "perc")
-        data.nPmu = fix(str2double(ddsettings.pmuset(i + 1)) * data.nBuses / 100);
+        data.nPmu = fix(str2double(ddsettings.pmuset(i + 1)) * num.bus / 100);
         toAdd = toAdd + 1;
     end
     if strcmp(ddsettings.pmuset(i), "complete")
-        data.nPmu = data.nBuses;
+        data.nPmu = num.bus;
     end
     if strcmp(ddsettings.pmuset(i), "currCh")
         nCurrCh = str2double(ddsettings.pmuset(i + 1));
@@ -303,7 +309,7 @@ if nFreq && sum(numInSetPMU) ~= data.nPmu && ~strcmp(ddsettings.pmufreq(1), "com
 end
 
 % building data.pmu
-pmubuses = randperm(data.nBuses);
+pmubuses = randperm(num.bus);
 pmubuses = pmubuses(1:data.nPmu)';
 pmudevs = zeros(data.nPmu, 4);
 if isRand
@@ -320,10 +326,10 @@ data.pmu = [ pmubuses, nCurrCh * ones(data.nPmu, 1), pmudevs, [ 100 * ones(numIn
     
     
  % make ajdacency list
-data.adj = adjacencylist(data.nBuses, branchi, branchj);
+data.adj = adjacencylist(num.bus, branchi, branchj);
 
 % pmu current channels - priority is given to connections to 
-hasPmu = zeros(data.nBuses, 1);
+hasPmu = zeros(num.bus, 1);
 hasPmu(pmubuses) = 1;
 data.pmucurrch = cell(data.nPmu, 1);
 for i = 1:data.nPmu

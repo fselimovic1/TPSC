@@ -78,7 +78,7 @@ algtime = toc;
 % Post processing of results
 if converged
     if nargin == 3
-        Vc = abs(Vc(powersystem.bus)) * exp(1i * (angle(Vc(powersystem.bus)) + dynsettings.thetaslack));
+        Vc = abs(Vc(powersystem.bus)) .* exp(1i .* (angle(Vc(powersystem.bus)) + dynsettings.thetaslack));
     end
     results = postprocess_acpf(ybus, powersystem.branchi, powersystem.branchj, Vc);
     results.Pload = powersystem.Pload;
@@ -92,5 +92,7 @@ results.iter = iter;
 results.algtime = algtime;
 results.method = method;
 results.sys = casename;
-results_pf(pfsettings, results, num, powersystem.bus, powersystem.branchi, powersystem.branchj, data.baseMVA);
+if pfsettings.info
+    results_pf(pfsettings, results, num, powersystem.bus, powersystem.branchi, powersystem.branchj, data.baseMVA);
+end
 end

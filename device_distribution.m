@@ -11,7 +11,7 @@ clear
 % multiple different measurement sets on for a power system. All settings
 % are contained as field of the structure 'ddsettings'.
 %----------------------------Power System----------------------------------
-name = 'case39';
+name = 'case118';
 vrs = 'A';
 %--------------------------------------------------------------------------
 
