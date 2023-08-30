@@ -2,7 +2,6 @@ function [ results, data ] = runpf(casename, pfsettings, varargin)
 % ----------------------- Load Power System -------------------------------
 data = loadcase(casename);
 %--------------------------------------------------------------------------
-tic
 %--------------------- Extract Useful Informations ------------------------
 powsys = preprocess(data, 'pf');
 %--------------------------------------------------------------------------
@@ -29,10 +28,11 @@ if nargin == 3
     end
 end
 % -------------------------------------------------------------------------
+
 % --------------------- Calculate Y matrix --------------------------------
 powsys = admittance_matrix(powsys);
 % -------------------------------------------------------------------------
-toc,tic
+
 % ----------------- Solve the power flows analysis problem ----------------
 tic
 if strcmp('complex', pfsettings.domain)
@@ -46,12 +46,7 @@ if converged
     if nargin == 3
         Vc = abs(Vc(powsys.bus)) .* exp(1i .* (angle(Vc(powsys.bus)) + dynsettings.thetaslack));
     end
-    results = postprocess_acpf(ybus, powsys.branchi, powsys.branchj, Vc);
-    results.Pload = powsys.Pload;
-    results.Qload = powsys.Qload;
-    results.Pgen(powsys.genbuses) = powsys.Pgeni;
-    results.Qgen(powsys.genbuses) = results.Qi(powsys.genbuses)...
-                                         + results.Qload(powsys.genbuses);
+    results = postprocess_acpf(powsys, Vc);
 end
 results.converged = converged;
 results.iter = iter;
@@ -61,6 +56,6 @@ results.sys = casename;
 % -------------------------------------------------------------------------
 
 if pfsettings.info
-    results_pf(pfsettings, results, num, powsys.bus, powsys.branchi, powsys.branchj, data.baseMVA);
+    results_pf(results, powsys, pfsettings, data.baseMVA);
 end
 end

@@ -1,54 +1,47 @@
-function [ results ] = postprocess_acpf(ybus, branchi, branchj, v)
-nBranches = numel(ybus.admittance);
-% bus voltage
-results.Vm = abs(v);
-results.Va = angle(v);
+function [ results ] = postprocess_acpf(powsys, Vc)
+% --------------------------- Bus voltage ---------------------------------
+results.Vm = abs(Vc);
+results.Va = angle(Vc);
+%--------------------------------------------------------------------------
 
-% injected current
-Ii = ybus.nodalMatrix * v;
+% ------------------------- Injected current ------------------------------
+Ii = powsys.ybus.y * Vc;
 results.Iim = abs(Ii);
 results.Iia = angle(Ii);
+% -------------------------------------------------------------------------
 
-% injected powers
-Si = v .* conj(Ii);
+% ------------------------- Injected powers -------------------------------
+Si = Vc .* conj(Ii);
 results.Pi = real(Si);
 results.Qi = imag(Si);
-results.Pgen = zeros(numel(Si), 1);
-results.Qgen = results.Pgen;
-results.Pload = results.Pgen;
-results.Qload = results.Pgen;
+results.Pload = powsys.bus.Pload;
+results.Qload = powsys.bus.Qload;
+results.Pgen = powsys.bus.Pgen;
+results.Qgen = zeros(powsys.num.bus, 1);
+results.Qgen(powsys.gen.bus) = results.Qi(powsys.gen.bus)...
+                                         + results.Qload(powsys.gen.bus);
+% -------------------------------------------------------------------------
 
-% current flows
-results.Iijm = zeros(nBranches, 1);
-results.Ijim = zeros(nBranches, 1);
-results.Iija = zeros(nBranches, 1);
-results.Ijia = zeros(nBranches, 1);
-results.Pij  = zeros(nBranches, 1);
-results.Pji  = zeros(nBranches, 1);
-results.Qij  = zeros(nBranches, 1);
-results.Qji  = zeros(nBranches, 1);
-results.Ploss = zeros(nBranches, 1);
-results.Qloss = zeros(nBranches, 1);
+% ------------------- Branch Current and Power Flows ----------------------
+Iij = [ powsys.ybus.fromfrom, powsys.ybus.fromto ] * [ Vc(powsys.branch.i), Vc(powsys.branch.j)].';
+Iij = diag(Iij);
+Iji = [ powsys.ybus.tofrom, powsys.ybus.toto ] * [ Vc(powsys.branch.i), Vc(powsys.branch.j)].';
+Iji = diag(Iji);
+Sij = Vc(powsys.branch.i) .* conj(Iij);
+Sji = Vc(powsys.branch.j) .* conj(Iji);
+results.Iijm = abs(Iij);
+results.Ijim = abs(Iji);
+results.Iija = angle(Iij);
+results.Ijia = angle(Iji);
+results.Pij  = real(Sij);
+results.Pji  = real(Sji);
+results.Qij  = imag(Sij);
+results.Qji  = imag(Sji);
+% -------------------------------------------------------------------------
 
-for i = 1:nBranches
-    Iij = [ ybus.nodalFromFrom(i), ybus.nodalFromTo(i)
-           ybus.nodalToFrom(i), ybus.nodalToTo(i)] *...
-           [ v(branchi(i)); v(branchj(i))];
-    Sij = v(branchi(i)) * conj(Iij(1));
-    Sji = v(branchj(i)) * conj(Iij(2));
-    results.Iijm(i) = abs(Iij(1));
-    results.Ijim(i) = abs(Iij(2));
-    results.Iija(i) = angle(Iij(1));
-    results.Ijia(i) = angle(Iij(2));
-    results.Pij(i)  = real(Sij);
-    results.Pji(i)  = real(Sji);
-    results.Qij(i)  = imag(Sij);
-    results.Qji(i)  = imag(Sji);
-    
-    % losses on the branch
-    Ib = ybus.admittance(i) * (v(branchi(i)) / ...
-        ybus.transformerRatio(i) - v(branchj(i)));
-    results.Ploss(i) = abs(Ib)^2 * real(1 / ybus.admittance(i));
-    results.Qloss(i) = abs(Ib)^2 * imag(1 / ybus.admittance(i));
-end
+% ---------------------------- Losses on branches -------------------------
+Ib = powsys.ybus.admittance .* (Vc(powsys.branch.i) ./ powsys.ybus.transratio - Vc(powsys.branch.j));
+results.Ploss = abs(Ib).^2 .* real(1 ./ powsys.ybus.admittance);
+results.Qloss = abs(Ib).^2 .* imag(1 ./ powsys.ybus.admittance);
+% -------------------------------------------------------------------------
 end

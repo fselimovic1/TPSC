@@ -10,13 +10,13 @@ clearvars
 %--------------------------------------------------------------------------
 
 %------------------------- Power System Case ------------------------------
-casename = 'case9';
+casename = 'case300';
 %--------------------------------------------------------------------------
 
 %---------------------- Power Flows Solver - Settings ---------------------
 pfsettings.domain = 'complex';
 pfsettings.method = 'cgn_pf';
-pfsettings.flatStart = 1;
+pfsettings.flatStart = 0;
 pfsettings.maxNumberOfIter = 20;
 pfsettings.eps = 1e-6;
 pfsettings.info = 1;

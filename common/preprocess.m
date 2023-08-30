@@ -54,7 +54,7 @@ if strcmp(type, 'pf')
     powsys.bus.Qgen = A * data.generator(genstatus, 3);
     powsys.bus.Qgmin = A * data.generator(genstatus, 10);
     powsys.gen.Qgmax = A * data.generator(genstatus, 9);
-    powsys.bus.Vini(powsys.gen.bus) = data.generator(genstatus, 6);
+    powsys.bus.Vmi(powsys.gen.bus) = data.generator(genstatus, 6);
     if ~all(genstatus)
         powsys.bus.type = 1;
         powsys.bus.type(sparse(powsys.gen.bus, 1, 1, ...

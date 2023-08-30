@@ -17,7 +17,6 @@ vrs = 'A';
 %----------------------------About Solver----------------------------------
 sesettings.domain = 'complex';
 sesettings.method = 'cgn_sse';
-sesettings.fc = 10;
 sesettings.maxNumberOfIter = 50;
 sesettings.eps = 1e-6;
 sesettings.showresults = 0;
