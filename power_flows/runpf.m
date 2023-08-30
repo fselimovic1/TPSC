@@ -2,19 +2,21 @@ function [ results, data ] = runpf(casename, pfsettings, varargin)
 % ----------------------- Load Power System -------------------------------
 data = loadcase(casename);
 %--------------------------------------------------------------------------
+
 %--------------------- Extract Useful Informations ------------------------
-powsys = preprocess(data, 'pf');
+powsys = preprocess_ps(data, 'pf');
 %--------------------------------------------------------------------------
 
 % ---------------------- Dynamics conditions (runmg) ----------------------
 if nargin == 3
     dynsettings = varargin{1};
-    % frequency - realation with model parameters
+    %------------- Frequency - realation with model parameters ------------
     powsys.branch.reactance = powsys.branch.reactance * dynsettings.f/data.fn;
     powsys.branch.charging = powsys.charging * data.fn/dynsettings.f;
     powsys.bus.Bshunt = powsys.bus.Bshunt * data.fn/dynsettings.f;
+    % ---------------------------------------------------------------------
     
-    % load dynamics
+    % ------------------------- Load dynamics -----------------------------
     if dynsettings.loadNo
         if dynsettings.loadNo == -1
             powsys.bus.Pload = powsys.bus.Pload .* dynsettings.load;
@@ -26,6 +28,7 @@ if nargin == 3
                                    dynsettings.load(2);                   
         end
     end
+    % ---------------------------------------------------------------------
 end
 % -------------------------------------------------------------------------
 
