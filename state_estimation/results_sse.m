@@ -7,15 +7,15 @@ fprintf('\tPower System: %s\n', results.sys);
 fprintf('\tMeasurement recived from SCADA (legacy): %d\n', meas.num.scada)
 fprintf('\tMeasurement recived from WAMS (PMU): %d\n', meas.num.pmu)
 fprintf('\tNumber of non-zeros in H: %d\n', results.info.nonZerosInH)
-fprintf('\tPower system redundancy: %f\n', results.info.redundancy)
+fprintf('\tPower system redundancy: %.2f\n', results.info.redundancy)
 if results.converged
-    fprintf('\tExecution time: %f [ms]\n', results.algtime * 1000) 
+    fprintf('\tExecution time: %.2f [ms]\n', results.algtime * 1000) 
 else
     fprintf('\tThe algortihm did not converged after: %d iterations!\n \t :( :( :(\n', sesettings.maxNumberOfIter)
     return;
 end
 fprintf('\tNumber of iterations: %d\n', results.iter) 
-fprintf('\tPerformance accuracy index: %s\n', sum(abs(results.voltage - meas.Vtrue) .^ 2));
+fprintf('\tPerformance accuracy index: %f\n', sum(abs(results.voltage - meas.Vtrue) .^ 2));
 if sesettings.showresults
     disp(' ')
     fprintf('\t')

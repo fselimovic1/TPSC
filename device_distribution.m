@@ -11,7 +11,7 @@ clear
 % multiple different measurement sets on for a power system. All settings
 % are contained as field of the structure 'ddsettings'.
 %----------------------------Power System----------------------------------
-name = 'case9241pegase';
+name = 'case300';
 vrs = 'A';
 %--------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ ddsettings.scadafreq = [ "complete", 1 ];
 %---------------------------Phasor Measurements----------------------------
 % Using the field "pmuset", a user determines PMU measurement devices
 % (PMUs) which are installed in a grid. 
-ddsettings.pmuset = [ "perc", 100, "currCh"  1 ]; %[ "perc", 95, "currCh" -1];
+ddsettings.pmuset = [ "perc", 100, "currCh"  2 ]; %[ "perc", 95, "currCh" -1];
 
 ddsettings.pmusd = [ "fixed", "magnitude", 0.01, 0.02, "phase", 0.2, 0.3, ...
                       "frequency", 5, 5, "rocof",  0.4, 0.4 ];

@@ -24,6 +24,7 @@ meas.pmu.mtrue = measurements.synpmu(:, 7);
 meas.pmu.atrue = measurements.synpmu(:, 8);
 % meas.pmu.msd = data.pmu(meas.pmu.onbus, 3); 
 % meas.pmu.asd = data.pmu(meas.pmu.onbus, 4);
+meas.pmu.inj = find(meas.pmu.type == 2);
 meas.pmu.ibranch = find(meas.pmu.type == 1 & meas.pmu.loc > 0);
 meas.pmu.ibranchOpp = find(meas.pmu.type == 1 & meas.pmu.loc < 0);
 meas.pmu.vnode = find(meas.pmu.type == 3);
@@ -32,6 +33,7 @@ meas.pmu.vnode = find(meas.pmu.type == 3);
 % ------------------------ Number of measurements -------------------------
 meas.num.scada = size(measurements.scada, 1);
 meas.num.pmu = size(measurements.synpmu, 1);
+meas.num.pInj = numel(meas.pmu.inj);
 meas.num.pIij = numel(meas.pmu.ibranch);
 meas.num.pIijO = numel(meas.pmu.ibranchOpp);
 meas.num.pV = numel(meas.pmu.vnode);
