@@ -8,28 +8,37 @@ measurements = loadcase(casename, vrs, 'M');
 powsys = preprocess_ps(data, 'se');
 %--------------------------------------------------------------------------
 
+% --------------------- Calculate Y matrix --------------------------------
+powsys = admittance_matrix(powsys);
+% -------------------------------------------------------------------------
+
 %----------------- Extract Useful Informations (Measurements) -------------
-meas = preprocess_meas(measurements);
+meas = preprocess_meas(data, measurements);
 %--------------------------------------------------------------------------
 
 % ---------------- Solve the state estimation problem ---------------------
+tic
 if strcmp('complex', sesettings.domain)
-    results = run_cgn_sse(powsys, meas, sesettings);
-elseif strcmp('real', sesettings.domain)
-    if strcmp('sgn_sse', sesettings.method)
-        results = run_gn_sse(powsys, meas, sesettings);
-    elseif strcmp('wls_tse', sesettings.method)
-        results = run_wls_tse_pmu(powsys, meas, sesettings);
-    else
-        return
+    if strcmp('cgn_sse', sesettings.method)
+        [ Vc, iter, converged, info ] = run_cgn_sse(powsys, meas, sesettings);
+    elseif strcmp('cls_sse', sesettings.method)
+        [ Vc, iter, converged, info ] = run_cls_sse(powsys, meas, sesettings);
     end
 else
     return
 end
+algtime = toc;
 % -------------------------------------------------------------------------
 
 % -------------------------- Show results ---------------------------------
-results_sse(sesettings, measurements, results)
+results.voltage = Vc;
+results.converged = converged;
+results.iter = iter;
+results.algtime = algtime;
+results.info = info;
+results.sys = casename;
+
+results_sse(results, powsys, meas, sesettings)
 % -------------------------------------------------------------------------
 end
 

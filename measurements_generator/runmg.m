@@ -43,13 +43,14 @@ if strcmp(mgsettings.mode, 'tracking')
     mSCADA = 0;
     hasPMU = zeros(num.bus, 1);
     for i = 1:data.nPmu
-        hasPMU(data.pmu(i, 1)) = 1;
+        bus = data.pmu(i, 1);
+        hasPMU(bus) = 1;
         measuringTimes = ceil((mgsettings.t + eps) * data.pmu(i, 7));
         mfreqPMU = mfreqPMU + measuringTimes;
         if data.pmu(i, 2) ~= - 1
             msynPMU = msynPMU + measuringTimes * (1 + numel(data.pmucurrch{i}));
         else
-            msynPMU = msynPMU + measuringTimes * (1 + nAdj(i));
+            msynPMU = msynPMU + measuringTimes * (1 + nAdj(bus));
         end
     end
     for i = 1:data.nScada
@@ -127,10 +128,11 @@ elseif strcmp(mgsettings.mode, 'static')
     loadNo = 0;
     msynPMU = 0;
     for i = 1:data.nPmu
-        if data.pmu ~= - 1
+        bus = data.pmu(i, 1);
+        if data.pmu(i, 2) ~= - 1
             msynPMU = msynPMU + 1 + numel(data.pmucurrch{i});
         else
-            msynPMU = msynPMU + 1 + nAdj(i);
+            msynPMU = msynPMU + 1 + nAdj(bus);
         end 
     end
     measurements.synpmu = zeros(msynPMU, 8);

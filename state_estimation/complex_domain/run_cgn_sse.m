@@ -7,7 +7,7 @@ converged = 0;
 
 % --------------------- Initialize state variables ------------------------
 if sesettings.flatStart
-    x = ones( 2 * data.nBuses, 1);
+    x = ones( 2 * powsys.num.bus, 1);
 else
     x = [ powsys.bus.Vmi .* (1i * powsys.bus.Vai);
           powsys.bus.Vmi .* (-1i * powsys.bus.Vai);
@@ -16,11 +16,12 @@ end
 % -------------------------------------------------------------------------
 
 % ----------------------- Vector of measurement values --------------------
-z = [ meas.pmu.m(meas.pmu.Ibranch) .* exp(1i .* meas.pmu.a(meas.pmu.Ibranch));
-      meas.pmu.m(meas.pmu.Vnode) .* exp(1i .* meas.pmu.a(meas.pmu.Vnode));
-      meas.pmu.m(meas.pmu.Ibranch) .* exp(-1i .* meas.pmu.a(meas.pmu.Ibranch));
-      meas.pmu.m(meas.pmu.Vnode) .* exp(-1i .* meas.pmu.a(meas.pmu.Vnode));
-      meas.pmu.m .* exp(-1i .* meas.pmu.a);
+z = [ meas.pmu.m(meas.pmu.ibranchOpp) .* exp(1i .* meas.pmu.a(meas.pmu.ibranchOpp));
+      meas.pmu.m(meas.pmu.ibranch) .* exp(1i .* meas.pmu.a(meas.pmu.ibranch));
+      meas.pmu.m(meas.pmu.vnode) .* exp(1i .* meas.pmu.a(meas.pmu.vnode));
+      meas.pmu.m(meas.pmu.ibranchOpp) .* exp(-1i .* meas.pmu.a(meas.pmu.ibranchOpp));
+      meas.pmu.m(meas.pmu.ibranch) .* exp(-1i .* meas.pmu.a(meas.pmu.ibranch));
+      meas.pmu.m(meas.pmu.vnode) .* exp(-1i .* meas.pmu.a(meas.pmu.vnode));
       meas.scada.m
     ];
 % -------------------------------------------------------------------------
@@ -32,177 +33,69 @@ W = sparse(1:2 * meas.num.pmu + meas.num.scada, 1:2 * meas.num.pmu + meas.num.sc
 % -------------------------------------------------------------------------
 
 % ------------------------- Construct C11 matrix --------------------------
-lines = meas.pmu.loc(meas.pmu.Ibranch);
-a = zeros(2 * meas.num.Ibranch, 1);
-from = find(lines > 0);
-to = find(lines < 0);
-a(from + meas.num.Ibranch) = powsys.ybus.fromfrom(lines(from));
-a(from + meas.num.Ibranch) = powsys.ybus.fromfrom(lines(from));
-a(to + meas.num.Ibranch) = powsys.ybus.fromfrom(lines(from));
-a(to + meas.num.Ibranch) = powsys.ybus.fromfrom(lines(from));
-C11 = sparse( [ reshape(repelem(1:meas.num.Ibranch, 2), [], 1), ...
-      meas.num.Ibranch + (1:meas.num.Vnode)], [])
+C11 = sparse(...
+             [ (1:meas.num.pIijO ), (1:meas.num.pIijO ), (meas.num.pIijO  +...
+               (1:meas.num.pIij)), (meas.num.pIijO  + (1:meas.num.pIij)),...
+                (meas.num.pIijO + meas.num.pIij + (1:meas.num.pV))  ],... 
+             [   powsys.branch.i(-meas.pmu.loc(meas.pmu.ibranchOpp)); 
+                 powsys.branch.j(-meas.pmu.loc(meas.pmu.ibranchOpp)); 
+                 powsys.branch.i(meas.pmu.loc(meas.pmu.ibranch)); 
+                 powsys.branch.j(meas.pmu.loc(meas.pmu.ibranch));
+                 meas.pmu.onbus(meas.pmu.vnode) ], ...
+             [   powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.ibranchOpp));...
+                 powsys.ybus.toto(-meas.pmu.loc(meas.pmu.ibranchOpp)); ...
+                 powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.ibranch));...
+                 powsys.ybus.fromto(meas.pmu.loc(meas.pmu.ibranch)); 
+                 ones(meas.num.pV, 1)] ...
+         );
 % -------------------------------------------------------------------------
 
-nNonZeroInC = 0;
-for i = 1:mPMU
-     if measurements.synpmu(i, 3) == 1
-           nNonZeroInC = nNonZeroInC + 2;
-     elseif measurements.synpmu(i, 3) == 2
-           nNonZeroInC = nNonZeroInC + nnz(data.powerSystemAC.nodalMatrix...
-               (measurements.synpmu(i, 2), :)); 
-     elseif measurements.synpmu(i, 3) == 3
-           nNonZeroInC = nNonZeroInC + 1;
-     end
-end
-
-% PMU - Complex measurements jacobian
-% Computed offline - linear relation
-c = zeros(mPMU, 1);
-elemInC = zeros(nNonZeroInC, 1);
-rowInC = zeros(nNonZeroInC, 1);
-colInC = zeros(nNonZeroInC, 1);
-elemCounter = 1;
-for i = 1:mPMU
-    if measurements.synpmu(i, 3) == 1
-        [ colInC(elemCounter:elemCounter + 1), elemInC(elemCounter:...
-            elemCounter + 1) ] = cJ_current_flow_phasor(measurements.synpmu(i, 4), branchi, branchj, data.powerSystemAC);
-        rowInC(elemCounter:elemCounter + 1) = [i, i];
-        elemCounter = elemCounter + 2;
-    elseif measurements.synpmu(i, 3) == 2
-        [~, cols, vals] = find(data.powerSystemAC.nodalMatrix...
-            (measurements.synpmu(i, 2), :));
-        nNew = numel(vals);
-        colInC(elemCounter:elemCounter + nNew - 1) = cols;
-        elemInC(elemCounter:elemCounter + nNew - 1) = vals;
-        rowInC(elemCounter:elemCounter + nNew - 1) = repmat(i, 1, nNew);
-        elemCounter = elemCounter + nNew;
-    elseif measurements.synpmu(i, 3) == 3
-        colInC(elemCounter) = measurements.synpmu(i, 2);
-        elemInC(elemCounter) = 1;
-        rowInC(elemCounter) = i;
-        elemCounter = elemCounter + 1;
-    end
-end
-C = sparse(rowInC, colInC, elemInC, mPMU, data.nBuses);
-zM = sparse(mPMU, data.nBuses);
-
-% SCADA - Complex measurement Jacobian
-nNonZeroInD = 0; 
-for i = 1:mSCADA
-    if measurements.scada(i, 3) == 1
-        nNonZeroInD = nNonZeroInD + 2;
-    elseif measurements.scada(i, 3) == 2
-        nNonZeroInD = nNonZeroInD + 2;
-    elseif measurements.scada(i, 3) == 3
-        nNonZeroInD = nNonZeroInD + nnz(...
-            data.powerSystemAC.nodalMatrix(measurements.scada(i, 2), :));
-    elseif measurements.scada(i, 3) == 4 
-        nNonZeroInD = nNonZeroInD + nnz(...
-            data.powerSystemAC.nodalMatrix(measurements.scada(i, 2), :));
-    elseif measurements.scada(i, 3) == 5
-        nNonZeroInD = nNonZeroInD + 2;
-    elseif measurements.scada(i, 3) == 6
-        nNonZeroInD = nNonZeroInD + 1;
-    end
-end
-
-% Real valued measurements
-d = zeros(mSCADA, 1);
-elemInD = zeros(nNonZeroInD, 1);
-rowInD = zeros(nNonZeroInD, 1);
-colInD = zeros(nNonZeroInD, 1);
-
-% Iterating:
-while k < sesettings.maxNumberOfIter
-    for i = 1:mPMU
-       if measurements.synpmu(i, 3) == 1
-           c(i) = cF_current_flow_phasor(...
-               measurements.synpmu(i, 4), branchi, branchj, data.powerSystemAC, x);
-       elseif measurements.synpmu(i, 3) == 2
-           c(i) = sum(transpose(data.powerSystemAC.nodalMatrix(...
-               measurements.synpmu(i, 2), :)) .* x(1:data.nBuses));
-       elseif measurements.synpmu(i, 3) == 3
-           c(i) = x(measurements.synpmu(i, 2));
-       end
-    end
-    elemCounter = 1;
-    for i = 1:mSCADA
-       if measurements.scada(i, 3) == 1
-           [ d(i), colInD(elemCounter:elemCounter + 1), ...
-               elemInD(elemCounter:elemCounter + 1) ] = ...
-               c_active_power_flow(measurements.scada(i, 4), branchi, branchj, data.powerSystemAC, x);
-           rowInD(elemCounter:elemCounter + 1) = [i, i];
-           elemCounter = elemCounter + 2;
-       elseif measurements.scada(i, 3) == 2
-           [ d(i), colInD(elemCounter:elemCounter + 1), ...
-               elemInD(elemCounter:elemCounter + 1) ] = ...
-               c_reactive_power_flow(measurements.scada(i, 4), branchi, branchj, data.powerSystemAC, x);
-           rowInD(elemCounter:elemCounter + 1) = [i, i];
-           elemCounter = elemCounter + 2;
-       elseif measurements.scada(i, 3) == 3
-           nNew = nnz(data.powerSystemAC.nodalMatrix(measurements.scada(i, 4), :));
-           [ d(i), colInD(elemCounter:elemCounter + nNew - 1), ...
-               elemInD(elemCounter:elemCounter + nNew - 1) ] = ...
-               c_active_power_injection(measurements.scada(i, 4), data.powerSystemAC, x);
-           rowInD(elemCounter:elemCounter + nNew - 1) = repmat(i, 1, nNew);
-           elemCounter = elemCounter + nNew;
-       elseif measurements.scada(i, 3) == 4
-           nNew = nnz(data.powerSystemAC.nodalMatrix(measurements.scada(i, 4), :));
-           [ d(i), colInD(elemCounter:elemCounter + nNew - 1), ...
-               elemInD(elemCounter:elemCounter + nNew - 1) ] = ...
-               c_reactive_power_injection(measurements.scada(i, 4), data.powerSystemAC, x);
-           rowInD(elemCounter:elemCounter + nNew - 1) = repmat(i, 1, nNew);
-           elemCounter = elemCounter + nNew;
-       elseif measurements.scada(i, 3) == 5
-           [ d(i), colInD(elemCounter:elemCounter + 1), ...
-               elemInD(elemCounter:elemCounter + 1) ] = ...
-               c_branch_current_magnitude(measurements.scada(i, 4), branchi, branchj, data.powerSystemAC, x);
-           rowInD(elemCounter:elemCounter + 1) = [i, i];
-           elemCounter = elemCounter + 2;
-       elseif measurements.scada(i, 3) == 6
-           bus = measurements.scada(i, 4);
-           d(i) = sqrt(x(bus) * x(bus + data.nBuses));
-           colInD(elemCounter) = measurements.scada(i, 4);
-           elemInD(elemCounter) = 0.5 * exp(-1i * angle(x(bus)));
-           rowInD(elemCounter) = i;
-           elemCounter = elemCounter + 1;
-       end
-    end
+% ------------------------- Construct C12 Matrix -------------------------- 
+C12 = sparse(meas.num.pmu, powsys.num.bus);
+% -------------------------------------------------------------------------
+% -------------------------- Construct D Matrix ---------------------------
+D = sparse(meas.num.scada, powsys.num.bus);
+% -------------------------------------------------------------------------
+while iter < sesettings.maxNumberOfIter  
+    % --------------------------- h <-> PMU -------------------------------
+%     c = [ diag([ powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.ibranchOpp)), ...
+%                  powsys.ybus.toto(-meas.pmu.loc(meas.pmu.ibranchOpp))] * ...
+%                [ x(powsys.branch.i(-meas.pmu.loc(meas.pmu.ibranchOpp))).';
+%                  x(powsys.branch.j(-meas.pmu.loc(meas.pmu.ibranchOpp))).' ] );
+%          diag([ powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.ibranch)), ...
+%          powsys.ybus.fromto(meas.pmu.loc(meas.pmu.ibranch))] * ...
+%        [ x(powsys.branch.i(meas.pmu.loc(meas.pmu.ibranch))).';
+%          x(powsys.branch.j(meas.pmu.loc(meas.pmu.ibranch))).' ] );
+%          x(meas.pmu.onbus(meas.pmu.vnode))
+%           ];
+    % ---------------------------------------------------------------------
     
-    % Combine Jacobians
-    D = sparse(rowInD, colInD, elemInD, mSCADA, data.nBuses);
-    H = [  C        zM
-          zM      conj(C)
+    % ----------------------------- d <-> SCADA ---------------------------
+    d = [];
+    % ---------------------------------------------------------------------
+    H = [  C11         C12
+         conj(C12)   conj(C11)
            D      conj(D)];
-    h = [c; conj(c); d];
-   
-    % Solve
-    r = z - h;
-    transpConjH = H';
-    G = transpConjH * W * H;
-    g = transpConjH * W * r;
-    dx = G \ g;
-    x = x + dx; 
-    if ~anySCADA || max(abs(dx)) < sesettings.eps
-        break
-    else
-        k = k + 1;
-    end
+%     h = [c; conj(c); d];
+    
+    x = H \ z;
+    converged = 1;
+    break;
+%     % Solve
+%     r = z - h;
+%     dx = (H' * W * H) \ (H' * W * r);
+%     x = x + dx; 
+%     if max(abs(dx)) < sesettings.eps
+%         converged = 1;
+%         break
+%     else
+%         iter = iter + 1;
+%     end
 end
-tEst = toc;
+% ----------------------- Estimator results -------------------------------
 Vc = x(powsys.bus.busnew);
-% Compose results:
-results.nonZerosInH = nNonZeroInC + nNonZeroInD;
-results.redundancy = (2 * mPMU + mSCADA)/(2 * data.nBuses);
-results.t = tEst;
-results.voltage = x(1:data.nBuses);
-results.iter = k;
-results.sys = data.case;
-if k < sesettings.maxNumberOfIter
-    results.converged = 1;
-else
-    results.converged = 0;
-end
+info.nonZerosInH = nnz(H);
+info.redundancy = (2 * meas.num.pmu + meas.num.scada)/(2 * powsys.num.bus);
+% -------------------------------------------------------------------------
 end
 

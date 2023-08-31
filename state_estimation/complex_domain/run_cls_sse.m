@@ -1,0 +1,48 @@
+function [ Vc, iter, converged, info ] = run_cls_sse(powsys, meas, sesettings)
+info.method = 'Linear State Estimation (PMU only) in Complex Variables';
+% --------------------- Setting additional variables ----------------------
+iter = 1;
+converged = 1;
+% -------------------------------------------------------------------------
+
+% ----------------------- Vector of measurement values --------------------
+z = [ meas.pmu.m(meas.pmu.ibranchOpp) .* exp(1i .* meas.pmu.a(meas.pmu.ibranchOpp));
+      meas.pmu.m(meas.pmu.ibranch) .* exp(1i .* meas.pmu.a(meas.pmu.ibranch));
+      meas.pmu.m(meas.pmu.vnode) .* exp(1i .* meas.pmu.a(meas.pmu.vnode));
+    ];
+% -------------------------------------------------------------------------
+
+% ------------------------ Measurements' weights --------------------------
+% W = sparse(1:meas.num.pmu, 1:meas.num.pmu, ...
+%            [ str2double(sesettings.mweights(2)) .* ones( 2 * meas.num.pmu, 1);...
+%            ones(meas.num.scada, 1) ]);
+% -------------------------------------------------------------------------
+
+% ------------------------- Construct C matrix ----------------------------
+H = sparse(...
+             [ (1:meas.num.pIijO ), (1:meas.num.pIijO ), (meas.num.pIijO  +...
+               (1:meas.num.pIij)), (meas.num.pIijO  + (1:meas.num.pIij)),...
+                (meas.num.pIijO + meas.num.pIij + (1:meas.num.pV))  ],... 
+             [   powsys.branch.i(-meas.pmu.loc(meas.pmu.ibranchOpp)); 
+                 powsys.branch.j(-meas.pmu.loc(meas.pmu.ibranchOpp)); 
+                 powsys.branch.i(meas.pmu.loc(meas.pmu.ibranch)); 
+                 powsys.branch.j(meas.pmu.loc(meas.pmu.ibranch));
+                 meas.pmu.onbus(meas.pmu.vnode) ], ...
+             [   powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.ibranchOpp));...
+                 powsys.ybus.toto(-meas.pmu.loc(meas.pmu.ibranchOpp)); ...
+                 powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.ibranch));...
+                 powsys.ybus.fromto(meas.pmu.loc(meas.pmu.ibranch)); 
+                 ones(meas.num.pV, 1)] ...
+         );
+% -------------------------------------------------------------------------
+
+% --------------------------- Solve the LS problem ------------------------
+    x = H \ z;
+% -------------------------------------------------------------------------
+
+% ----------------------- Estimator results -------------------------------
+Vc = x;
+info.nonZerosInH = nnz(H);
+info.redundancy = (2 * meas.num.pmu + meas.num.scada)/(2 * powsys.num.bus);
+% -------------------------------------------------------------------------
+end
