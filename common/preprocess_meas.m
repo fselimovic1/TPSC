@@ -14,8 +14,8 @@ meas.scada.qbranchO = find(meas.scada.type == 2 & meas.scada.loc < 0);
 meas.scada.qbranch = find(meas.scada.type == 2 & meas.scada.loc > 0);
 meas.scada.pinj = find(meas.scada.type == 3);
 meas.scada.qinj = find(meas.scada.type == 4);
-meas.scada.ibrMO = find(meas.scada.type == 5);
-meas.scada.ibrM = find(meas.scada.type == 5 & meas.scada.loc < 0);
+meas.scada.ibrMO = find(meas.scada.type == 5 & meas.scada.loc < 0);
+meas.scada.ibrM = find(meas.scada.type == 5 & meas.scada.loc > 0);
 meas.scada.vm = find(meas.scada.type == 6);
 % meas.scada.sd = data.scada(:, 4);
 % -------------------------------------------------------------------------

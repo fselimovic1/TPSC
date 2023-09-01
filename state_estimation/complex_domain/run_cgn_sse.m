@@ -30,6 +30,8 @@ z = [ meas.pmu.m(meas.pmu.ibranchO) .* exp(1i .* meas.pmu.a(meas.pmu.ibranchO));
       meas.scada.m(meas.scada.qbranch);
       meas.scada.m(meas.scada.pinj);
       meas.scada.m(meas.scada.qinj); 
+      meas.scada.m(meas.scada.ibrMO);
+      meas.scada.m(meas.scada.ibrM);
       meas.scada.m(meas.scada.vm)
     ];
 % -------------------------------------------------------------------------
@@ -170,14 +172,20 @@ while iter < sesettings.maxNumberOfIter
                x(powsys.num.bus + meas.scada.onbus(meas.scada.qinj)));...
                nonzeros(1i/2 .*  conj(x(meas.scada.onbus(meas.scada.qinj))) .* ...
                 powsys.ybus.yij(meas.scada.onbus(meas.scada.qinj), :))];     
-    vDibrMO = [];
-    vDibrM = [];
+    vDibrMO = [ 1/2 .* powsys.ybus.tofrom(-meas.scada.loc(meas.scada.ibrMO)) ...
+                .* exp(-1i .* angle(Iji(-meas.scada.loc(meas.scada.ibrMO))));
+                1/2 .* powsys.ybus.toto(-meas.scada.loc(meas.scada.ibrMO)) ...
+                .* exp(-1i .* angle(Iji(-meas.scada.loc(meas.scada.ibrMO)))); ];
+    vDibrM =  [ 1/2 .* powsys.ybus.fromfrom(meas.scada.loc(meas.scada.ibrM)) ...
+                .* exp(-1i .* angle(Iij(meas.scada.loc(meas.scada.ibrM))));
+                1/2 .* powsys.ybus.fromto(meas.scada.loc(meas.scada.ibrM)) ...
+                .* exp(-1i .* angle(Iij(meas.scada.loc(meas.scada.ibrM)))); ];
     vDvm = 1/2 .* exp(-1i .* angle(meas.scada.onbus(meas.scada.vm)));
     
     D = sparse(...
-               [ iDpbrO, iDpbr, iDqbrO, iDqbr, iDpinj, iDqinj, iDvm ], ...
-               [ jDpbrO; jDpbr; jDqbrO; jDqbr; jDpinj; jDqinj; jDvm ], ...
-               [ vDpbrO; vDpbr; vDqbrO; vDqbr; vDpinj; vDqinj; vDvm ] );
+               [ iDpbrO, iDpbr, iDqbrO, iDqbr, iDpinj, iDqinj, iDibrMO, iDibrM, iDvm ], ...
+               [ jDpbrO; jDpbr; jDqbrO; jDqbr; jDpinj; jDqinj; jDibrMO; jDibrM; jDvm ], ...
+               [ vDpbrO; vDpbr; vDqbrO; vDqbr; vDpinj; vDqinj; vDibrMO; vDibrM; vDvm ] );
     % ---------------------------------------------------------------------
     
     % --------------------------- h <-> PMU -------------------------------
@@ -194,7 +202,9 @@ while iter < sesettings.maxNumberOfIter
           imag(Sji(-meas.scada.loc(meas.scada.qbranchO)));
           imag(Sij(meas.scada.loc(meas.scada.qbranch)));
           real(Si(meas.scada.onbus(meas.scada.pinj)));
-          imag(Si(meas.scada.onbus(meas.scada.qinj)))
+          imag(Si(meas.scada.onbus(meas.scada.qinj)));
+          abs(Iji(-meas.scada.loc(meas.scada.ibrMO)));
+          abs(Iij(meas.scada.loc(meas.scada.ibrM)));
           abs(x(meas.scada.onbus(meas.scada.vm)))
           ];
     % ---------------------------------------------------------------------

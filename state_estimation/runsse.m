@@ -22,7 +22,7 @@ if strcmp('complex', sesettings.domain)
     if strcmp('cgn_sse', sesettings.method)
         [ Vc, iter, converged, info ] = run_cgn_sse(powsys, meas, sesettings);
     elseif strcmp('cls_sse', sesettings.method)
-        [ Vc, iter, converged, info ] = run_cls_sse(powsys, meas, sesettings);
+        [ Vc, iter, converged, info ] = run_cls_sse(powsys, meas);
     end
 else
     return

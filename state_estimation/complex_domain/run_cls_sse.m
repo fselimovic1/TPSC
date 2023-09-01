@@ -1,4 +1,4 @@
-function [ Vc, iter, converged, info ] = run_cls_sse(powsys, meas, sesettings)
+function [ Vc, iter, converged, info ] = run_cls_sse(powsys, meas)
 info.method = 'Linear State Estimation (PMU only) in Complex Variables';
 % --------------------- Setting additional variables ----------------------
 iter = 1;
@@ -6,9 +6,10 @@ converged = 1;
 % -------------------------------------------------------------------------
 
 % ----------------------- Vector of measurement values --------------------
-z = [ meas.pmu.m(meas.pmu.ibranchOpp) .* exp(1i .* meas.pmu.a(meas.pmu.ibranchOpp));
+z = [ meas.pmu.m(meas.pmu.ibranchO) .* exp(1i .* meas.pmu.a(meas.pmu.ibranchO));
       meas.pmu.m(meas.pmu.ibranch) .* exp(1i .* meas.pmu.a(meas.pmu.ibranch));
       meas.pmu.m(meas.pmu.vnode) .* exp(1i .* meas.pmu.a(meas.pmu.vnode));
+      meas.pmu.m(meas.pmu.inj) .* exp(1i .* meas.pmu.a(meas.pmu.inj));
     ];
 % -------------------------------------------------------------------------
 
@@ -29,8 +30,8 @@ iHInj = meas.num.pIijO + meas.num.pIij + meas.num.pV + rowInj;
 % -------------------------------------------------------------------------
 
 % ------------------------ Column indices ---------------------------------
-jHIij0 = [     powsys.branch.i(-meas.pmu.loc(meas.pmu.ibranchOpp)); 
-                 powsys.branch.j(-meas.pmu.loc(meas.pmu.ibranchOpp)); ];
+jHIij0 = [     powsys.branch.i(-meas.pmu.loc(meas.pmu.ibranchO)); 
+                 powsys.branch.j(-meas.pmu.loc(meas.pmu.ibranchO)); ];
 jHIij =  [     powsys.branch.i(meas.pmu.loc(meas.pmu.ibranch)); 
                  powsys.branch.j(meas.pmu.loc(meas.pmu.ibranch));
                  ];
@@ -39,8 +40,8 @@ jHInj = colInj;
 % -------------------------------------------------------------------------
 
 % ------------------------- Values of elements ----------------------------
-vHIijO = [     powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.ibranchOpp));...
-                 powsys.ybus.toto(-meas.pmu.loc(meas.pmu.ibranchOpp)); ];
+vHIijO = [     powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.ibranchO));...
+                 powsys.ybus.toto(-meas.pmu.loc(meas.pmu.ibranchO)); ];
 vHIij =  [     powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.ibranch));...
                  powsys.ybus.fromto(meas.pmu.loc(meas.pmu.ibranch)); 
     ];
