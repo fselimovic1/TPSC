@@ -23,10 +23,8 @@ results.Qgen(powsys.gen.bus) = results.Qi(powsys.gen.bus)...
 % -------------------------------------------------------------------------
 
 % ------------------- Branch Current and Power Flows ----------------------
-Iij = [ powsys.ybus.fromfrom, powsys.ybus.fromto ] * [ Vc(powsys.branch.i), Vc(powsys.branch.j)].';
-Iij = diag(Iij);
-Iji = [ powsys.ybus.tofrom, powsys.ybus.toto ] * [ Vc(powsys.branch.i), Vc(powsys.branch.j)].';
-Iji = diag(Iji);
+Iij = sum([ powsys.ybus.fromfrom, powsys.ybus.fromto ] .* [ Vc(powsys.branch.i), Vc(powsys.branch.j)], 2);
+Iji = sum([ powsys.ybus.tofrom, powsys.ybus.toto ] .* [ Vc(powsys.branch.i), Vc(powsys.branch.j)], 2);
 Sij = Vc(powsys.branch.i) .* conj(Iij);
 Sji = Vc(powsys.branch.j) .* conj(Iji);
 results.Iijm = abs(Iij);
