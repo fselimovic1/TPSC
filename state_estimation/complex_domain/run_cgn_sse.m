@@ -1,4 +1,4 @@
-function [ Vc, iter, converged, info ] = run_cgn_sse(powsys, meas, sesettings)
+function [ Vc, iter, converged, info ] = run_cgn_sse(powsys, meas, sesettings, varargin)
 info.method = 'Gauss-Newton in Complex Variables';
 % --------------------- Setting additional variables ----------------------
 iter = 1;
@@ -6,12 +6,17 @@ converged = 0;
 % -------------------------------------------------------------------------
 
 % --------------------- Initialize state variables ------------------------
-if sesettings.flatStart
-    x = ones( 2 * powsys.num.bus, 1);
+if nargin == 4
+    x0 = varargin{1};
+    x = [ x0, conj(x0) ];
 else
-    x = [ powsys.bus.Vmi .* exp(1i * powsys.bus.Vai);
-          powsys.bus.Vmi .* exp(-1i * powsys.bus.Vai);
-         ];
+    if sesettings.flatStart
+        x = ones( 2 * powsys.num.bus, 1);
+    else
+        x = [ powsys.bus.Vmi .* exp(1i * powsys.bus.Vai);
+              powsys.bus.Vmi .* exp(-1i * powsys.bus.Vai);
+             ];
+    end
 end
 % -------------------------------------------------------------------------
 

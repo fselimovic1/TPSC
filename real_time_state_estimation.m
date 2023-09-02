@@ -17,11 +17,12 @@ vrs = 'A';
 %----------------------------About Solver----------------------------------
 rtsesettings.domain = 'complex';
 rtsesettings.method = 'quasidyn';
+rtsesettings.mweights = [ "pmuscadaratio", 1 ];
 rtsesettings.fc = 100;
 rtsesettings.maxNumberOfIter = 50;
 rtsesettings.eps = 1e-6;
 rtsesettings.realtimeplot = 1;
-rtsesettings.rtpbus = 39;
+rtsesettings.rtpbus = 27;
 %--------------------------------------------------------------------------
 
 %--------------------------Static State Estimation-------------------------

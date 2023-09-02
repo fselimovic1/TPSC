@@ -5,6 +5,7 @@ measurements = loadcase(casename, vrs, 'M');
 % -------------------------------------------------------------------------
 
 % ------------------------ Settings Check ---------------------------------
+initalStage = true;
 if ~strcmp(measurements.mode, "tracking")
 	error('Measurements are not generated in tracking mode. Real time state estimation reqiures measurement for a time interval.');
 end
@@ -26,6 +27,15 @@ powsys = preprocess_ps(data, 'se');
 powsys = admittance_matrix(powsys);
 % -------------------------------------------------------------------------
 
+% --------------------- Initial state variables ---------------------------
+if rtsesettings.flatStart
+    Vc = ones( 2 * powsys.num.bus, 1);
+else
+    Vc = [ powsys.bus.Vmi .* exp(1i * powsys.bus.Vai);
+          powsys.bus.Vmi .* exp(-1i * powsys.bus.Vai);
+         ];
+end
+% -------------------------------------------------------------------------
 % -------------------- Allocate memeory for the results -------------------
 results.Vc = complex(zeros(powsys.num.bus, estamps));
 % -------------------------------------------------------------------------
@@ -53,15 +63,15 @@ for i = 1:dI:measurements.tstamps
     
     % ------------------- Calculate state variables -----------------------
     if strcmp(rtsesettings.domain, "complex")
-        if strcmp(rtsesettings.method, "quasidyn")
-            sesettings.mweights = [ "pmuscadaratio", 1 ];
-            sesettings.flatStart = 0;
-            sesettings.maxNumberOfIter = 50;
-            sesettings.eps = 1e-1;
-            [ Vc, ~, converged, ~ ] = run_cgn_sse(powsys, meas, sesettings);
+        if strcmp(rtsesettings.method, "quasidyn") 
+            [ Vc, ~, converged, ~ ] = run_cgn_sse(powsys, meas, rtsesettings, Vc);
         else
         end
     else
+        if strcmp(rtsesettings.method, 'fEFKrect')
+            [ Vc, ~, converged, ~ ] = run_fEKFrect_rtse(powsys, meas, rtsesettings, Vc);      
+        else
+        end
     end
     % ---------------------------------------------------------------------
     if ~converged
@@ -75,6 +85,7 @@ for i = 1:dI:measurements.tstamps
     end
     % ---------------------------------------------------------------------
     % ---------------------------------------------------------------------
+    initialStage = false;
 end
 end
 
