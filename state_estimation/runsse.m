@@ -13,7 +13,7 @@ powsys = admittance_matrix(powsys);
 % -------------------------------------------------------------------------
 
 %----------------- Extract Useful Informations (Measurements) -------------
-meas = preprocess_meas(data, measurements);
+meas = preprocess_meas(measurements);
 %--------------------------------------------------------------------------
 
 % ---------------- Solve the state estimation problem ---------------------

@@ -1,8 +1,8 @@
-function meas = preprocess_meas(data, measurements)
-% ------------------------- SCADA Measurements ----------------------------
-if ~isempty(measurements.scada) && any(measurements.scada(:, 1) ~= measurements.scada(1, 1))
-    error('When runnning static state estimation, all measurements must have the same time stamp.')
+function meas = preprocess_meas(measurements)
+if ~strcmp(measurements.mode, "static")
+    error('Measurements are not generated in static mode. Static state estimation reqiures measurement for a distinct time stamp.')
 end
+% ------------------------- SCADA Measurements ----------------------------
 meas.scada.type = measurements.scada(:, 3);
 meas.scada.onbus = measurements.scada(:, 2);
 meas.scada.loc = measurements.scada(:, 4);
@@ -21,9 +21,6 @@ meas.scada.vm = find(meas.scada.type == 6);
 % -------------------------------------------------------------------------
 
 % -------------------------- PMU Measurements -----------------------------
-if ~isempty(measurements.scada) && any(measurements.synpmu(:, 1) ~= measurements.synpmu(1, 1))
-    error('When runnning static state estimation, all measurements must have the same time stamp.')
-end
 meas.pmu.type = measurements.synpmu(:, 3);
 meas.pmu.onbus = measurements.synpmu(:, 2);
 meas.pmu.loc = measurements.synpmu(:, 4);
@@ -64,7 +61,7 @@ meas.num.pV = numel(meas.pmu.vnode);
 % -------------------------------------------------------------------------
 
 % --------------------------- True values ---------------------------------
-meas.Vtrue = measurements.trueVoltage;
+% meas.Vtrue = measurements.trueVoltage;
 % -------------------------------------------------------------------------
 end
 

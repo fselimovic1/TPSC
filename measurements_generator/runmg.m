@@ -1,4 +1,5 @@
 function runmg(casename, vrs, mgsettings)
+measurements.mode = mgsettings.mode;
 % load data
 data = loadcase(casename, vrs);
 
@@ -281,7 +282,8 @@ for i = 1:tstamps
     end
 end
 if strcmp(mgsettings.mode, 'tracking')
-    measurements.calcFreq = calcfreq;
+    measurements.genFreq = calcfreq;
+    measurements.tstamps = tstamps;
     measurements.f = f;
 end
 

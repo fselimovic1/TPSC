@@ -12,7 +12,7 @@ if nargin == 3
     dynsettings = varargin{1};
     %------------- Frequency - realation with model parameters ------------
     powsys.branch.reactance = powsys.branch.reactance * dynsettings.f/data.fn;
-    powsys.branch.charging = powsys.charging * data.fn/dynsettings.f;
+    powsys.branch.charging = powsys.branch.charging * data.fn/dynsettings.f;
     powsys.bus.Bshunt = powsys.bus.Bshunt * data.fn/dynsettings.f;
     % ---------------------------------------------------------------------
     
@@ -47,7 +47,7 @@ algtime = toc;
 % --------------------- Post processing of the results --------------------
 if converged
     if nargin == 3
-        Vc = abs(Vc(powsys.bus)) .* exp(1i .* (angle(Vc(powsys.bus)) + dynsettings.thetaslack));
+        Vc = abs(Vc) .* exp(1i .* (angle(Vc) + dynsettings.thetaslack));
     end
     results = postprocess_acpf(powsys, Vc);
 end
