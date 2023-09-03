@@ -8,7 +8,9 @@ converged = 0;
 % --------------------- Initialize state variables ------------------------
 if nargin == 4
     x0 = varargin{1};
-    x = [ x0, conj(x0) ];
+    x = [ x0;
+        conj(x0) 
+        ];
 else
     if sesettings.flatStart
         x = ones( 2 * powsys.num.bus, 1);

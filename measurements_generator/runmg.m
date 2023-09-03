@@ -46,7 +46,7 @@ if strcmp(mgsettings.mode, 'tracking')
     for i = 1:data.nPmu
         bus = data.pmu(i, 1);
         hasPMU(bus) = 1;
-        measuringTimes = ceil((mgsettings.t + eps) * data.pmu(i, 7));
+        measuringTimes = ceil((mgsettings.t + eps * 10) * data.pmu(i, 7));
         mfreqPMU = mfreqPMU + measuringTimes;
         if data.pmu(i, 2) ~= - 1
             msynPMU = msynPMU + measuringTimes * (1 + numel(data.pmucurrch{i}));
@@ -58,7 +58,7 @@ if strcmp(mgsettings.mode, 'tracking')
         mSCADA = mSCADA + ceil((mgsettings.t + eps) * data.scada(i, 5));
     end
     measurements.synpmu = zeros(msynPMU, 8);
-    measurements.fpmu = zeros(msynPMU, 6);
+    measurements.fpmu = zeros(mfreqPMU, 6);
     measurements.scada = zeros(mSCADA, 6);
     % power system dynamics 
     fmode = mgsettings.fdynamics(1);
@@ -158,7 +158,7 @@ for i = 1:tstamps
         dynsettings.loadNo = loadNo;
         if loadNo == -1
             dynsettings.load = load(i);
-        elseif i / calcfreq == 1/5 * mgsettings.t
+        elseif i / calcfreq > 1/5 * mgsettings.t
             dynsettings.load = load;
         else
             dynsettings.loadNo = 0;

@@ -5,7 +5,6 @@ measurements = loadcase(casename, vrs, 'M');
 % -------------------------------------------------------------------------
 
 % ------------------------ Settings Check ---------------------------------
-initalStage = true;
 if ~strcmp(measurements.mode, "tracking")
 	error('Measurements are not generated in tracking mode. Real time state estimation reqiures measurement for a time interval.');
 end
@@ -27,15 +26,6 @@ powsys = preprocess_ps(data, 'se');
 powsys = admittance_matrix(powsys);
 % -------------------------------------------------------------------------
 
-% --------------------- Initial state variables ---------------------------
-if rtsesettings.flatStart
-    Vc = ones( 2 * powsys.num.bus, 1);
-else
-    Vc = [ powsys.bus.Vmi .* exp(1i * powsys.bus.Vai);
-          powsys.bus.Vmi .* exp(-1i * powsys.bus.Vai);
-         ];
-end
-% -------------------------------------------------------------------------
 % -------------------- Allocate memeory for the results -------------------
 results.Vc = complex(zeros(powsys.num.bus, estamps));
 % -------------------------------------------------------------------------
@@ -44,7 +34,7 @@ results.Vc = complex(zeros(powsys.num.bus, estamps));
 if rtsesettings.realtimeplot
     rtpEst = animatedline('Color','r');
     rtpTrue = animatedline('Color','k', 'LineWidth', 1.5);
-    axis([0 round(measurements.tstamps/measurements.genFreq) 0.9 1.1])
+%     axis([0 round(measurements.tstamps/measurements.genFreq) 0.9 1.1])
     str = ['Bus ', num2str(rtsesettings.rtpbus), ' voltage magnitude'];
     title(str)
     xlabel("Time [s]")
@@ -53,10 +43,11 @@ if rtsesettings.realtimeplot
 end
 % -------------------------------------------------------------------------
 for i = 1:dI:measurements.tstamps
-    % -------------------- Extract Current Measurements -------------------
+    % -------------------- Extract Present Measurements -------------------
     cMeasurements.scada = measurements.scada(measurements.scada(:, 1) == i - 1, :);
 	cMeasurements.synpmu = measurements.synpmu(measurements.synpmu(:, 1) == i - 1, :);
     cMeasurements.trueVoltage = measurements.trueVoltage(:, i);
+    cMeasurements.fpmu = measurements.fpmu(measurements.fpmu(:, 1) == i - 1, :);
     cMeasurements.mode = 'static';
     meas = preprocess_meas(cMeasurements);
     % ---------------------------------------------------------------------
@@ -64,12 +55,39 @@ for i = 1:dI:measurements.tstamps
     % ------------------- Calculate state variables -----------------------
     if strcmp(rtsesettings.domain, "complex")
         if strcmp(rtsesettings.method, "quasidyn") 
-            [ Vc, ~, converged, ~ ] = run_cgn_sse(powsys, meas, rtsesettings, Vc);
+            % --------------------- Initial state variables ---------------
+            if rtsesettings.initalStage
+                if rtsesettings.flatStart     
+                    Vc = ones(2  * powsys.num.bus, 1);
+                else
+                    Vc = [ powsys.bus.Vmi .* exp(1i * powsys.bus.Vai);
+                           powsys.bus.Vmi .* exp(-1i * powsys.bus.Vai); 
+                           ];
+                end
+            end
+            % -------------------------------------------------------------
+            [ Vc, iter, converged, info ] = run_cgn_sse(powsys, meas, rtsesettings, Vc);
         else
         end
     else
-        if strcmp(rtsesettings.method, 'fEFKrect')
-            [ Vc, ~, converged, ~ ] = run_fEKFrect_rtse(powsys, meas, rtsesettings, Vc);      
+        if strcmp(rtsesettings.method, 'fEKFrect')
+            % --------------------- Initial state variables ---------------
+            if rtsesettings.initialStage
+                if rtsesettings.flatStart     
+                    X_ = [ reshape([ones(1, powsys.num.bus, 1); ...
+                           zeros(1 ,powsys.num.bus) ], [], 1); 0 ];
+                else
+                    X_ = [ powsys.bus.Vmi .* cos(powsys.bus.Vai);
+                           powsys.bus.Vmi .* sin(powsys.bus.Vai); 
+                           0
+                           ];
+                end
+            end
+            % -------------------------------------------------------------
+            [ X, X_, converged, info ] = run_fEKFrect_rtse(powsys,...
+                meas, rtsesettings, X_);  
+            Vc = X(1:2:2 * powsys.num.bus - 1) + 1i .* X(2:2:2 * powsys.num.bus);
+            
         else
         end
     end
@@ -85,7 +103,8 @@ for i = 1:dI:measurements.tstamps
     end
     % ---------------------------------------------------------------------
     % ---------------------------------------------------------------------
-    initialStage = false;
+    pause(0.1)
+    rtsesettings.initialStage = false;
 end
 end
 

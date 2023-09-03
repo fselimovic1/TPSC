@@ -34,6 +34,11 @@ meas.pmu.inj = find(meas.pmu.type == 2);
 meas.pmu.ibranch = find(meas.pmu.type == 1 & meas.pmu.loc > 0);
 meas.pmu.ibranchO = find(meas.pmu.type == 1 & meas.pmu.loc < 0);
 meas.pmu.vnode = find(meas.pmu.type == 3);
+
+% --------------------- Frequency measurements ----------------------------
+meas.fpmu.onbus = measurements.fpmu(:, 2);
+meas.fpmu.m = measurements.fpmu(:, 3);
+% -------------------------------------------------------------------------
 % -------------------------------------------------------------------------
 
 % ------------------------ Number of measurements -------------------------
@@ -57,6 +62,7 @@ meas.num.pInj = numel(meas.pmu.inj);
 meas.num.pIij = numel(meas.pmu.ibranch);
 meas.num.pIijO = numel(meas.pmu.ibranchO);
 meas.num.pV = numel(meas.pmu.vnode);
+meas.num.f = numel(meas.fpmu.onbus);
 % -------------------------------------------------------------------------
 % -------------------------------------------------------------------------
 

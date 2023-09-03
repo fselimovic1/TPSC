@@ -7,7 +7,7 @@ powsys.num.branch = sum(branchstatus);
 powsys.num.gen = sum(genstatus);
 powsys.num.islack = find(data.bus(:, 2) == 3);
 % -------------------------------------------------------------------------
-
+powsys.fn = data.fn;
 % -------------------------- Bus data -------------------------------------
 powsys.bus.busnew = (1:powsys.num.bus)';
 powsys.bus.busorg = data.bus(:, 1);
