@@ -65,5 +65,23 @@ if strcmp(type, 'pf')
     powsys.bus.pv = powsys.bus.busnew(powsys.bus.type == 2);    
 end
 % -------------------------------------------------------------------------
+
+if strcmp("se", type)
+    % ----------------- PMU Measurements Devices --------------------------
+    powsys.pmu.onbus = data.pmu(:, 1);
+    powsys.pmu.rfreq = data.pmu(:, 7);
+    powsys.pmu.msd = data.pmu(:, 3);
+    powsys.pmu.asd = data.pmu(:, 4);
+    powsys.pmu.fsd = data.pmu(:, 5);
+    powsys.pmu.rfsd = data.pmu(:, 6);
+    % ---------------------------------------------------------------------
+    
+    % -------------------- SCADA Measurement Devices ----------------------
+    powsys.scada.type = data.pmu(:, 2);
+    powsys.scada.onbus = data.pmu(:, 1);
+    powsys.pmu.rfreq = data.pmu(:, 5);
+    powsys.pmu.sd = data.pmu(:, 4);
+    % ---------------------------------------------------------------------
+end
 end
 

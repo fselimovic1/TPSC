@@ -1,4 +1,4 @@
-function meas = preprocess_meas(measurements)
+function meas = preprocess_meas(powsys, measurements)
 if ~strcmp(measurements.mode, "static")
     error('Measurements are not generated in static mode. Static state estimation reqiures measurement for a distinct time stamp.')
 end
@@ -8,16 +8,15 @@ meas.scada.onbus = measurements.scada(:, 2);
 meas.scada.loc = measurements.scada(:, 4);
 meas.scada.m = measurements.scada(:, 5);
 meas.scada.true = measurements.scada(:, 6);
-meas.scada.pbranchO = find(meas.scada.type == 1 & meas.scada.loc < 0);
-meas.scada.pbranch = find(meas.scada.type == 1 & meas.scada.loc > 0);
-meas.scada.qbranchO = find(meas.scada.type == 2 & meas.scada.loc < 0);
-meas.scada.qbranch = find(meas.scada.type == 2 & meas.scada.loc > 0);
+meas.scada.pijO = find(meas.scada.type == 1 & meas.scada.loc < 0);
+meas.scada.pij = find(meas.scada.type == 1 & meas.scada.loc > 0);
+meas.scada.qijO = find(meas.scada.type == 2 & meas.scada.loc < 0);
+meas.scada.qij = find(meas.scada.type == 2 & meas.scada.loc > 0);
 meas.scada.pinj = find(meas.scada.type == 3);
 meas.scada.qinj = find(meas.scada.type == 4);
-meas.scada.ibrMO = find(meas.scada.type == 5 & meas.scada.loc < 0);
-meas.scada.ibrM = find(meas.scada.type == 5 & meas.scada.loc > 0);
+meas.scada.IijmO = find(meas.scada.type == 5 & meas.scada.loc < 0);
+meas.scada.Iijm = find(meas.scada.type == 5 & meas.scada.loc > 0);
 meas.scada.vm = find(meas.scada.type == 6);
-% meas.scada.sd = data.scada(:, 4);
 % -------------------------------------------------------------------------
 
 % -------------------------- PMU Measurements -----------------------------
@@ -28,17 +27,21 @@ meas.pmu.m = measurements.synpmu(:, 5);
 meas.pmu.a = measurements.synpmu(:, 6);
 meas.pmu.mtrue = measurements.synpmu(:, 7);
 meas.pmu.atrue = measurements.synpmu(:, 8);
-% meas.pmu.msd = data.pmu(meas.pmu.onbus, 3); 
-% meas.pmu.asd = data.pmu(meas.pmu.onbus, 4);
-meas.pmu.inj = find(meas.pmu.type == 2);
-meas.pmu.ibranch = find(meas.pmu.type == 1 & meas.pmu.loc > 0);
-meas.pmu.ibranchO = find(meas.pmu.type == 1 & meas.pmu.loc < 0);
-meas.pmu.vnode = find(meas.pmu.type == 3);
+meas.pmu.Iinj = find(meas.pmu.type == 2);
+meas.pmu.Iij = find(meas.pmu.type == 1 & meas.pmu.loc > 0);
+meas.pmu.IijO = find(meas.pmu.type == 1 & meas.pmu.loc < 0);
+meas.pmu.v = find(meas.pmu.type == 3);
 
 % --------------------- Frequency measurements ----------------------------
-meas.fpmu.onbus = measurements.fpmu(:, 2);
-meas.fpmu.m = measurements.fpmu(:, 3);
+if isfield(measurements, 'fpmu')
+    meas.fpmu.onbus = measurements.fpmu(:, 2);
+    meas.fpmu.m = measurements.fpmu(:, 3);
+    meas.num.f = numel(meas.fpmu.onbus);
+end
 % -------------------------------------------------------------------------
+meas.pmu.msd = ((powsys.pmu.msd(meas.pmu.onbus) .* meas.pmu.m)/100) / 3;
+meas.pmu.asd = (powsys.pmu.asd(meas.pmu.onbus) * pi / 180)/3;
+meas.fpmu.fsd = (powsys.pmu.fsd(meas.fpmu.onbus)) / 3;
 % -------------------------------------------------------------------------
 
 % ------------------------ Number of measurements -------------------------
@@ -46,28 +49,27 @@ meas.num.scada = size(measurements.scada, 1);
 meas.num.pmu = size(measurements.synpmu, 1);
 
 % ----------------------------- SCADA (-s) --------------------------------
-meas.num.sPbr0 = numel(meas.scada.pbranchO);
-meas.num.sPbr = numel(meas.scada.pbranch);
-meas.num.sQbr0 = numel(meas.scada.qbranchO);
-meas.num.sQbr = numel(meas.scada.qbranch);
+meas.num.sPijO = numel(meas.scada.pijO);
+meas.num.sPij = numel(meas.scada.pij);
+meas.num.sQijO = numel(meas.scada.qijO);
+meas.num.sQij = numel(meas.scada.qij);
 meas.num.sPinj = numel(meas.scada.pinj);
 meas.num.sQinj = numel(meas.scada.qinj);
-meas.num.sIbrM0 = numel(meas.scada.ibrMO);
-meas.num.sIbrM = numel(meas.scada.ibrM);
+meas.num.sIijmO = numel(meas.scada.IijmO);
+meas.num.sIijm = numel(meas.scada.Iijm);
 meas.num.sVm = numel(meas.scada.vm);
 % -------------------------------------------------------------------------
 
 % ------------------------------ PMU (-p) ---------------------------------
-meas.num.pInj = numel(meas.pmu.inj);
-meas.num.pIij = numel(meas.pmu.ibranch);
-meas.num.pIijO = numel(meas.pmu.ibranchO);
-meas.num.pV = numel(meas.pmu.vnode);
-meas.num.f = numel(meas.fpmu.onbus);
+meas.num.pIinj = numel(meas.pmu.Iinj);
+meas.num.pIij = numel(meas.pmu.Iij);
+meas.num.pIijO = numel(meas.pmu.IijO);
+meas.num.pV = numel(meas.pmu.v);
 % -------------------------------------------------------------------------
 % -------------------------------------------------------------------------
 
 % --------------------------- True values ---------------------------------
-% meas.Vtrue = measurements.trueVoltage;
+meas.Vtrue = measurements.trueVoltage;
 % -------------------------------------------------------------------------
 end
 

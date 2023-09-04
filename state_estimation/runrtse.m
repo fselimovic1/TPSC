@@ -49,14 +49,14 @@ for i = 1:dI:measurements.tstamps
     cMeasurements.trueVoltage = measurements.trueVoltage(:, i);
     cMeasurements.fpmu = measurements.fpmu(measurements.fpmu(:, 1) == i - 1, :);
     cMeasurements.mode = 'static';
-    meas = preprocess_meas(cMeasurements);
+    meas = preprocess_meas(powsys, cMeasurements);
     % ---------------------------------------------------------------------
     
     % ------------------- Calculate state variables -----------------------
     if strcmp(rtsesettings.domain, "complex")
         if strcmp(rtsesettings.method, "quasidyn") 
             % --------------------- Initial state variables ---------------
-            if rtsesettings.initalStage
+            if rtsesettings.initialStage
                 if rtsesettings.flatStart     
                     Vc = ones(2  * powsys.num.bus, 1);
                 else

@@ -18,9 +18,9 @@ mgsettings.mode = 'tracking';
 %--------------------------------------------------------------------------
 
 %------------------------- Tracking SE options ----------------------------
-mgsettings.t = 5;
-mgsettings.fdynamics = [ "UD1", 49.5 ];
-mgsettings.ldynamics = [ "loadon", 200, 60 ];
+mgsettings.t = 10;
+mgsettings.fdynamics = [ "random", 0.01 ];
+mgsettings.ldynamics = [ "random", 0.01 ];
 %--------------------------------------------------------------------------
 
 %--------------------------- Power Flow options ---------------------------

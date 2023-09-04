@@ -18,13 +18,13 @@ vrs = 'A';
 rtsesettings.domain = 'real';
 rtsesettings.method = 'fEKFrect';
 rtsesettings.mweights = [ "pmuscadaratio", 1 ];
-rtsesettings.fc = 50;
+rtsesettings.fc = 25;
 rtsesettings.flatStart = 1;
 rtsesettings.maxNumberOfIter = 50;
 rtsesettings.eps = 1e-6;
 rtsesettings.initialStage = 1;
 rtsesettings.realtimeplot = 1;
-rtsesettings.rtpbus = 15;
+rtsesettings.rtpbus = 27;
 %--------------------------------------------------------------------------
 
 %--------------------------Static State Estimation-------------------------

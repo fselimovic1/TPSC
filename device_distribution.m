@@ -39,10 +39,10 @@ ddsettings.scadafreq = [ "complete", 1 ];
 % (PMUs) which are installed in a grid. 
 ddsettings.pmuset = [ "perc", 100, "currCh"  1 ]; %[ "perc", 95, "currCh" -1];
 
-ddsettings.pmusd = [ "fixed", "magnitude", 0.01, 0.02, "phase", 0.2, 0.3, ...
-                      "frequency", 5, 5, "rocof",  0.4, 0.4 ];
+ddsettings.pmusd = [ "fixed", "magnitude", 0.7, "phase", 7e-3 * 180 / pi, ...
+                      "frequency", 5, "rocof",  0.4, 0.4 ];
 
-ddsettings.pmufreq = [ "complete", 50 ];
+ddsettings.pmufreq = [ "complete", 25 ];
 %--------------------------------------------------------------------------
 
 %------------------------- Run Device Distribution ------------------------

@@ -7,10 +7,7 @@ converged = 0;
 
 % --------------------- Initialize state variables ------------------------
 if nargin == 4
-    x0 = varargin{1};
-    x = [ x0;
-        conj(x0) 
-        ];
+    x = varargin{1};
 else
     if sesettings.flatStart
         x = ones( 2 * powsys.num.bus, 1);
@@ -23,22 +20,22 @@ end
 % -------------------------------------------------------------------------
 
 % ----------------------- Vector of measurement values --------------------
-z = [ meas.pmu.m(meas.pmu.ibranchO) .* exp(1i .* meas.pmu.a(meas.pmu.ibranchO));
-      meas.pmu.m(meas.pmu.ibranch) .* exp(1i .* meas.pmu.a(meas.pmu.ibranch));
-      meas.pmu.m(meas.pmu.vnode) .* exp(1i .* meas.pmu.a(meas.pmu.vnode));
-      meas.pmu.m(meas.pmu.inj) .* exp(1i .* meas.pmu.a(meas.pmu.inj));
-      meas.pmu.m(meas.pmu.ibranchO) .* exp(-1i .* meas.pmu.a(meas.pmu.ibranchO));
-      meas.pmu.m(meas.pmu.ibranch) .* exp(-1i .* meas.pmu.a(meas.pmu.ibranch));
-      meas.pmu.m(meas.pmu.vnode) .* exp(-1i .* meas.pmu.a(meas.pmu.vnode));
-      meas.pmu.m(meas.pmu.inj) .* exp(-1i .* meas.pmu.a(meas.pmu.inj));
-      meas.scada.m(meas.scada.pbranchO);
-      meas.scada.m(meas.scada.pbranch);
-      meas.scada.m(meas.scada.qbranchO);
-      meas.scada.m(meas.scada.qbranch);
+z = [ meas.pmu.m(meas.pmu.IijO) .* exp(1i .* meas.pmu.a(meas.pmu.IijO));
+      meas.pmu.m(meas.pmu.Iij) .* exp(1i .* meas.pmu.a(meas.pmu.Iij));
+      meas.pmu.m(meas.pmu.v) .* exp(1i .* meas.pmu.a(meas.pmu.v));
+      meas.pmu.m(meas.pmu.Iinj) .* exp(1i .* meas.pmu.a(meas.pmu.Iinj));
+      meas.pmu.m(meas.pmu.IijO) .* exp(-1i .* meas.pmu.a(meas.pmu.IijO));
+      meas.pmu.m(meas.pmu.Iij) .* exp(-1i .* meas.pmu.a(meas.pmu.Iij));
+      meas.pmu.m(meas.pmu.v) .* exp(-1i .* meas.pmu.a(meas.pmu.v));
+      meas.pmu.m(meas.pmu.Iinj) .* exp(-1i .* meas.pmu.a(meas.pmu.Iinj));
+      meas.scada.m(meas.scada.pijO);
+      meas.scada.m(meas.scada.pij);
+      meas.scada.m(meas.scada.qijO);
+      meas.scada.m(meas.scada.qij);
       meas.scada.m(meas.scada.pinj);
       meas.scada.m(meas.scada.qinj); 
-      meas.scada.m(meas.scada.ibrMO);
-      meas.scada.m(meas.scada.ibrM);
+      meas.scada.m(meas.scada.IijmO);
+      meas.scada.m(meas.scada.Iijm);
       meas.scada.m(meas.scada.vm)
     ];
 % -------------------------------------------------------------------------
@@ -50,7 +47,7 @@ W = sparse(1:2 * meas.num.pmu + meas.num.scada, 1:2 * meas.num.pmu + meas.num.sc
 % -------------------------------------------------------------------------
 
 % ------------------------- Construct C11 matrix --------------------------
-[ rowInj, colInj ] = find(powsys.ybus.y(meas.pmu.loc(meas.pmu.inj), :));  
+[ rowInj, colInj ] = find(powsys.ybus.y(meas.pmu.loc(meas.pmu.Iinj), :));  
 
 % ---------------------------- Row indices --------------------------------
 iC11IijO = [ 1:meas.num.pIijO, 1:meas.num.pIijO ];
@@ -60,23 +57,23 @@ iC11Inj = meas.num.pIijO + meas.num.pIij + meas.num.pV + rowInj;
 % -------------------------------------------------------------------------
 
 % ------------------------ Column indices ---------------------------------
-jC11Iij0 = [     powsys.branch.i(-meas.pmu.loc(meas.pmu.ibranchO)); 
-                 powsys.branch.j(-meas.pmu.loc(meas.pmu.ibranchO)); ];
-jC11Iij =  [     powsys.branch.i(meas.pmu.loc(meas.pmu.ibranch)); 
-                 powsys.branch.j(meas.pmu.loc(meas.pmu.ibranch));
+jC11Iij0 = [     powsys.branch.i(-meas.pmu.loc(meas.pmu.IijO)); 
+                 powsys.branch.j(-meas.pmu.loc(meas.pmu.IijO)); ];
+jC11Iij =  [     powsys.branch.i(meas.pmu.loc(meas.pmu.Iij)); 
+                 powsys.branch.j(meas.pmu.loc(meas.pmu.Iij));
                  ];
-jC11V = meas.pmu.onbus(meas.pmu.vnode);
+jC11V = meas.pmu.onbus(meas.pmu.v);
 jC11Inj = colInj;
 % -------------------------------------------------------------------------
 
 % ------------------------- Values of elements ----------------------------
-vC11IijO = [     powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.ibranchO));...
-                 powsys.ybus.toto(-meas.pmu.loc(meas.pmu.ibranchO)); ];
-vC11Iij =  [     powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.ibranch));...
-                 powsys.ybus.fromto(meas.pmu.loc(meas.pmu.ibranch)); 
+vC11IijO = [     powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.IijO));...
+                 powsys.ybus.toto(-meas.pmu.loc(meas.pmu.IijO)); ];
+vC11Iij =  [     powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.Iij));...
+                 powsys.ybus.fromto(meas.pmu.loc(meas.pmu.Iij)); 
     ];
 vC11V = ones(meas.num.pV, 1);
-vC11Inj = nonzeros(powsys.ybus.y(meas.pmu.loc(meas.pmu.inj), :));
+vC11Inj = nonzeros(powsys.ybus.y(meas.pmu.loc(meas.pmu.Iinj), :));
 % -------------------------------------------------------------------------
 
 C11 = sparse(...
@@ -96,40 +93,40 @@ C12 = sparse(meas.num.pmu, powsys.num.bus);
 [ rowQinj, colQinj ] = find(powsys.ybus.yij(meas.scada.onbus(meas.scada.qinj),:));
 accI = 0;
 % ---------------------------- Row indices --------------------------------
-iDpbrO = [ 1:meas.num.sPbr0, 1:meas.num.sPbr0 ];
-accI = accI + meas.num.sPbr0;
-iDpbr = [ (accI + (1:meas.num.sPbr)), (accI + (1:meas.num.sPbr)) ];
-accI = accI + meas.num.sPbr;
-iDqbrO = [ (accI + (1:meas.num.sQbr0)), (accI + (1:meas.num.sQbr0)) ];
-accI = accI + meas.num.sQbr0;
-iDqbr = [ (accI + (1:meas.num.sQbr)), (accI + (1:meas.num.sQbr)) ];
-accI = accI + meas.num.sQbr;
+iDpbrO = [ 1:meas.num.sPijO, 1:meas.num.sPijO ];
+accI = accI + meas.num.sPijO;
+iDpbr = [ (accI + (1:meas.num.sPij)), (accI + (1:meas.num.sPij)) ];
+accI = accI + meas.num.sPij;
+iDqbrO = [ (accI + (1:meas.num.sQijO)), (accI + (1:meas.num.sQijO)) ];
+accI = accI + meas.num.sQijO;
+iDqbr = [ (accI + (1:meas.num.sQij)), (accI + (1:meas.num.sQij)) ];
+accI = accI + meas.num.sQij;
 iDpinj = [ (accI + (1:meas.num.sPinj)), accI + rowPinj' ];
 accI = accI + meas.num.sPinj;
 iDqinj = [ (accI + (1:meas.num.sQinj)), accI + rowQinj' ];
 accI = accI + meas.num.sQinj;
-iDibrMO = [ (accI + (1:meas.num.sIbrM0)), (accI + (1:meas.num.sIbrM0)) ];
-accI = accI + meas.num.sIbrM0;
-iDibrM = [ (accI + (1:meas.num.sIbrM)), (accI + (1:meas.num.sIbrM)) ];
-accI = accI + meas.num.sIbrM;
+iDibrMO = [ (accI + (1:meas.num.sIijmO)), (accI + (1:meas.num.sIijmO)) ];
+accI = accI + meas.num.sIijmO;
+iDibrM = [ (accI + (1:meas.num.sIijm)), (accI + (1:meas.num.sIijm)) ];
+accI = accI + meas.num.sIijm;
 iDvm = (accI + (1:meas.num.sVm));
 % -------------------------------------------------------------------------
 
 % --------------------------- Column indices ------------------------------
-jDpbrO = [ powsys.branch.i(-meas.scada.loc(meas.scada.pbranchO));...
-           powsys.branch.j(-meas.scada.loc(meas.scada.pbranchO))];
-jDpbr = [ powsys.branch.i(meas.scada.loc(meas.scada.pbranch));...
-          powsys.branch.j(meas.scada.loc(meas.scada.pbranch))];
-jDqbrO = [ powsys.branch.i(-meas.scada.loc(meas.scada.qbranchO));...
-           powsys.branch.j(-meas.scada.loc(meas.scada.qbranchO))];
-jDqbr = [ powsys.branch.i(meas.scada.loc(meas.scada.qbranch));...
-          powsys.branch.j(meas.scada.loc(meas.scada.qbranch))];   
+jDpbrO = [ powsys.branch.i(-meas.scada.loc(meas.scada.pijO));...
+           powsys.branch.j(-meas.scada.loc(meas.scada.pijO))];
+jDpbr = [ powsys.branch.i(meas.scada.loc(meas.scada.pij));...
+          powsys.branch.j(meas.scada.loc(meas.scada.pij))];
+jDqbrO = [ powsys.branch.i(-meas.scada.loc(meas.scada.qijO));...
+           powsys.branch.j(-meas.scada.loc(meas.scada.qijO))];
+jDqbr = [ powsys.branch.i(meas.scada.loc(meas.scada.qij));...
+          powsys.branch.j(meas.scada.loc(meas.scada.qij))];   
 jDpinj = [ meas.scada.onbus(meas.scada.pinj); colPinj ];
 jDqinj = [ meas.scada.onbus(meas.scada.qinj); colQinj ];
-jDibrMO = [ powsys.branch.i(-meas.scada.loc(meas.scada.ibrMO));...
-            powsys.branch.j(-meas.scada.loc(meas.scada.ibrMO)) ];
-jDibrM = [ powsys.branch.i(meas.scada.loc(meas.scada.ibrM));...
-           powsys.branch.j(meas.scada.loc(meas.scada.ibrM)) ];
+jDibrMO = [ powsys.branch.i(-meas.scada.loc(meas.scada.IijmO));...
+            powsys.branch.j(-meas.scada.loc(meas.scada.IijmO)) ];
+jDibrM = [ powsys.branch.i(meas.scada.loc(meas.scada.Iijm));...
+           powsys.branch.j(meas.scada.loc(meas.scada.Iijm)) ];
 jDvm = (meas.scada.onbus(meas.scada.vm));
 % -------------------------------------------------------------------------
 % -------------------------------------------------------------------------
@@ -144,29 +141,29 @@ while iter < sesettings.maxNumberOfIter
     % ---------------------------------------------------------------------
     
     % ----------------------- D update & construct  -----------------------
-    vDpbrO = [  1/2 .* powsys.ybus.tofrom(-meas.scada.loc(meas.scada.pbranchO)) ...
-               .* x(powsys.num.bus + (powsys.branch.j(-meas.scada.loc(meas.scada.pbranchO)))); ...
-                1/2 .* ((powsys.ybus.toto(-meas.scada.loc(meas.scada.pbranchO))) .* ...
-                x(powsys.num.bus + (powsys.branch.j(-meas.scada.loc(meas.scada.pbranchO)))) + ...
-                conj(Iji(-meas.scada.loc(meas.scada.pbranchO))))
+    vDpbrO = [  1/2 .* powsys.ybus.tofrom(-meas.scada.loc(meas.scada.pijO)) ...
+               .* x(powsys.num.bus + (powsys.branch.j(-meas.scada.loc(meas.scada.pijO)))); ...
+                1/2 .* ((powsys.ybus.toto(-meas.scada.loc(meas.scada.pijO))) .* ...
+                x(powsys.num.bus + (powsys.branch.j(-meas.scada.loc(meas.scada.pijO)))) + ...
+                conj(Iji(-meas.scada.loc(meas.scada.pijO))))
                 ];
-    vDpbr = [  1/2 .* (powsys.ybus.fromfrom(meas.scada.loc(meas.scada.pbranch)) ...
-               .* x(powsys.num.bus + (powsys.branch.i(meas.scada.loc(meas.scada.pbranch)))) + ...
-               conj(Iij(meas.scada.loc(meas.scada.pbranch)))); ...
-               1/2 .* (powsys.ybus.fromto(meas.scada.loc(meas.scada.pbranch))) .* ...
-               x(powsys.num.bus + (powsys.branch.i(meas.scada.loc(meas.scada.pbranch))))
+    vDpbr = [  1/2 .* (powsys.ybus.fromfrom(meas.scada.loc(meas.scada.pij)) ...
+               .* x(powsys.num.bus + (powsys.branch.i(meas.scada.loc(meas.scada.pij)))) + ...
+               conj(Iij(meas.scada.loc(meas.scada.pij)))); ...
+               1/2 .* (powsys.ybus.fromto(meas.scada.loc(meas.scada.pij))) .* ...
+               x(powsys.num.bus + (powsys.branch.i(meas.scada.loc(meas.scada.pij))))
                 ];  
-    vDqbrO = [  1i/2 .* powsys.ybus.tofrom(-meas.scada.loc(meas.scada.qbranchO)) ...
-               .* x(powsys.num.bus + (powsys.branch.j(-meas.scada.loc(meas.scada.qbranchO)))); ...
-                1i/2 .* ((powsys.ybus.toto(-meas.scada.loc(meas.scada.qbranchO))) .* ...
-                x(powsys.num.bus + (powsys.branch.j(-meas.scada.loc(meas.scada.qbranchO)))) - ...
-                conj(Iji(-meas.scada.loc(meas.scada.qbranchO))))
+    vDqbrO = [  1i/2 .* powsys.ybus.tofrom(-meas.scada.loc(meas.scada.qijO)) ...
+               .* x(powsys.num.bus + (powsys.branch.j(-meas.scada.loc(meas.scada.qijO)))); ...
+                1i/2 .* ((powsys.ybus.toto(-meas.scada.loc(meas.scada.qijO))) .* ...
+                x(powsys.num.bus + (powsys.branch.j(-meas.scada.loc(meas.scada.qijO)))) - ...
+                conj(Iji(-meas.scada.loc(meas.scada.qijO))))
                 ];
-    vDqbr = [  1i/2 .* (powsys.ybus.fromfrom(meas.scada.loc(meas.scada.qbranch)) ...
-               .* x(powsys.num.bus + (powsys.branch.i(meas.scada.loc(meas.scada.qbranch)))) - ...
-               conj(Iij(meas.scada.loc(meas.scada.qbranch)))); ...
-               1i/2 .* (powsys.ybus.fromto(meas.scada.loc(meas.scada.qbranch))) .* ...
-               x(powsys.num.bus + (powsys.branch.i(meas.scada.loc(meas.scada.qbranch))))
+    vDqbr = [  1i/2 .* (powsys.ybus.fromfrom(meas.scada.loc(meas.scada.qij)) ...
+               .* x(powsys.num.bus + (powsys.branch.i(meas.scada.loc(meas.scada.qij)))) - ...
+               conj(Iij(meas.scada.loc(meas.scada.qij)))); ...
+               1i/2 .* (powsys.ybus.fromto(meas.scada.loc(meas.scada.qij))) .* ...
+               x(powsys.num.bus + (powsys.branch.i(meas.scada.loc(meas.scada.qij))))
                 ]; 
        
     vDpinj = [ 1/2 .* (conj(Ii(meas.scada.onbus(meas.scada.pinj))) + ...
@@ -179,14 +176,14 @@ while iter < sesettings.maxNumberOfIter
                x(powsys.num.bus + meas.scada.onbus(meas.scada.qinj)));...
                nonzeros(1i/2 .*  conj(x(meas.scada.onbus(meas.scada.qinj))) .* ...
                 powsys.ybus.yij(meas.scada.onbus(meas.scada.qinj), :))];     
-    vDibrMO = [ 1/2 .* powsys.ybus.tofrom(-meas.scada.loc(meas.scada.ibrMO)) ...
-                .* exp(-1i .* angle(Iji(-meas.scada.loc(meas.scada.ibrMO))));
-                1/2 .* powsys.ybus.toto(-meas.scada.loc(meas.scada.ibrMO)) ...
-                .* exp(-1i .* angle(Iji(-meas.scada.loc(meas.scada.ibrMO)))); ];
-    vDibrM =  [ 1/2 .* powsys.ybus.fromfrom(meas.scada.loc(meas.scada.ibrM)) ...
-                .* exp(-1i .* angle(Iij(meas.scada.loc(meas.scada.ibrM))));
-                1/2 .* powsys.ybus.fromto(meas.scada.loc(meas.scada.ibrM)) ...
-                .* exp(-1i .* angle(Iij(meas.scada.loc(meas.scada.ibrM)))); ];
+    vDibrMO = [ 1/2 .* powsys.ybus.tofrom(-meas.scada.loc(meas.scada.IijmO)) ...
+                .* exp(-1i .* angle(Iji(-meas.scada.loc(meas.scada.IijmO))));
+                1/2 .* powsys.ybus.toto(-meas.scada.loc(meas.scada.IijmO)) ...
+                .* exp(-1i .* angle(Iji(-meas.scada.loc(meas.scada.IijmO)))); ];
+    vDibrM =  [ 1/2 .* powsys.ybus.fromfrom(meas.scada.loc(meas.scada.Iijm)) ...
+                .* exp(-1i .* angle(Iij(meas.scada.loc(meas.scada.Iijm))));
+                1/2 .* powsys.ybus.fromto(meas.scada.loc(meas.scada.Iijm)) ...
+                .* exp(-1i .* angle(Iij(meas.scada.loc(meas.scada.Iijm)))); ];
     vDvm = 1/2 .* exp(-1i .* angle(meas.scada.onbus(meas.scada.vm)));
     
     D = sparse(...
@@ -196,22 +193,22 @@ while iter < sesettings.maxNumberOfIter
     % ---------------------------------------------------------------------
     
     % --------------------------- h <-> PMU -------------------------------
-    c = [   Iji(-meas.pmu.loc(meas.pmu.ibranchO));
-            Iij(meas.pmu.loc(meas.pmu.ibranch));
-            x(meas.pmu.onbus(meas.pmu.vnode));
-            Ii(meas.pmu.onbus(meas.pmu.inj))
+    c = [   Iji(-meas.pmu.loc(meas.pmu.IijO));
+            Iij(meas.pmu.loc(meas.pmu.Iij));
+            x(meas.pmu.onbus(meas.pmu.v));
+            Ii(meas.pmu.onbus(meas.pmu.Iinj))
           ];
     % ---------------------------------------------------------------------
     
     % ----------------------------- d <-> SCADA ---------------------------
-    d = [ real(Sji(-meas.scada.loc(meas.scada.pbranchO)));
-          real(Sij(meas.scada.loc(meas.scada.pbranch)));
-          imag(Sji(-meas.scada.loc(meas.scada.qbranchO)));
-          imag(Sij(meas.scada.loc(meas.scada.qbranch)));
+    d = [ real(Sji(-meas.scada.loc(meas.scada.pijO)));
+          real(Sij(meas.scada.loc(meas.scada.pij)));
+          imag(Sji(-meas.scada.loc(meas.scada.qijO)));
+          imag(Sij(meas.scada.loc(meas.scada.qij)));
           real(Si(meas.scada.onbus(meas.scada.pinj)));
           imag(Si(meas.scada.onbus(meas.scada.qinj)));
-          abs(Iji(-meas.scada.loc(meas.scada.ibrMO)));
-          abs(Iij(meas.scada.loc(meas.scada.ibrM)));
+          abs(Iji(-meas.scada.loc(meas.scada.IijmO)));
+          abs(Iij(meas.scada.loc(meas.scada.Iijm)));
           abs(x(meas.scada.onbus(meas.scada.vm)))
           ];
     % ---------------------------------------------------------------------
@@ -232,7 +229,7 @@ while iter < sesettings.maxNumberOfIter
     end
 end
 % ----------------------- Estimator results -------------------------------
-Vc = x(powsys.bus.busnew);
+Vc = x;
 info.nonZerosInH = nnz(H);
 info.redundancy = (2 * meas.num.pmu + meas.num.scada)/(2 * powsys.num.bus);
 % -------------------------------------------------------------------------
