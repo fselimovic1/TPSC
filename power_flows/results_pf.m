@@ -1,4 +1,5 @@
-function results_pf(pfsettings, results, num, bus, branchi, branchj, baseMVA)
+function results_pf(results, powsys, pfsettings, baseMVA)
+% ------------------- Basic Calculation Info ------------------------------
 fprintf('\tTOOLBOX FOR POWER SYSTEM COMPUTATIONS - POWER FLOW ANALYSIS\n')
 fprintf(['\tDate: ', datestr(now, 'dd.mm.yyyy HH:MM:SS \n\n')])
 fprintf('\tMethod: %s\n', results.method);
@@ -9,11 +10,14 @@ else
  fprintf('\tThe algortihm did not converged after: %d iterations!\n \t :( :( :(\n', pfsettings.maxNumberOfIter)
  return;
 end
-fprintf('\tNumber of iterations: %d\n', results.iter)     
+fprintf('\tNumber of iterations: %d\n', results.iter) 
+% -------------------------------------------------------------------------
+
+% ------------------------ Show Bus Data ----------------------------------
 if pfsettings.showbus
     disp(' ')
     fprintf('\t')   
-    A = [ bus', results.Vm, results.Va .* 180/pi] ;
+    A = [ powsys.bus.busnew, results.Vm, results.Va .* 180/pi] ;
     disp(' ')
     disp('   _____________________________________________________________________________________')
     disp('  |                               POWER FLOW BUS DATA                                   |')
@@ -21,8 +25,8 @@ if pfsettings.showbus
     disp('  |                  VOLTAGE                 GENERATION                DEMAND           |')
     disp('  |   No.      Mag[p.u.] | Angle[deg.]    P [MW]  |  Q [MVAr]    P [MW]  |  Q [MVAr]    |')
     disp('  |  ----     ----------   -----------    -------   ---------    -------    --------    |')
-    for i = 1:num.bus
-        if i == num.islack
+    for i = 1:powsys.num.bus
+        if i == powsys.num.islack
             fprintf('  |   %-6d    %6.3f      %7.2f*  ', A(i, :));
         else 
             fprintf('  |   %-6d    %6.3f      %7.2f   ', A(i, :));
@@ -49,6 +53,9 @@ if pfsettings.showbus
     end
     disp('  |-------------------------------------------------------------------------------------|')   
 end
+% -------------------------------------------------------------------------
+
+% ----------------------------- Show Branch Data --------------------------
 if pfsettings.showbranch
     fprintf('\t') 
     disp(' ')
@@ -58,14 +65,15 @@ if pfsettings.showbranch
     disp('  | Branch     From   To     From Bus Power Flow    To Bus Power Flow       Power Losses     |')
     disp('  |   No.      Bus    Bus    P [MW]   | Q [MVAr]   P [MW]   | Q [MVAr]   P [MW]   | Q [MVAr] |')
     disp('  |  -----    -----  -----   --------   --------   --------   --------   --------   -------- |')
-    for i = 1:num.branch
-        fprintf("  |   %-6d %6d %6d", i, branchi(i), branchj(i));
+    for i = 1:powsys.num.branch
+        fprintf("  |   %-6d %6d %6d", i, powsys.branch.i(i), powsys.branch.j(i));
         fprintf("   %8.2f   %8.2f", results.Pij(i) * baseMVA, results.Qij(i)* baseMVA);
         fprintf("   %8.2f   %8.2f", results.Pji(i) * baseMVA, results.Qji(i) * baseMVA);
         fprintf("  %7.2f   %8.2f   |\n", results.Ploss(i) * baseMVA, results.Qloss(i) * baseMVA);
     end
     disp('  |------------------------------------------------------------------------------------------|')
 end
+% -------------------------------------------------------------------------
 end
 
 

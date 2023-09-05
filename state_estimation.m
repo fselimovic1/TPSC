@@ -2,28 +2,29 @@ clc
 close
 clearvars
 
-%---------------------------State Estimation-------------------------------
+%-------------------------- Static State Estimation -----------------------
 %--------------------------------------------------------------------------
 
 %-------------------------Generate Path Name-------------------------------
  addpath(genpath(fileparts(which(mfilename))));
 %--------------------------------------------------------------------------
 
-%--------------------------- Power System Case ----------------------------
-casename = 'case39';
+%------------------------- Power System Case ------------------------------
+casename = 'case9241pegase';
 vrs = 'A';
 %--------------------------------------------------------------------------
 
-%----------------------------About Solver----------------------------------
+%------------------- State estimaion solver - Settings --------------------
 sesettings.domain = 'complex';
-sesettings.method = 'cgn_sse';
-sesettings.fc = 10;
+sesettings.method = 'cls_sse';
+sesettings.mweights = [ "pmuscadaratio", 1 ];
+sesettings.flatStart = 0;
 sesettings.maxNumberOfIter = 50;
 sesettings.eps = 1e-6;
 sesettings.showresults = 0;
 %--------------------------------------------------------------------------
 
-%--------------------------Static State Estimation-------------------------
+%------------------------ Run state estimation ----------------------------
 runsse(casename, vrs, sesettings);
 %--------------------------------------------------------------------------
 

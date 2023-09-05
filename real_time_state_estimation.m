@@ -15,12 +15,16 @@ vrs = 'A';
 %--------------------------------------------------------------------------
 
 %----------------------------About Solver----------------------------------
-rtsesettings.domain = 'complex';
+rtsesettings.domain = 'real';
 rtsesettings.method = 'fEKFrect';
-rtsesettings.fc = 10;
+rtsesettings.mweights = [ "pmuscadaratio", 1 ];
+rtsesettings.fc = 25;
+rtsesettings.flatStart = 1;
 rtsesettings.maxNumberOfIter = 50;
 rtsesettings.eps = 1e-6;
-rtsesettings.showresults = 0;
+rtsesettings.initialStage = 1;
+rtsesettings.realtimeplot = 1;
+rtsesettings.rtpbus = 27;
 %--------------------------------------------------------------------------
 
 %--------------------------Static State Estimation-------------------------

@@ -1,0 +1,39 @@
+function powsys = admittance_matrix(powsys)
+% --------------------- Unified branch model -------------------------------
+powsys.ybus.admittance = 1 ./ (powsys.branch.resistance + 1i .* ...
+                           powsys.branch.reactance);
+isLine = ~powsys.branch.transturns;
+powsys.ybus.transratio = zeros(powsys.num.branch, 1);
+powsys.ybus.transratio(isLine) = exp(1i .* powsys.branch.transphase(isLine));
+powsys.ybus.transratio(~isLine) = powsys.branch.transturns(~isLine)...
+                              .* exp(1i * powsys.branch.transphase(~isLine));
+transratioConj = conj(powsys.ybus.transratio);
+powsys.ybus.toto =  powsys.ybus.admittance + 1i / 2 .* powsys.branch.charging;
+powsys.ybus.fromfrom =  powsys.ybus.toto ./ ...
+            (transratioConj .* powsys.ybus.transratio);
+powsys.ybus.fromto = -powsys.ybus.admittance ./ transratioConj;
+powsys.ybus.tofrom = -powsys.ybus.admittance ./ ...
+                                   powsys.ybus.transratio;
+% -------------------------------------------------------------------------
+
+% ---------------------------- Diagonal elements in Y ---------------------
+powsys.ybus.ydiag = accumarray([powsys.branch.i; powsys.branch.j ],...
+    [powsys.ybus.fromfrom; powsys.ybus.toto ], [powsys.num.bus, 1] ) ...
+    + powsys.bus.Gshunt + 1i .* powsys.bus.Bshunt;
+% -------------------------------------------------------------------------
+
+% -------------------- Compose sparse matrices ----------------------------
+powsys.ybus.y = sparse([ powsys.bus.busnew; powsys.branch.i;...
+                                    powsys.branch.j ], [powsys.bus.busnew; ...
+                                   powsys.branch.j; powsys.branch.i], ...
+                            [ powsys.ybus.ydiag; powsys.ybus.fromto; powsys.ybus.tofrom], ...
+                             powsys.num.bus, powsys.num.bus);
+powsys.ybus.yij = sparse([ powsys.branch.i; powsys.branch.j ], ...
+        [ powsys.branch.j, powsys.branch.i], [ powsys.ybus.fromto; ...
+         powsys.ybus.tofrom], powsys.num.bus, powsys.num.bus);                       
+powsys.ybus.yT = transpose(powsys.ybus.y);  
+% -------------------------------------------------------------------------
+end
+
+
+

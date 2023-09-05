@@ -7,7 +7,7 @@ clear
 
 %--------------------------Generate New Data-------------------------------
 %--------------------Power system with measurement devices-----------------
-casename = 'case118';
+casename = 'case39';
 vrs = 'A';
 %--------------------------------------------------------------------------
 
@@ -18,9 +18,9 @@ mgsettings.mode = 'tracking';
 %--------------------------------------------------------------------------
 
 %------------------------- Tracking SE options ----------------------------
-mgsettings.t = 2;
-mgsettings.fdynamics = [ "random", 0.001 ];
-mgsettings.ldynamics = [ "random", 0.0005 ];
+mgsettings.t = 10;
+mgsettings.fdynamics = [ "random", 0.01 ];
+mgsettings.ldynamics = [ "random", 0.01 ];
 %--------------------------------------------------------------------------
 
 %--------------------------- Power Flow options ---------------------------

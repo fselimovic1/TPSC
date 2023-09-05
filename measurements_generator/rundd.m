@@ -402,7 +402,7 @@ else
 end
 %------------------------------Save case-----------------------------------
 home = getenv('USERPROFILE');
-path = strcat(home, '\PowerSystemComputations\data\power_system_with_devices\TPSC', name, 'D_', vrs);
+path = strcat(home, '\TPSC\data\power_system_with_devices\TPSC', name, 'D_', vrs);
 save(path, 'data')
 %--------------------------------------------------------------------------
 end

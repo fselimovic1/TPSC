@@ -1,4 +1,5 @@
 function runmg(casename, vrs, mgsettings)
+measurements.mode = mgsettings.mode;
 % load data
 data = loadcase(casename, vrs);
 
@@ -43,20 +44,21 @@ if strcmp(mgsettings.mode, 'tracking')
     mSCADA = 0;
     hasPMU = zeros(num.bus, 1);
     for i = 1:data.nPmu
-        hasPMU(data.pmu(i, 1)) = 1;
-        measuringTimes = ceil((mgsettings.t + eps) * data.pmu(i, 7));
+        bus = data.pmu(i, 1);
+        hasPMU(bus) = 1;
+        measuringTimes = ceil((mgsettings.t + eps * 10) * data.pmu(i, 7));
         mfreqPMU = mfreqPMU + measuringTimes;
         if data.pmu(i, 2) ~= - 1
             msynPMU = msynPMU + measuringTimes * (1 + numel(data.pmucurrch{i}));
         else
-            msynPMU = msynPMU + measuringTimes * (1 + nAdj(i));
+            msynPMU = msynPMU + measuringTimes * (1 + nAdj(bus));
         end
     end
     for i = 1:data.nScada
         mSCADA = mSCADA + ceil((mgsettings.t + eps) * data.scada(i, 5));
     end
     measurements.synpmu = zeros(msynPMU, 8);
-    measurements.fpmu = zeros(msynPMU, 6);
+    measurements.fpmu = zeros(mfreqPMU, 6);
     measurements.scada = zeros(mSCADA, 6);
     % power system dynamics 
     fmode = mgsettings.fdynamics(1);
@@ -127,10 +129,11 @@ elseif strcmp(mgsettings.mode, 'static')
     loadNo = 0;
     msynPMU = 0;
     for i = 1:data.nPmu
-        if data.pmu ~= - 1
+        bus = data.pmu(i, 1);
+        if data.pmu(i, 2) ~= - 1
             msynPMU = msynPMU + 1 + numel(data.pmucurrch{i});
         else
-            msynPMU = msynPMU + 1 + nAdj(i);
+            msynPMU = msynPMU + 1 + nAdj(bus);
         end 
     end
     measurements.synpmu = zeros(msynPMU, 8);
@@ -155,7 +158,7 @@ for i = 1:tstamps
         dynsettings.loadNo = loadNo;
         if loadNo == -1
             dynsettings.load = load(i);
-        elseif i / calcfreq == 1/5 * mgsettings.t
+        elseif i / calcfreq > 1/5 * mgsettings.t
             dynsettings.load = load;
         else
             dynsettings.loadNo = 0;
@@ -202,7 +205,7 @@ for i = 1:tstamps
             measurements.synpmu(c_synpmu, 2) = bus;
             measurements.synpmu(c_synpmu, 3) = 3;
             measurements.synpmu(c_synpmu, 4) = bus;
-            measurements.synpmu(c_synpmu, 5) = results.Vm(bus) * (1 + randn * data.pmu(j, 3));
+            measurements.synpmu(c_synpmu, 5) = results.Vm(bus) * (1 + randn * data.pmu(j, 3)/100);
             measurements.synpmu(c_synpmu, 6) = results.Va(bus)  + randn * data.pmu(j, 4) * pi / 180;
             measurements.synpmu(c_synpmu, 7) = results.Vm(bus);
             measurements.synpmu(c_synpmu, 8) = results.Va(bus);
@@ -279,7 +282,8 @@ for i = 1:tstamps
     end
 end
 if strcmp(mgsettings.mode, 'tracking')
-    measurements.calcFreq = calcfreq;
+    measurements.genFreq = calcfreq;
+    measurements.tstamps = tstamps;
     measurements.f = f;
 end
 
@@ -301,7 +305,7 @@ else
 end
 %------------------------------Save Case-----------------------------------
 home = getenv('USERPROFILE');
-path = strcat(home, '\PowerSystemComputations\data\measurements\TPSC', casename, ...
+path = strcat(home, '\TPSC\data\measurements\TPSC', casename, ...
     'M_', vrs);
 save(path, 'measurements')
 %--------------------------------------------------------------------------
