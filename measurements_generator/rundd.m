@@ -349,7 +349,7 @@ for i = 1:data.nPmu
                 j = j + 1;
             end
             if toThrow
-                connBuses(end - toThrow:end) = [];
+                connBuses((end - toThrow + 1):end) = [];
             end
         end
     end

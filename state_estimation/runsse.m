@@ -13,7 +13,7 @@ powsys = admittance_matrix(powsys);
 % -------------------------------------------------------------------------
 
 %----------------- Extract Useful Informations (Measurements) -------------
-meas = preprocess_meas(measurements);
+meas = preprocess_meas(powsys, measurements);
 %--------------------------------------------------------------------------
 
 % ---------------- Solve the state estimation problem ---------------------
@@ -21,6 +21,8 @@ tic
 if strcmp('complex', sesettings.domain)
     if strcmp('cgn_sse', sesettings.method)
         [ Vc, iter, converged, info ] = run_cgn_sse(powsys, meas, sesettings);
+    elseif strcmp('cec_sse', sesettings.method)
+        [ Vc, iter, converged, info ] = run_cec_sse(powsys, meas, sesettings);
     elseif strcmp('cls_sse', sesettings.method)
         [ Vc, iter, converged, info ] = run_cls_sse(powsys, meas);
     end
@@ -31,7 +33,7 @@ algtime = toc;
 % -------------------------------------------------------------------------
 
 % -------------------------- Show results ---------------------------------
-results.voltage = Vc;
+results.voltage = Vc(powsys.bus.busnew);
 results.converged = converged;
 results.iter = iter;
 results.algtime = algtime;

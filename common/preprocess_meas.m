@@ -37,11 +37,12 @@ if isfield(measurements, 'fpmu')
     meas.fpmu.onbus = measurements.fpmu(:, 2);
     meas.fpmu.m = measurements.fpmu(:, 3);
     meas.num.f = numel(meas.fpmu.onbus);
+    meas.fpmu.fsd = (powsys.pmu.fsd(meas.fpmu.onbus));
 end
 % -------------------------------------------------------------------------
-meas.pmu.msd = ((powsys.pmu.msd(meas.pmu.onbus) .* meas.pmu.m)/100) / 3;
-meas.pmu.asd = (powsys.pmu.asd(meas.pmu.onbus) * pi / 180)/3;
-meas.fpmu.fsd = (powsys.pmu.fsd(meas.fpmu.onbus)) / 3;
+[ ~, pmuidx ] = ismember(meas.pmu.onbus, powsys.pmu.onbus); 
+meas.pmu.msd = ((powsys.pmu.msd(pmuidx) .* meas.pmu.m)/100);
+meas.pmu.asd = (powsys.pmu.asd(pmuidx) * pi / 180);
 % -------------------------------------------------------------------------
 
 % ------------------------ Number of measurements -------------------------

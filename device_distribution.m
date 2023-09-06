@@ -11,7 +11,7 @@ clear
 % multiple different measurement sets on for a power system. All settings
 % are contained as field of the structure 'ddsettings'.
 %----------------------------Power System----------------------------------
-name = 'case39';
+name = 'case300';
 vrs = 'A';
 %--------------------------------------------------------------------------
 
@@ -26,7 +26,7 @@ vrs = 'A';
 
 % Using the field "scadaset", a user determines SCADA measurement devices
 % (RTUs) which are deployed in a grid. 
-ddsettings.scadaset = ["perc", "Pij", 0, "Qij", 0, "Pi", 0, "Qi", 0, "Iij", 0, "Vi", 0 ];
+ddsettings.scadaset = ["perc", "Pij", 0, "Qij", 0, "Pi", 90, "Qi", 70, "Iij", 0, "Vi", 90 ];
 % Using the field "scadavar", a user determines the variances of measurement devices
 % (RTUs) which are deployed in a grid.
 ddsettings.scadasd = [ "fixed", "complete", 0.005 ];
@@ -37,7 +37,7 @@ ddsettings.scadafreq = [ "complete", 1 ];
 %---------------------------Phasor Measurements----------------------------
 % Using the field "pmuset", a user determines PMU measurement devices
 % (PMUs) which are installed in a grid. 
-ddsettings.pmuset = [ "perc", 100, "currCh"  1 ]; %[ "perc", 95, "currCh" -1];
+ddsettings.pmuset = [ "perc", 80, "currCh"  1 ]; %[ "perc", 95, "currCh" -1];
 
 ddsettings.pmusd = [ "fixed", "magnitude", 0.7, "phase", 7e-3 * 180 / pi, ...
                       "frequency", 5, "rocof",  0.4, 0.4 ];
