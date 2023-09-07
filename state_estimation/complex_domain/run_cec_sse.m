@@ -150,9 +150,10 @@ jDsl = slackIdx;
 % -------------------------------------------------------------------------
 
 % ---------------------- Construct J matrix -------------------------------
+Zzi = sparse(2 * powsys.num.zi, 2 * powsys.num.zi);
 J11 = powsys.ybus.y(powsys.bus.zi, :);
 J = [           J11,            sparse(powsys.num.zi, powsys.num.bus);
-     sparse(powsys.num.zi, powsys.num.bus),    conj(J11)  ];
+        sparse(powsys.num.zi, powsys.num.bus),    conj(J11)  ];
 % -------------------------------------------------------------------------
 while iter < sesettings.maxNumberOfIter  
     % ----------------- Branch currents and injected currents -------------
@@ -242,18 +243,22 @@ while iter < sesettings.maxNumberOfIter
           angle(x(slackIdx))
           ];
     % ---------------------------------------------------------------------
+    % ----------------------------- Solve ---------------------------------
     H = [  C11         C12
          conj(C12)   conj(C11)
            D      conj(D)];
     h = [ c; conj(c); d ];
-    
-    % Solve
+    e = -J11 * x(powsys.bus.busnew);
     r = z - h;
-    dx = [(H' * W * H),    J'
-                J,        sparse(2 * powsys.num.zi, 2 * powsys.num.zi)  ] \ ...
+    dx = [ (H' * W * H),    J'
+                J,         Zzi  ] \ ...
                 [ H' * W * r; 
-                 zeros(2 * powsys.num.zi, 1)
+               e
+               conj(e)
                  ];
+    % ---------------------------------------------------------------------         
+             
+    % ------------------------ Check Convergence --------------------------
     x = x + dx(1:2 * powsys.num.bus); 
     if max(abs(dx(1:2 * powsys.num.bus))) < sesettings.eps
         converged = 1;
@@ -261,6 +266,7 @@ while iter < sesettings.maxNumberOfIter
     else
         iter = iter + 1;
     end
+    % ---------------------------------------------------------------------
 end
 % ----------------------- Estimator results -------------------------------
 Vc = x;

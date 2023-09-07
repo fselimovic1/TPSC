@@ -1,5 +1,5 @@
-function [ Vc, iter, converged, info ] = run_cls_sse(powsys, meas)
-info.method = 'Linear State Estimation (PMU only) in Complex Variables';
+function [ Vc, iter, converged, info ] = run_lcec_sse(powsys, meas)
+info.method = 'Linear Equality Constrained State Estimation (PMU only) in Complex Variables';
 % --------------------- Setting additional variables ----------------------
 iter = 1;
 converged = 1;
@@ -56,9 +56,15 @@ H = sparse(...
          );
 % -------------------------------------------------------------------------
 
+% ---------------------- Construct J matrix -------------------------------
+J = powsys.ybus.y(powsys.bus.zi, :);
+% -------------------------------------------------------------------------
 
 % --------------------------- Solve the LS problem ------------------------
-    x = (H' * W * H) \ (H' * W * z);
+x = [ H' * W * H,       J'
+       J    sparse(powsys.num.zi, powsys.num.zi) ] \ ...
+           [ H' *  W * z
+                 sparse(powsys.num.zi, 1) ];
 % -------------------------------------------------------------------------
 
 % ----------------------- Estimator results -------------------------------

@@ -4,7 +4,7 @@ clc
 clear
 
 % insert the name of Matpower case 
-caseName = 'case9';
+caseName = 'case39';
 
 data = eval(caseName);
 
@@ -34,6 +34,6 @@ data.fn = 50;
 data.case = caseName;
 
 home = getenv('USERPROFILE');
-path = strcat(home, '\PowerSystemComputations\data\power_systems\TPSC', caseName);
+path = strcat(home, '\TPSC\data\power_systems\TPSC', caseName);
 save(path,'data')
 
