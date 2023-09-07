@@ -1,4 +1,7 @@
 function runmg(casename, vrs, mgsettings)
+% ---------------------- Seed random number generator ---------------------
+rng('shuffle');
+% -------------------------------------------------------------------------
 measurements.mode = mgsettings.mode;
 % load data
 data = loadcase(casename, vrs);
@@ -226,7 +229,7 @@ for i = 1:tstamps
                 measurements.synpmu(c_synpmu, 2) = bus;
                 measurements.synpmu(c_synpmu, 3) = 1;
                 measurements.synpmu(c_synpmu, 4) = data.pmucurrch{j}(k);
-                measurements.synpmu(c_synpmu, 5) = Iijm * (1 + randn * data.pmu(j, 3) / 100);
+                measurements.synpmu(c_synpmu, 5) = Iijm  * (1 + randn * data.pmu(j, 3)/100);
                 measurements.synpmu(c_synpmu, 6) = Iija  + randn * data.pmu(j, 4) * pi / 180;
                 measurements.synpmu(c_synpmu, 7) = Iijm;
                 measurements.synpmu(c_synpmu, 8) = Iija; 

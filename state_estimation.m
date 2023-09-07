@@ -10,14 +10,14 @@ clearvars
 %--------------------------------------------------------------------------
 
 %------------------------- Power System Case ------------------------------
-casename = 'case9241pegase';
+casename = 'case13659pegase';
 vrs = 'A';
 %--------------------------------------------------------------------------
 
 %------------------- State estimaion solver - Settings --------------------
-sesettings.domain = 'complex';
-sesettings.method = 'cec_sse';
-sesettings.mweights = [ "pmuscadaratio", 1 ];
+sesettings.domain = 'real';
+sesettings.method = 'wls_rect_sse';
+sesettings.mweights = [ "deviceinfo", 1 ];
 sesettings.flatStart = 1;
 sesettings.maxNumberOfIter = 50;
 sesettings.eps = 1e-6;

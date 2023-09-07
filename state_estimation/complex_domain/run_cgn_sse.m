@@ -52,9 +52,13 @@ z = [ meas.pmu.m(meas.pmu.IijO) .* exp(1i .* meas.pmu.a(meas.pmu.IijO));
 % -------------------------------------------------------------------------
 
 % ------------------------ Measurements' weights --------------------------
-wIdx = [1:2 * meas.num.pmu + meas.num.scada, (slackIdx/slackIdx) * (2 * meas.num.pmu + meas.num.scada + 1)];
-W = sparse(wIdx, wIdx, [ str2double(sesettings.mweights(2)) .* ones( 2 * meas.num.pmu, 1);...
-           ones(meas.num.scada, 1); (slackIdx/slackIdx) * 100 ]);
+if strcmp(sesettings.mweights(1), "pmuscadaratio")
+    wIdx = [1:2 * meas.num.pmu + meas.num.scada, (slackIdx/slackIdx) * (2 * meas.num.pmu + meas.num.scada + 1)];
+    W = sparse(wIdx, wIdx, [ str2double(sesettings.mweights(2)) .* ones( 2 * meas.num.pmu, 1);...
+               ones(meas.num.scada, 1); (slackIdx/slackIdx) * 100 ]);
+elseif strcmp(sesettings.mweights(1), "deviceinfo")
+    
+end
 % -------------------------------------------------------------------------
 
 % ------------------------- Construct C11 matrix --------------------------

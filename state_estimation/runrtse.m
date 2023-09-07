@@ -70,7 +70,10 @@ for i = 1:dI:measurements.tstamps
         else
         end
     else
-        if strcmp(rtsesettings.method, 'fEKFrect')
+        if strcmp(rtsesettings.method, 'quasidyn')
+                [ X, iter, converged, info  ] = run_wls_rect_sse(powsys,...
+                meas);
+        elseif strcmp(rtsesettings.method, 'fEKFrect')
             % --------------------- Initial state variables ---------------
             if rtsesettings.initialStage
                 if rtsesettings.flatStart     
@@ -85,11 +88,9 @@ for i = 1:dI:measurements.tstamps
             end
             % -------------------------------------------------------------
             [ X, X_, converged, info ] = run_fEKFrect_rtse(powsys,...
-                meas, rtsesettings, X_);  
-            Vc = X(1:2:2 * powsys.num.bus - 1) + 1i .* X(2:2:2 * powsys.num.bus);
-            
-        else
+                meas, rtsesettings, X_);                
         end
+        Vc = X(1:2:2 * powsys.num.bus - 1) + 1i .* X(2:2:2 * powsys.num.bus);
     end
     % ---------------------------------------------------------------------
     if ~converged

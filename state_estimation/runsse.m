@@ -29,7 +29,11 @@ if strcmp('complex', sesettings.domain)
         [ Vc, iter, converged, info ] = run_lcec_sse(powsys, meas);
     end
 else
-    return
+    if strcmp('wls_rect_sse', sesettings.method)
+        [ Vc, iter, converged, info ] = run_wls_rect_sse(powsys, meas);
+        Vc = Vc(1:2:2*powsys.num.bus - 1) + 1i * Vc(2:2:2*powsys.num.bus);
+    else
+    end
 end
 algtime = toc;
 % -------------------------------------------------------------------------
