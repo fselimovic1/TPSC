@@ -1,12 +1,7 @@
 function [ Vc, iter, converged, info ] = run_cec_sse(powsys, meas, sesettings, varargin)
 info.method = 'Complex Equality Constrained Gauss-Newton';
 % -------------------- Eq. for the slack bus (no PMU case) ----------------
-nopmu = ~meas.num.pmu;
-if nopmu
-    slackIdx = powsys.num.islack;
-else
-    slackIdx = [];
-end
+nopmu =  ~meas.num.pmu;
 % -------------------------------------------------------------------------
 
 % --------------------- Setting additional variables ----------------------
@@ -46,14 +41,13 @@ z = [ meas.pmu.m(meas.pmu.IijO) .* exp(1i .* meas.pmu.a(meas.pmu.IijO));
       meas.scada.m(meas.scada.IijmO);
       meas.scada.m(meas.scada.Iijm);
       meas.scada.m(meas.scada.vm)
-      powsys.bus.Vai(slackIdx)
     ];
 % -------------------------------------------------------------------------
 
 % ------------------------ Measurements' weights --------------------------
-wIdx = [1:2 * meas.num.pmu + meas.num.scada, (slackIdx/slackIdx) * (2 * meas.num.pmu + meas.num.scada + 1)];
+wIdx = 1:2 * meas.num.pmu + meas.num.scada;
 W = sparse(wIdx, wIdx, [ str2double(sesettings.mweights(2)) .* ones( 2 * meas.num.pmu, 1);...
-           ones(meas.num.scada, 1); (slackIdx/slackIdx) * 100 ]);
+           ones(meas.num.scada, 1) ]);
 % -------------------------------------------------------------------------
 
 % ------------------------- Construct C11 matrix --------------------------
@@ -120,11 +114,6 @@ accI = accI + meas.num.sIijmO;
 iDibrM = [ (accI + (1:meas.num.sIijm)), (accI + (1:meas.num.sIijm)) ];
 accI = accI + meas.num.sIijm;
 iDvm = (accI + (1:meas.num.sVm));
-if nopmu
-    iDsl = meas.num.sVm + accI + 1;
-else
-    iDsl = [];
-end
 % -------------------------------------------------------------------------
 
 % --------------------------- Column indices ------------------------------
@@ -144,16 +133,21 @@ jDibrM = [ powsys.branch.i(meas.scada.loc(meas.scada.Iijm));...
            powsys.branch.j(meas.scada.loc(meas.scada.Iijm)) ];
 jDvm = (meas.scada.onbus(meas.scada.vm));
 
-jDsl = slackIdx;
-
 % -------------------------------------------------------------------------
 % -------------------------------------------------------------------------
 
 % ---------------------- Construct J matrix -------------------------------
-Zzi = sparse(2 * powsys.num.zi, 2 * powsys.num.zi);
-J11 = powsys.ybus.y(powsys.bus.zi, :);
-J = [           J11,            sparse(powsys.num.zi, powsys.num.bus);
-        sparse(powsys.num.zi, powsys.num.bus),    conj(J11)  ];
+rJzi = powsys.ybus.y(powsys.bus.zi, :);
+if nopmu
+    Zzi = sparse(2 * (powsys.num.zi + 1), 2 * (powsys.num.zi + 1));
+    rJsl = sparse(1, powsys.num.islack, -1i / 2, 1, powsys.num.bus);
+    J = [           [rJzi; rJsl],            sparse(powsys.num.zi + 1, powsys.num.bus);
+        sparse(powsys.num.zi + 1, powsys.num.bus),    conj([rJzi; rJsl])  ];
+else
+    Zzi = sparse(2 * powsys.num.zi, 2 * powsys.num.zi);
+    J = [           rJzi,            sparse(powsys.num.zi, powsys.num.bus);
+        sparse(powsys.num.zi, powsys.num.bus),    conj(rJzi)  ];
+end
 % -------------------------------------------------------------------------
 while iter < sesettings.maxNumberOfIter  
     % ----------------- Branch currents and injected currents -------------
@@ -210,16 +204,11 @@ while iter < sesettings.maxNumberOfIter
                 1/2 .* powsys.ybus.fromto(meas.scada.loc(meas.scada.Iijm)) ...
                 .* exp(-1i .* angle(Iij(meas.scada.loc(meas.scada.Iijm)))); ];
     vDvm = 1/2 .* exp(-1i .* angle(meas.scada.onbus(meas.scada.vm)));
-    if nopmu
-        vDsl = -1i/2;
-    else
-        vDsl = [];
-    end
     
     D = sparse(...
-               [ iDpbrO, iDpbr, iDqbrO, iDqbr, iDpinj, iDqinj, iDibrMO, iDibrM, iDvm, iDsl ], ...
-               [ jDpbrO; jDpbr; jDqbrO; jDqbr; jDpinj; jDqinj; jDibrMO; jDibrM; jDvm; jDsl ], ...
-               [ vDpbrO; vDpbr; vDqbrO; vDqbr; vDpinj; vDqinj; vDibrMO; vDibrM; vDvm; vDsl ] );
+               [ iDpbrO, iDpbr, iDqbrO, iDqbr, iDpinj, iDqinj, iDibrMO, iDibrM, iDvm ], ...
+               [ jDpbrO; jDpbr; jDqbrO; jDqbr; jDpinj; jDqinj; jDibrMO; jDibrM; jDvm ], ...
+               [ vDpbrO; vDpbr; vDqbrO; vDqbr; vDpinj; vDqinj; vDibrMO; vDibrM; vDvm ] );
     % ---------------------------------------------------------------------
     
     % --------------------------- h <-> PMU -------------------------------
@@ -240,7 +229,6 @@ while iter < sesettings.maxNumberOfIter
           abs(Iji(-meas.scada.loc(meas.scada.IijmO)));
           abs(Iij(meas.scada.loc(meas.scada.Iijm)));
           abs(x(meas.scada.onbus(meas.scada.vm)))
-          angle(x(slackIdx))
           ];
     % ---------------------------------------------------------------------
     % ----------------------------- Solve ---------------------------------
@@ -248,7 +236,12 @@ while iter < sesettings.maxNumberOfIter
          conj(C12)   conj(C11)
            D      conj(D)];
     h = [ c; conj(c); d ];
-    e = -J11 * x(powsys.bus.busnew);
+    if nopmu
+        e = [ -rJzi * x(powsys.bus.busnew);
+            powsys.bus.Vai(powsys.num.islack) - angle(x(powsys.num.islack))  ];
+    else
+        e = -rJzi * x(powsys.bus.busnew);
+    end
     r = z - h;
     dx = [ (H' * W * H),    J'
                 J,         Zzi  ] \ ...

@@ -57,7 +57,7 @@ if strcmp(sesettings.mweights(1), "pmuscadaratio")
     W = sparse(wIdx, wIdx, [ str2double(sesettings.mweights(2)) .* ones( 2 * meas.num.pmu, 1);...
                ones(meas.num.scada, 1); (slackIdx/slackIdx) * 100 ]);
 elseif strcmp(sesettings.mweights(1), "deviceinfo")
-    
+    W = [];
 end
 % -------------------------------------------------------------------------
 
