@@ -290,7 +290,6 @@ if strcmp(mgsettings.mode, 'tracking')
     measurements.f = f;
 end
 
-% Print messeage to a user
 % Print a message to a user
 fprintf('\tTOOLBOX FOR POWER SYSTEM COMPUTATIONS - MEASUREMENT GENERATOR\n')
 fprintf(['\tDate: ', datestr(now, 'dd.mm.yyyy HH:MM:SS \n\n')])

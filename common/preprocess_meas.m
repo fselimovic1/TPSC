@@ -17,13 +17,6 @@ meas.scada.qinj = find(meas.scada.type == 4);
 meas.scada.IijmO = find(meas.scada.type == 5 & meas.scada.loc < 0);
 meas.scada.Iijm = find(meas.scada.type == 5 & meas.scada.loc > 0);
 meas.scada.vm = find(meas.scada.type == 6);
-% ----------------------- Complex flow pair -------------------------------
-meas.scada.Sij = [];
-% -------------------------------------------------------------------------
-% ----------------------- Complex injection pairs -------------------------
-meas.scada.Sinj = [];
-% -------------------------------------------------------------------------
-
 % -------------------------------------------------------------------------
 
 % -------------------------- PMU Measurements -----------------------------
