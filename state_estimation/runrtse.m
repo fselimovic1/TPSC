@@ -67,7 +67,17 @@ for i = 1:dI:measurements.tstamps
             end
             % -------------------------------------------------------------
             [ Vc, iter, converged, info ] = run_cgn_sse(powsys, meas, rtsesettings, Vc);
-        else
+        elseif strcmp(rtsesettings.method, "pgne")
+            % --------------------- Initial state variables ---------------
+            if rtsesettings.initialStage
+                if rtsesettings.flatStart     
+                    Vc = ones(powsys.num.bus, 1);
+                else
+                    Vc = [ powsys.bus.Vmi .* exp(1i * powsys.bus.Vai) ];
+                end
+                [ Vc, iter, converged, info ] = run_pgne_rtse(powsys, meas, rtsesettings, Vc)
+            end
+            % -------------------------------------------------------------
         end
     else
         if strcmp(rtsesettings.method, 'quasidyn')
