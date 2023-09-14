@@ -302,6 +302,11 @@ while i <= nFreq
     end
     i = i + toAdd;
 end
+if sum(numInSetPMU) ~= data.nPmu
+    diff = data.nPmu - sum(numInSetPMU);
+    [ ~, setWithMax ] = max(numInSetPMU);
+    numInSetPMU(setWithMax) = numInSetPMU(setWithMax) + diff;
+end
 if nFreq && sum(numInSetPMU) ~= data.nPmu && ~strcmp(ddsettings.pmufreq(1), "complete")
    ME = MException('MyComponent:notDefinedBehaviour', ...
                    'Percentage of devices in the reporting rate groups must add to 100%.');

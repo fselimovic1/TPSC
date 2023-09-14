@@ -15,18 +15,19 @@ vrs = 'A';
 %--------------------------------------------------------------------------
 
 %----------------------------About Solver----------------------------------
-rtsesettings.domain = 'real';
-rtsesettings.method = 'fEKFrect';
-rtsesettings.mweights = [ "pmuscadaratio", 1 ];
-rtsesettings.fc = 25;
+rtsesettings.domain = 'complex';
+rtsesettings.method = 'pgne';
+rtsesettings.mweights = [ "pmuscadaratio", 100 ];
+rtsesettings.fc = 10;
 rtsesettings.flatStart = 1;
 rtsesettings.maxNumberOfIter = 50;
-rtsesettings.eps = 1e-6;
+rtsesettings.eps = 1e-8;
 rtsesettings.initialStage = 1;
 rtsesettings.realtimeplot = 1;
-rtsesettings.rtpbus = 27;
+rtsesettings.rtpbus = 15;
+rtsesettings.plotpause = 0;
 %--------------------------------------------------------------------------
 
-%--------------------------Static State Estimation-------------------------
+% -------------------------Static State Estimation-------------------------
 runrtse(casename, vrs, rtsesettings);
-%--------------------------------------------------------------------------
+% -------------------------------------------------------------------------

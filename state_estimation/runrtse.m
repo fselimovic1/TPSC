@@ -15,7 +15,7 @@ dI = measurements.genFreq/rtsesettings.fc;
 if dI ~= fix(dI)
 	error('Estimation/tracking frequency must be an integer divisor of the base measurements recieving frequency.');
 end
-estamps = ceil(measurements.tstamps/dI);
+tstamps = ceil(measurements.tstamps/dI);
 % -------------------------------------------------------------------------
 
 %----------------- Extract Useful Informations (Power System) -------------
@@ -27,7 +27,7 @@ powsys = admittance_matrix(powsys);
 % -------------------------------------------------------------------------
 
 % -------------------- Allocate memeory for the results -------------------
-results.Vc = complex(zeros(powsys.num.bus, estamps));
+results.Vc = complex(zeros(powsys.num.bus, tstamps));
 % -------------------------------------------------------------------------
 
 % ---------------------- Prepare real time plot ---------------------------
@@ -73,10 +73,10 @@ for i = 1:dI:measurements.tstamps
                 if rtsesettings.flatStart     
                     Vc = ones(powsys.num.bus, 1);
                 else
-                    Vc = [ powsys.bus.Vmi .* exp(1i * powsys.bus.Vai) ];
+                    Vc = powsys.bus.Vmi .* exp(1i * powsys.bus.Vai);
                 end
-                [ Vc, iter, converged, info ] = run_pgne_rtse(powsys, meas, rtsesettings, Vc)
             end
+            [ Vc, iter, converged, info ] = run_pgne_rtse(powsys, meas, rtsesettings, Vc);
             % -------------------------------------------------------------
         end
     else
@@ -114,7 +114,7 @@ for i = 1:dI:measurements.tstamps
     end
     % ---------------------------------------------------------------------
     % ---------------------------------------------------------------------
-    pause(0.1)
+    pause(rtsesettings.plotpause)
     rtsesettings.initialStage = false;
 end
 end

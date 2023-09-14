@@ -83,10 +83,10 @@ if strcmp("se", type)
     % ---------------------------------------------------------------------
     
     % -------------------- SCADA Measurement Devices ----------------------
-    powsys.scada.type = data.pmu(:, 2);
-    powsys.scada.onbus = data.pmu(:, 1);
-    powsys.pmu.rfreq = data.pmu(:, 5);
-    powsys.pmu.sd = data.pmu(:, 4);
+    powsys.scada.type = data.scada(:, 2);
+    powsys.scada.onbus = data.scada(:, 1);
+    powsys.scada.rfreq = data.scada(:, 5);
+    powsys.pmu.sd = data.scada(:, 4);
     % ---------------------------------------------------------------------
 end
 end
