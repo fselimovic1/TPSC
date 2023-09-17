@@ -2,6 +2,7 @@ function [ Vc, iter, converged, info ] = run_cec_sse(powsys, meas, sesettings, v
 info.method = 'Complex Equality Constrained Gauss-Newton';
 % -------------------- Eq. for the slack bus (no PMU case) ----------------
 nopmu =  ~meas.num.pmu;
+noscada = ~meas.num.scada;
 % -------------------------------------------------------------------------
 
 % --------------------- Setting additional variables ----------------------
@@ -253,7 +254,7 @@ while iter < sesettings.maxNumberOfIter
              
     % ------------------------ Check Convergence --------------------------
     x = x + dx(1:2 * powsys.num.bus); 
-    if max(abs(dx(1:2 * powsys.num.bus))) < sesettings.eps
+    if max(abs(dx(1:2 * powsys.num.bus))) < sesettings.eps || noscada
         converged = 1;
         break
     else

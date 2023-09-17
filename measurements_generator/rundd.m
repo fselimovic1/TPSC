@@ -158,7 +158,13 @@ if isRand
 else
     devs = sdPerType(1) * ones(nPerType(1), 1);
 end
-[ busidx, branchidx ] = randombranch(branchi, branchj, num.branch, nPerType(1));
+
+if nPerType(1) == num.branch
+    busidx = data.branch(:, 1);
+    branchidx = (1:num.branch)';
+else
+    [ busidx, branchidx ] = randombranch(branchi, branchj, num.branch, nPerType(1));
+end
 data.scada(1:nPerType(1), :) = [busidx, ones(nPerType(1), 1), branchidx,...
     devs,  freqPerType(1) * ones(nPerType(1), 1)];
 nextStart = 1 + nPerType(1);
@@ -168,7 +174,12 @@ if isRand
 else
     devs = sdPerType(2) * ones(nPerType(2), 1);
 end
-[ busidx, branchidx ] = randombranch(branchi, branchj, num.branch, nPerType(2));
+if nPerType(2) == num.branch
+    busidx = data.branch(:, 1);
+    branchidx = (1:num.branch)';
+else
+    [ busidx, branchidx ] = randombranch(branchi, branchj, num.branch, nPerType(2));
+end
 data.scada(nextStart:nextStart + nPerType(2) - 1, :) = [busidx, 2 * ones(nPerType(2), 1), branchidx,...
         devs,  freqPerType(2) * ones(nPerType(2), 1)];
 nextStart = nextStart + nPerType(2);
@@ -200,7 +211,12 @@ if isRand
 else
     devs = sdPerType(5) * ones(nPerType(5), 1);
 end
-[ busidx, branchidx ] = randombranch(branchi, branchj, num.branch, nPerType(5));
+if nPerType(5) == num.branch
+    busidx = data.branch(:, 1);
+    branchidx = (1:num.branch)';
+else
+    [ busidx, branchidx ] = randombranch(branchi, branchj, num.branch, nPerType(5));
+end
 data.scada(nextStart:nextStart + nPerType(5) - 1, :) = [busidx, 5 * ones(nPerType(5), 1), branchidx,...
     devs,  freqPerType(5) * ones(nPerType(5), 1)];
 nextStart = nextStart + nPerType(5);

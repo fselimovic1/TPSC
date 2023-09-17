@@ -3,6 +3,7 @@ info.method = 'Gauss-Newton in Complex Variables';
 
 % -------------------- Eq. for the slack bus (no PMU case) ----------------
 nopmu = ~meas.num.pmu;
+noscada = ~meas.num.scada;
 if nopmu
     slackIdx = powsys.num.islack;
 else
@@ -38,6 +39,7 @@ z = [ meas.pmu.m(meas.pmu.IijO) .* exp(1i .* meas.pmu.a(meas.pmu.IijO));
       meas.pmu.m(meas.pmu.Iij) .* exp(-1i .* meas.pmu.a(meas.pmu.Iij));
       meas.pmu.m(meas.pmu.v) .* exp(-1i .* meas.pmu.a(meas.pmu.v));
       meas.pmu.m(meas.pmu.Iinj) .* exp(-1i .* meas.pmu.a(meas.pmu.Iinj));
+      zeros(2 * powsys.num.zi * sesettings.virtual, 1);
       meas.scada.m(meas.scada.pijO);
       meas.scada.m(meas.scada.pij);
       meas.scada.m(meas.scada.qijO);
@@ -53,9 +55,10 @@ z = [ meas.pmu.m(meas.pmu.IijO) .* exp(1i .* meas.pmu.a(meas.pmu.IijO));
 
 % ------------------------ Measurements' weights --------------------------
 if strcmp(sesettings.mweights(1), "pmuscadaratio")
-    wIdx = [1:2 * meas.num.pmu + meas.num.scada, (slackIdx/slackIdx) * (2 * meas.num.pmu + meas.num.scada + 1)];
+    wIdx = [1:2 * meas.num.pmu + meas.num.scada + sesettings.virtual * 2 * powsys.num.zi,...
+           (slackIdx/slackIdx) * (2 * meas.num.pmu + meas.num.scada + 2 * sesettings.virtual * powsys.num.zi + 1)];
     W = sparse(wIdx, wIdx, [ str2double(sesettings.mweights(2)) .* ones( 2 * meas.num.pmu, 1);...
-               ones(meas.num.scada, 1); (slackIdx/slackIdx) * 100 ]);
+               25 .* ones(2 * powsys.num.zi * sesettings.virtual, 1); ones(meas.num.scada, 1); (slackIdx/slackIdx) * 25 ]);
 elseif strcmp(sesettings.mweights(1), "deviceinfo")
     W = [];
 end
@@ -63,12 +66,16 @@ end
 
 % ------------------------- Construct C11 matrix --------------------------
 [ rowInj, colInj ] = find(powsys.ybus.y(meas.pmu.loc(meas.pmu.Iinj), :));  
-
 % ---------------------------- Row indices --------------------------------
 iC11IijO = [ 1:meas.num.pIijO, 1:meas.num.pIijO ];
 iC11Iij = [ (meas.num.pIijO  + (1:meas.num.pIij)), (meas.num.pIijO  + (1:meas.num.pIij)) ];
 iC11V = (meas.num.pIijO + meas.num.pIij + (1:meas.num.pV));
 iC11Inj = meas.num.pIijO + meas.num.pIij + meas.num.pV + rowInj;
+if isempty(rowInj)
+    iMax = meas.num.pIijO + meas.num.pIij + meas.num.pV;
+else
+    iMax = meas.num.pIijO + meas.num.pIij + meas.num.pV + max(rowInj);
+end
 % -------------------------------------------------------------------------
 
 % ------------------------ Column indices ---------------------------------
@@ -94,11 +101,18 @@ vC11Inj = nonzeros(powsys.ybus.y(meas.pmu.loc(meas.pmu.Iinj), :));
 C11 = sparse(...
              [ iC11IijO, iC11Iij, iC11V, iC11Inj  ],... 
              [ jC11Iij0; jC11Iij; jC11V; jC11Inj  ], ...
-             [ vC11IijO; vC11Iij; vC11V; vC11Inj  ], ...
-             meas.num.pmu, powsys.num.bus...
-         );
+             [ vC11IijO; vC11Iij; vC11V; vC11Inj  ], meas.num.pmu, powsys.num.bus );
 % -------------------------------------------------------------------------
 
+% ---------------- OPTIONAL - Virtual current injection -------------------
+if sesettings.virtual
+    J = powsys.ybus.y(powsys.bus.zi,:); 
+    Zj = sparse(powsys.num.zi, powsys.num.bus);
+else
+    J = [];
+    Zj = [];
+end
+% -------------------------------------------------------------------------
 % ------------------------- Construct C12 Matrix -------------------------- 
 C12 = sparse(meas.num.pmu, powsys.num.bus);
 % -------------------------------------------------------------------------
@@ -228,6 +242,14 @@ while iter < sesettings.maxNumberOfIter
           ];
     % ---------------------------------------------------------------------
     
+    % ---------------------------- j <-> ZI -------------------------------
+    if sesettings.virtual
+        j = Ii(powsys.bus.zi);
+    else
+        j = [];
+    end
+    % ---------------------------------------------------------------------
+    
     % ----------------------------- d <-> SCADA ---------------------------
     d = [ real(Sji(-meas.scada.loc(meas.scada.pijO)));
           real(Sij(meas.scada.loc(meas.scada.pij)));
@@ -243,14 +265,16 @@ while iter < sesettings.maxNumberOfIter
     % ---------------------------------------------------------------------
     H = [  C11         C12
          conj(C12)   conj(C11)
+            J          Zj
+            Zj       conj(J)
            D      conj(D)];
-    h = [ c; conj(c); d ];
+    h = [ c; conj(c); j; conj(j); d ];
     
     % Solve
     r = z - h;
     dx = (H' * W * H) \ (H' * W * r);
     x = x + dx; 
-    if max(abs(dx)) < sesettings.eps
+    if max(abs(dx)) < sesettings.eps || noscada
         converged = 1;
         break
     else

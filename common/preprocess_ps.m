@@ -1,7 +1,7 @@
 function powsys = preprocess_ps(data, type)
 % -------------------- Number of elements in power sytem ------------------
 branchstatus = logical(data.branch(:, 11));
-genstatus = logical(data.generator(:, 8));
+genstatus = logical(data.generator(:, 8) + 1);
 powsys.num.bus = size(data.bus, 1);
 powsys.num.branch = sum(branchstatus);
 powsys.num.gen = sum(genstatus);

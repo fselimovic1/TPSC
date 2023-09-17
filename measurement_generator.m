@@ -7,14 +7,14 @@ clear
 
 %--------------------------Generate New Data-------------------------------
 %--------------------Power system with measurement devices-----------------
-casename = 'case39';
-vrs = 'A';
+casename = 'case118';
+vrs = 'C2';
 %--------------------------------------------------------------------------
 
 %---------------------------- State Estimation mode -----------------------
 % 'tracking' - measurements will be taken for a specific time period
 % 'static' - measurements will be taken for a single, distinct moment in time.
-mgsettings.mode = 'tracking';
+mgsettings.mode = 'static';
 %--------------------------------------------------------------------------
 
 %------------------------- Tracking SE options ----------------------------
