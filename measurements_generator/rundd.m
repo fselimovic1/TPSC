@@ -9,7 +9,7 @@ num.gen = size(data.generator, 1);
 num.islack = find(data.bus(:, 2) == 3);
 
 % renumber buses if needed
-bus = 1:num.bus;
+bus = (1:num.bus)';
 busi = data.bus(:, 1);
 branchi = data.branch(:, 1);
 branchj = data.branch(:, 2);
@@ -160,7 +160,7 @@ else
 end
 
 if nPerType(1) == num.branch
-    busidx = data.branch(:, 1);
+    busidx = branchi;
     branchidx = (1:num.branch)';
 else
     [ busidx, branchidx ] = randombranch(branchi, branchj, num.branch, nPerType(1));
@@ -175,7 +175,7 @@ else
     devs = sdPerType(2) * ones(nPerType(2), 1);
 end
 if nPerType(2) == num.branch
-    busidx = data.branch(:, 1);
+    busidx = branchi;
     branchidx = (1:num.branch)';
 else
     [ busidx, branchidx ] = randombranch(branchi, branchj, num.branch, nPerType(2));
@@ -212,7 +212,7 @@ else
     devs = sdPerType(5) * ones(nPerType(5), 1);
 end
 if nPerType(5) == num.branch
-    busidx = data.branch(:, 1);
+    busidx = branchi;
     branchidx = (1:num.branch)';
 else
     [ busidx, branchidx ] = randombranch(branchi, branchj, num.branch, nPerType(5));

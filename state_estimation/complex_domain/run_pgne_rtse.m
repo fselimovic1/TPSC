@@ -1,6 +1,8 @@
 function [ Vc, iter, converged, info ] = run_pgne_rtse(powsys, meas, rtsesettings, Vc)
 info.method = 'Complex Perturbed Gauss-Newton Estimator';
 info.paper = 'A Complex Variable Perturbed Gauss-Newton Method for Tracking Mode State Estimation';
+info.nonZerosInH = 0;
+info.redundancy = 0;
 % -------------------- Eq. for the slack bus (no PMU case) ----------------
 nopmu =  ~meas.num.pmu;
 % -------------------------------------------------------------------------
@@ -173,6 +175,8 @@ if rtsesettings.initialStage
                         J      sparse(nEQ, nEQ); ]);
     A = A - 1i .* imag(diag(diag(A)));
     [ L, D ] = ldl(A);
+    L = sparse(L);
+    D = sparse(D);
     % ---------------------------------------------------------------------
 end
 % -------------------------------------------------------------------------

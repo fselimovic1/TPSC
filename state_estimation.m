@@ -10,13 +10,13 @@ clearvars
 %--------------------------------------------------------------------------
 
 %------------------------- Power System Case ------------------------------
-casename = 'case118';
-vrs = 'C';
+casename = 'case9241pegase';
+vrs = 'D';
 %--------------------------------------------------------------------------
 
 %------------------- State estimaion solver - Settings --------------------
 sesettings.domain = 'complex';
-sesettings.method = 'cec_sse';
+sesettings.method = 'pgne';
 sesettings.mweights = [ "pmuscadaratio", 5 ];
 sesettings.virtual = 0;
 sesettings.flatStart = 0;
