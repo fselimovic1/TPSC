@@ -21,6 +21,8 @@ tic
 if strcmp('complex', sesettings.domain)
     if strcmp('cgn_sse', sesettings.method)
         [ Vc, iter, converged, info ] = run_cgn_sse(powsys, meas, sesettings);
+    elseif strcmp('ecgn_sse', sesettings.method)
+        [ Vc, iter, converged, info ] = run_ecgn_sse(powsys, meas, sesettings);
     elseif strcmp('cec_sse', sesettings.method)
         [ Vc, iter, converged, info ] = run_cec_sse(powsys, meas, sesettings);
     elseif strcmp('pgne', sesettings.method)
@@ -30,6 +32,8 @@ if strcmp('complex', sesettings.domain)
         [ Vc, iter, converged, info ] = run_cls_sse(powsys, meas);
     elseif strcmp('lcec_sse', sesettings.method)
         [ Vc, iter, converged, info ] = run_lcec_sse(powsys, meas);
+    else
+        error("Specified method does not exist.")
     end
 else
     if strcmp('wls_rect_sse', sesettings.method)

@@ -1,4 +1,4 @@
-function [ Vc, iter, converged, info ] = run_pgne_rtse(powsys, meas, rtsesettings, Vc)
+function [ Vc, iter, converged, info ] = run_pgne_tse(powsys, meas, tsesettings, Vc)
 info.method = 'Complex Perturbed Gauss-Newton Estimator';
 info.paper = 'A Complex Variable Perturbed Gauss-Newton Method for Tracking Mode State Estimation';
 info.nonZerosInH = 0;
@@ -19,7 +19,7 @@ x = Vc;
 
 % ------------ Matrices computed only at the inital run -------------------
     %---------------------------------------------------------------------
-if rtsesettings.initialStage
+if tsesettings.initialStage
     %------------------------ PMU measurement keys ------------------------
     zPh = zeros(meas.num.pmu, 1);
     zPhKeys = [ -meas.pmu.loc(meas.pmu.IijO)
@@ -155,7 +155,7 @@ if rtsesettings.initialStage
     
     % ---------------------- Measurement weights --------------------------
     wIdx = 1:(meas.num.pmu + numScada);
-    W = sparse(wIdx, wIdx, [ str2double(rtsesettings.mweights(2)) .* ones( meas.num.pmu, 1);...
+    W = sparse(wIdx, wIdx, [ str2double(tsesettings.mweights(2)) .* ones( meas.num.pmu, 1);...
            ones(numScada, 1) ]);
     % ---------------------------------------------------------------------
     % ---------------------- Construct J matrix ---------------------------
@@ -197,7 +197,7 @@ zPh([idxIijO; idxIij; idxV; idxIinj]) = [ ...
 % -------------------------------------------------------------------------
 % -------------------------------------------------------------------------
 
-while iter < rtsesettings.maxNumberOfIter 
+while iter < tsesettings.maxNumberOfIter 
     % ---------------------------- SCADA data ---------------------------------
     [ idxPijO, idxQijO ] = myintersect(meas.scada.loc, meas.scada.pijO, meas.scada.qijO);
     [ ~, idxSijO ] = ismember(-meas.scada.loc(idxPijO), zSKeys);
@@ -236,7 +236,7 @@ while iter < rtsesettings.maxNumberOfIter
                 ]));
     % ---------------------------------------------------------------------         
     % ------------------------ Check Convergence --------------------------
-    if max(abs(xnew(powsys.bus.busnew) - x)) < rtsesettings.eps
+    if max(abs(xnew(powsys.bus.busnew) - x)) < tsesettings.eps
         x = xnew(powsys.bus.busnew);
         converged = 1;
         break;
