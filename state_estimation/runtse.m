@@ -9,7 +9,7 @@ if ~strcmp(measurements.mode, "tracking")
 	error('Measurements are not generated in tracking mode. Real time state estimation reqiures measurement for a time interval.');
 end
 if measurements.genFreq < tsesettings.fc
-	error('Available measurements does not support the entered estimation frequency.');
+	error('Available measurements do not support the entered estimation frequency.');
 end
 dI = measurements.genFreq/tsesettings.fc;
 if dI ~= fix(dI)
@@ -46,7 +46,7 @@ if tsesettings.realtimeplot
     figure('Position', [100, 100, width*100, height*100]); % Position is in pixels
 
     rtpEst = animatedline('color', 'r');
-    rtpTrue = animatedline('Color','k', 'LineWidth', 1.5);
+    rtpTrue = animatedline('Color', 'k', 'LineWidth', 1.5);
 %     axis([0 round(measurements.tstamps/measurements.genFreq) 0.9 1.1])
     if ~tsesettings.plotForPaper
         str = ['Bus ', num2str(tsesettings.rtpbus), ' voltage magnitude'];
@@ -92,7 +92,7 @@ for i = 1:dI:measurements.tstamps
                     Vc = powsys.bus.Vmi .* exp(1i * powsys.bus.Vai);
                 end
             end
-            [ Vc, iter, converged, info ] = run_pgne_rtse(powsys, meas, tsesettings, Vc);
+            [ Vc, iter, converged, info ] = run_pgne_tse(powsys, meas, tsesettings, Vc);
             % -------------------------------------------------------------
         end
     else
@@ -113,7 +113,7 @@ for i = 1:dI:measurements.tstamps
                 end
             end
             % -------------------------------------------------------------
-            [ X, X_, converged, info ] = run_fEKFrect_rtse(powsys,...
+            [ X, X_, converged, info ] = run_fEKFrect_dse(powsys,...
                 meas, tsesettings, X_);                
         end
         Vc = X(1:2:2 * powsys.num.bus - 1) + 1i .* X(2:2:2 * powsys.num.bus);

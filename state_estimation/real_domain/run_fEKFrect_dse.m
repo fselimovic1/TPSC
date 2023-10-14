@@ -1,28 +1,28 @@
-function [ X, X_, converged, info ] = run_fEKFrect_rtse(powsys, meas, rtsesettings, X_)
-info.method = "Extended Kalman Filter with frequency tracking - rectangular coordinates";
-info.paper = [ 'New Kalman Filter Approach Exploiting Frequency ', ...
-     'Knowledge for Accurate PMU-based Power System State Estimation' ];
+function [ X, X_, converged, info ] = run_fEKFrect_dse(powsys, meas, dsesettings, X_)
+info.method = "Extended Kalman Filter with fRequency tracking - Rectangular coordinates";
+info.paper = [ 'New Kalman Filter Approach Exploiting FRequency ', ...
+     'Knowledge for Accurate PMU-based Power System State EstImation' ];
 % ------------------------- Variables definition --------------------------
 global H Q P_ iAidx jAidx iRidx jRidx;
-reidx = 1:2:2 * powsys.num.bus - 1;
-imidx = 2:2:2 * powsys.num.bus;
-Trr = 1 / rtsesettings.fc;
+Reidx = 1:2:2 * powsys.num.bus - 1;
+Imidx = 2:2:2 * powsys.num.bus;
+Trr = 1 / dsesettings.fc;
 % -------------------------------------------------------------------------
 
 % ------------ Matrices computed only at the inital run -------------------
-if rtsesettings.initialStage
+if dsesettings.initialStage
     % -------------------- Measurement matrix - H -------------------------
     accI = 0;
     % ------------------------ Row indices --------------------------------
-    iHibrOre = [ 1:meas.num.pIijO, 1:meas.num.pIijO, 1:meas.num.pIijO, 1:meas.num.pIijO ];
-    accI = accI + meas.num.pIijO;
-    iHibrOim = [ (accI + (1:meas.num.pIijO)), (accI + (1:meas.num.pIijO)),...
-                (accI + (1:meas.num.pIijO)), (accI + (1:meas.num.pIijO)) ];
-    accI = accI + meas.num.pIijO; 
-    iHibrRe = [ (accI + (1:meas.num.pIij)), (accI + (1:meas.num.pIij)),...
+    iHIjiRe = [ 1:meas.num.pIji, 1:meas.num.pIji, 1:meas.num.pIji, 1:meas.num.pIji ];
+    accI = accI + meas.num.pIji;
+    iHIjiIm = [ (accI + (1:meas.num.pIji)), (accI + (1:meas.num.pIji)),...
+                (accI + (1:meas.num.pIji)), (accI + (1:meas.num.pIji)) ];
+    accI = accI + meas.num.pIji; 
+    iHIijRe = [ (accI + (1:meas.num.pIij)), (accI + (1:meas.num.pIij)),...
                 (accI + (1:meas.num.pIij)), (accI + (1:meas.num.pIij)) ];
     accI = accI + meas.num.pIij;         
-    iHibrIm = [ (accI + (1:meas.num.pIij)), (accI + (1:meas.num.pIij)),...
+    iHIijIm = [ (accI + (1:meas.num.pIij)), (accI + (1:meas.num.pIij)),...
                 (accI + (1:meas.num.pIij)), (accI + (1:meas.num.pIij)) ]; 
     accI = accI + meas.num.pIij; 
     iHvRe = (accI + (1:meas.num.pV));
@@ -33,67 +33,67 @@ if rtsesettings.initialStage
     % ---------------------------------------------------------------------
     
     % -------------------------- Column indices ---------------------------
-    jHibrO = [ 2 .* powsys.branch.i(-meas.pmu.loc(meas.pmu.IijO)) - 1; 
-               2 .* powsys.branch.i(-meas.pmu.loc(meas.pmu.IijO));
-               2 .* powsys.branch.j(-meas.pmu.loc(meas.pmu.IijO)) - 1;
-               2 .* powsys.branch.j(-meas.pmu.loc(meas.pmu.IijO)) ];
-    jHibr = [  2 .* powsys.branch.i(meas.pmu.loc(meas.pmu.Iij)) - 1; 
-               2 .* powsys.branch.i(meas.pmu.loc(meas.pmu.Iij));
-               2 .* powsys.branch.j(meas.pmu.loc(meas.pmu.Iij)) - 1;
-               2 .* powsys.branch.j(meas.pmu.loc(meas.pmu.Iij)) ];
+    jHIji = [ 2 .* powsys.ijanch.i(-meas.pmu.loc(meas.pmu.Iji)) - 1; 
+               2 .* powsys.ijanch.i(-meas.pmu.loc(meas.pmu.Iji));
+               2 .* powsys.ijanch.j(-meas.pmu.loc(meas.pmu.Iji)) - 1;
+               2 .* powsys.ijanch.j(-meas.pmu.loc(meas.pmu.Iji)) ];
+    jHIij = [  2 .* powsys.ijanch.i(meas.pmu.loc(meas.pmu.Iij)) - 1; 
+               2 .* powsys.ijanch.i(meas.pmu.loc(meas.pmu.Iij));
+               2 .* powsys.ijanch.j(meas.pmu.loc(meas.pmu.Iij)) - 1;
+               2 .* powsys.ijanch.j(meas.pmu.loc(meas.pmu.Iij)) ];
     jHvRe  = 2 .* meas.pmu.onbus(meas.pmu.v) - 1;
     jHvIm  = 2 .* meas.pmu.onbus(meas.pmu.v);
     jHf = (2 * powsys.num.bus + 1) .* ones(meas.num.f, 1);
     % ---------------------------------------------------------------------
     
     % ----------------------- Elements' values ----------------------------
-    vHibrOre = [ real(powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.IijO)));
-                 -imag(powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.IijO)));
-                 real(powsys.ybus.toto(-meas.pmu.loc(meas.pmu.IijO)));
-                 -imag(powsys.ybus.toto(-meas.pmu.loc(meas.pmu.IijO)))];
-    vHibrOim = [ imag(powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.IijO)));
-                 real(powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.IijO)));
-                 imag(powsys.ybus.toto(-meas.pmu.loc(meas.pmu.IijO)));
-                 real(powsys.ybus.toto(-meas.pmu.loc(meas.pmu.IijO)))];
-    vHibrRe = [   real(powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.Iij)));
-                 -imag(powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.Iij)));
-                 real(powsys.ybus.fromto(meas.pmu.loc(meas.pmu.Iij)));
-                 -imag(powsys.ybus.fromto(meas.pmu.loc(meas.pmu.Iij)))];
-    vHibrIm = [ imag(powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.Iij)));
-                 real(powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.Iij)));
-                 imag(powsys.ybus.fromto(meas.pmu.loc(meas.pmu.Iij)));
-                 real(powsys.ybus.fromto(meas.pmu.loc(meas.pmu.Iij)))];
+    vHIjiRe = [ Real(powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.Iji)));
+                 -Imag(powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.Iji)));
+                 Real(powsys.ybus.toto(-meas.pmu.loc(meas.pmu.Iji)));
+                 -Imag(powsys.ybus.toto(-meas.pmu.loc(meas.pmu.Iji)))];
+    vHIjiIm = [ Imag(powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.Iji)));
+                 Real(powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.Iji)));
+                 Imag(powsys.ybus.toto(-meas.pmu.loc(meas.pmu.Iji)));
+                 Real(powsys.ybus.toto(-meas.pmu.loc(meas.pmu.Iji)))];
+    vHIijRe = [   Real(powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.Iij)));
+                 -Imag(powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.Iij)));
+                 Real(powsys.ybus.fromto(meas.pmu.loc(meas.pmu.Iij)));
+                 -Imag(powsys.ybus.fromto(meas.pmu.loc(meas.pmu.Iij)))];
+    vHIijIm = [ Imag(powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.Iij)));
+                 Real(powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.Iij)));
+                 Imag(powsys.ybus.fromto(meas.pmu.loc(meas.pmu.Iij)));
+                 Real(powsys.ybus.fromto(meas.pmu.loc(meas.pmu.Iij)))];
     vHv = ones(meas.num.pV, 1);
     vHf = ones(meas.num.f, 1);
     % ---------------------------------------------------------------------
-    H = sparse([ iHibrOre, iHibrOim, iHibrRe, iHibrIm, iHvRe, iHvIm, iHf ],...
-               [ jHibrO; jHibrO; jHibr; jHibr; jHvRe; jHvIm; jHf ],...
-               [ vHibrOre; vHibrOim; vHibrRe; vHibrIm; vHv; vHv; vHf ]);
+    H = sparse([ iHIjiRe, iHIjiIm, iHIijRe, iHIijIm, iHvRe, iHvIm, iHf ],...
+               [ jHIji; jHIji; jHIij; jHIij; jHvRe; jHvIm; jHf ],...
+               [ vHIjiRe; vHIjiIm; vHIijRe; vHIijIm; vHv; vHv; vHf ]);
     % ---------------------------------------------------------------------
     
-    % ------------------ Measurement noise covarinace matrix --------------
+    % ------------------ MeasuRement noise covarinace matrix --------------
     % ----------------------------- Row indices ---------------------------
-    accI = meas.num.pIijO;
-    iRIbrO = [ (1:meas.num.pIijO), accI + (1:meas.num.pIijO)]; 
-    accI = accI + meas.num.pIijO;
-    iRIbr = [ accI + (1:meas.num.pIij), accI + meas.num.pIij + (1:meas.num.pIij)];
+    accI = meas.num.pIji;
+    iRIji = [ (1:meas.num.pIji), accI + (1:meas.num.pIji)]; 
+    accI = accI + meas.num.pIji;
+    iRIij = [ accI + (1:meas.num.pIij), accI + meas.num.pIij + (1:meas.num.pIij)];
     accI = accI + 2 * meas.num.pIij;
     iRv = [ accI + (1:meas.num.pV), accI + meas.num.pV + (1:meas.num.pV)];
     accI = accI + 2 * meas.num.pV;
     iRf =  accI + (1:meas.num.f);
-    iRidx = [ iRIbrO, iRIbr, iRv, iRf ];
+    iRidx = [ iRIji, iRIij, iRv, iRf ];
     % ---------------------------------------------------------------------
 
     % ---------------------------- Column indices -------------------------
-    accJ = meas.num.pIijO;
-    jRIbrO = [ 1:meas.num.pIijO, accJ + (1:meas.num.pIijO) ];
-    accJ = accJ + meas.num.pIijO;
-    jRIbr = [ (accJ + (1:meas.num.pIij)), accJ + meas.num.pIij + (1:meas.num.pIij)];
+    accJ = meas.num.pIji;
+    jRIji = [ 1:meas.num.pIji, accJ + (1:meas.num.pIji) ];
+    accJ = accJ + meas.num.pIji;
+    jRIij = [ (accJ + (1:meas.num.pIij)), accJ + meas.num.pIij + (1:meas.num.pIij)];
     accJ = accJ + 2 * meas.num.pIij;   
     jRv = [ (accJ + (1:meas.num.pV)), accJ + meas.num.pV + (1:meas.num.pV)];
     accJ = accJ + 2 * meas.num.pV;
     jRf = accJ + (1:meas.num.f);
-    jRidx = [ jRIbrO, jRIbr, jRv, jRf ];
+    jRidx = [ jRIji, jRIij, jRv, jRf ];
     % ---------------------------------------------------------------------
     % ---------------------------------------------------------------------
 
@@ -101,23 +101,23 @@ if rtsesettings.initialStage
     Q = 10^-4.* eye(2 * powsys.num.bus + 1);
     % ---------------------------------------------------------------------
     
-    % -------------------- Initial prediction covariance ------------------
+    % -------------------- Initial pRediction covariance ------------------
     P_ = 10 * eye(2 * powsys.num.bus + 1);
     % ---------------------------------------------------------------------
     
     % -------- Row and column indices of the state process Jacobian -------
-    iAidx = [ (1:2 * powsys.num.bus), (1:2 * powsys.num.bus), reidx, imidx,  2 * powsys.num.bus + 1];
-    jAidx = [ (1:2 * powsys.num.bus), reshape([imidx; ...
-               reidx], 1, []), (2 * powsys.num.bus  + 1)...
+    iAidx = [ (1:2 * powsys.num.bus), (1:2 * powsys.num.bus), Reidx, Imidx,  2 * powsys.num.bus + 1];
+    jAidx = [ (1:2 * powsys.num.bus), Reshape([Imidx; ...
+               Reidx], 1, []), (2 * powsys.num.bus  + 1)...
                .* ones(1, 2 * powsys.num.bus + 1)];
     % ---------------------------------------------------------------------
 end
 % -------------------------------------------------------------------------
 
-% ------------------------ Measurements vector ----------------------------
+% ------------------------ MeasuRements vector ----------------------------
 z = [
-      meas.pmu.m(meas.pmu.IijO) .* cos(meas.pmu.a(meas.pmu.IijO));
-      meas.pmu.m(meas.pmu.IijO) .* sin(meas.pmu.a(meas.pmu.IijO));
+      meas.pmu.m(meas.pmu.Iji) .* cos(meas.pmu.a(meas.pmu.Iji));
+      meas.pmu.m(meas.pmu.Iji) .* sin(meas.pmu.a(meas.pmu.Iji));
       meas.pmu.m(meas.pmu.Iij) .* cos(meas.pmu.a(meas.pmu.Iij));
       meas.pmu.m(meas.pmu.Iij) .* sin(meas.pmu.a(meas.pmu.Iij));
       meas.pmu.m(meas.pmu.v) .* cos(meas.pmu.a(meas.pmu.v));
@@ -128,16 +128,16 @@ z = [
     ];
 % -------------------------------------------------------------------------
 
-% -------------- Measurements covariance matrix - R -----------------------
+% -------------- MeasuRements covariance matrix - R -----------------------
 % ----------------- Compute values of the elements ------------------------
-vRIbrO = [ (cos(meas.pmu.a(meas.pmu.IijO)).^2) .* (meas.pmu.msd(meas.pmu.IijO) .^2)...
-            + meas.pmu.m(meas.pmu.IijO).^2 .* (sin(meas.pmu.a(meas.pmu.IijO)).^2) .* ...
-            (meas.pmu.asd(meas.pmu.IijO) .^2);...
-            (sin(meas.pmu.a(meas.pmu.IijO)).^2) .* (meas.pmu.msd(meas.pmu.IijO) .^2)...
-            + meas.pmu.m(meas.pmu.IijO).^2 .* (cos(meas.pmu.a(meas.pmu.IijO)).^2) .* ...
-            (meas.pmu.asd(meas.pmu.IijO) .^2);
+vRIji = [ (cos(meas.pmu.a(meas.pmu.Iji)).^2) .* (meas.pmu.msd(meas.pmu.Iji) .^2)...
+            + meas.pmu.m(meas.pmu.Iji).^2 .* (sin(meas.pmu.a(meas.pmu.Iji)).^2) .* ...
+            (meas.pmu.asd(meas.pmu.Iji) .^2);...
+            (sin(meas.pmu.a(meas.pmu.Iji)).^2) .* (meas.pmu.msd(meas.pmu.Iji) .^2)...
+            + meas.pmu.m(meas.pmu.Iji).^2 .* (cos(meas.pmu.a(meas.pmu.Iji)).^2) .* ...
+            (meas.pmu.asd(meas.pmu.Iji) .^2);
              ];      
-vRIbr = [ (cos(meas.pmu.a(meas.pmu.Iij)).^2) .* (meas.pmu.msd(meas.pmu.Iij) .^2)...
+vRIij = [ (cos(meas.pmu.a(meas.pmu.Iij)).^2) .* (meas.pmu.msd(meas.pmu.Iij) .^2)...
             + meas.pmu.m(meas.pmu.Iij).^2 .* (sin(meas.pmu.a(meas.pmu.Iij)).^2) .* ...
             (meas.pmu.asd(meas.pmu.Iij) .^2);...
             (sin(meas.pmu.a(meas.pmu.Iij)).^2) .* (meas.pmu.msd(meas.pmu.Iij) .^2)...
@@ -152,7 +152,7 @@ vRv = [ (cos(meas.pmu.a(meas.pmu.v)).^2) .* (meas.pmu.msd(meas.pmu.v) .^2)...
             (meas.pmu.asd(meas.pmu.v) .^2);
              ];    
 vRf = (meas.fpmu.fsd).^2;
-vR = [ vRIbrO; vRIbr; vRv; vRf ];
+vR = [ vRIji; vRIij; vRv; vRf ];
 % -------------------------------------------------------------------------
 R = sparse(iRidx, jRidx, vR);
 % -------------------------------------------------------------------------
@@ -165,12 +165,12 @@ P = (eye(2 * powsys.num.bus + 1) - K * H) * P_;
 
 % ------------------------- Prediction step -------------------------------
 dA = 2 * pi * X(2 * powsys.num.bus + 1) * Trr;
-X_ =  [ reshape([ (X(reidx) * cos(dA) - X(imidx) * sin(dA)).'; (X(reidx) *...
-        sin(dA) + X(imidx) * cos(dA)).' ], [], 1); X(2 * powsys.num.bus + 1) ];
+X_ =  [ Reshape([ (X(Reidx) * cos(dA) - X(Imidx) * sin(dA)).'; (X(Reidx) *...
+        sin(dA) + X(Imidx) * cos(dA)).' ], [], 1); X(2 * powsys.num.bus + 1) ];
 % ------------------------ Calculate values of A --------------------------
-vA = [ ones(2 * powsys.num.bus, 1); - dA .* ones(2 * powsys.num.bus, 1); ...
-       [ -X(reidx) .* (2 * pi * Trr)^2 * X(2 * powsys.num.bus + 1) - X(imidx) .* 2 * pi * Trr;
-         -X(imidx) .* (2 * pi * Trr)^2 * X(2 * powsys.num.bus + 1) + X(reidx) .* 2 * pi * Trr]; 1 ];
+vA = [   ones(2 * powsys.num.bus, 1); - dA .* ones(2 * powsys.num.bus, 1); ...
+       [ -X(Reidx) .* (2 * pi * Trr)^2 * X(2 * powsys.num.bus + 1) - X(Imidx) .* 2 * pi * Trr;
+         -X(Imidx) .* (2 * pi * Trr)^2 * X(2 * powsys.num.bus + 1) + X(Reidx) .* 2 * pi * Trr]; 1 ];
 A = sparse(iAidx, jAidx, vA);
 
 P_ = A * P * A.' + Q;
