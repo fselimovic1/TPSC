@@ -28,6 +28,11 @@ powsys = admittance_matrix(powsys);
 
 % -------------------- Allocate memeory for the results -------------------
 results.Vc = complex(zeros(powsys.num.bus, tstamps));
+rmse.vm = zeros(tstamps, 1);
+rmse.va = zeros(tstamps, 1);
+if strcmp(tsesettings.method, 'fEKFrect')
+    results.f = zeros(tstamps, 1);
+end
 % -------------------------------------------------------------------------
 
 
@@ -43,7 +48,7 @@ if tsesettings.realtimeplot
     width = 3.5;   % Width of the figure in inches
     height = 2.8;  % Height of the figure in inches
     % Create a new figure with the specified size
-    figure('Position', [100, 100, width*100, height*100]); % Position is in pixels
+    figure('Position', [100, 100, width * 100, height * 100]); % Position is in pixels
 
     rtpEst = animatedline('color', 'r');
     rtpTrue = animatedline('Color', 'k', 'LineWidth', 1.5);
@@ -114,7 +119,8 @@ for i = 1:dI:measurements.tstamps
             end
             % -------------------------------------------------------------
             [ X, X_, converged, info ] = run_fEKFrect_dse(powsys,...
-                meas, tsesettings, X_);                
+                meas, tsesettings, X_);       
+            results.f(i) = 50 + X(2 * powsys.num.bus + 1);
         end
         Vc = X(1:2:2 * powsys.num.bus - 1) + 1i .* X(2:2:2 * powsys.num.bus);
     end
@@ -136,11 +142,20 @@ for i = 1:dI:measurements.tstamps
     end
     % ---------------------------------------------------------------------
     % ---------------------------------------------------------------------
+    
+    % ----------------------- Compute RMSE  -------------------------------
+    rmse.vm(ceil(i/dI)) = sqrt(sum(abs(abs(measurements.trueVoltage(:, i))... 
+                        - abs(Vc(1:powsys.num.bus)))));
+    rmse.va(ceil(i/dI)) = sqrt(sum(abs(angle(measurements.trueVoltage(:, i))...
+                        - angle(Vc(1:powsys.num.bus)))));
+    % ---------------------------------------------------------------------
+    results.Vc(:, i) = Vc;
     pause(tsesettings.plotpause)
     tsesettings.initialStage = false;
 end
 if tsesettings.measureTime
     fprintf("PGNE requires %.2f [ms] in average.\n", mean(times) * 1000);
 end
+results.rmse = rmse;
 end
 

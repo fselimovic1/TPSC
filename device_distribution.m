@@ -11,8 +11,8 @@ clear
 % multiple different measurement sets for a power system. All settings
 % are contained within the structure 'ddsettings'.
 %----------------------------Power System----------------------------------
-name = 'case118';
-vrs = 'TB';
+name = 'case39';
+vrs = 'TA';
 %--------------------------------------------------------------------------
 
 %---------------------------Legacy measurements----------------------------
@@ -37,12 +37,12 @@ ddsettings.scadafreq = [ "complete", 1 ];
 %---------------------------Phasor Measurements----------------------------
 % Using the field "pmuset", a user determines PMU measurement devices
 % (PMUs) which are installed in a grid. 
-ddsettings.pmuset = [ "num", 118, "currCh", 1 ]; %[ "perc", 95, "currCh" -1];
+ddsettings.pmuset = [ "num", 39, "currCh", 1 ]; %[ "perc", 95, "currCh" -1];
 
-ddsettings.pmusd = [ "fixed", "magnitude", 0.7, "phase", 0.7e-2 * 180 / pi, ...
-                      "frequency", 5, "rocof",  0.4 ];
+ddsettings.pmusd = [ "fixed", "magnitude", 0.7 * 1/3, "phase", 1/3 * 0.7e-2 * 180 / pi, ...
+                      "frequency", 1/3 * 5, "rocof",  0.4 ];
 
-ddsettings.pmufreq = [ "complete", 50 ];%[ "P100", 50 "P50", 20, "P25", 10, "P10", 20 ];
+ddsettings.pmufreq = [ "complete", 10 ];%[ "P100", 50 "P50", 20, "P25", 10, "P10", 20 ];
 %--------------------------------------------------------------------------
 
 %------------------------- Run Device Distribution ------------------------
