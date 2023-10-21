@@ -1,5 +1,5 @@
-function [ X, X_, converged, info ] = run_fEKFrect_dse(powsys, meas, dsesettings, X_)
-info.method = "Extended Kalman Filter with fRequency tracking - Rectangular coordinates";
+function [ x, x_, converged, info ] = run_fEKFrect_dse(powsys, meas, dsesettings, x_)
+info.method = "Extended Kalman Filter with frequency tracking - Rectangular coordinates";
 info.paper = [ 'New Kalman Filter Approach Exploiting Frequency ', ...
                'Knowledge for Accurate PMU-based Power System State Estimation' ];
 % ------------------------- Variables definition --------------------------
@@ -13,6 +13,8 @@ Trr = 1 / dsesettings.fc;
 if dsesettings.initialStage
     % -------------------- Measurement matrix - H -------------------------
     accI = 0;
+    [ rowInj, colInj ] = find(powsys.ybus.y(meas.pmu.loc(meas.pmu.Iinj), :));  
+    nnzY = nonzeros(powsys.ybus.y(meas.pmu.loc(meas.pmu.Iinj), :));
     % ------------------------ Row indices --------------------------------
     iHIjiRe = [ 1:meas.num.pIji, 1:meas.num.pIji, 1:meas.num.pIji, 1:meas.num.pIji ];
     accI = accI + meas.num.pIji;
@@ -29,7 +31,12 @@ if dsesettings.initialStage
     accI = accI + meas.num.pV; 
     iHvIm = (accI + (1:meas.num.pV));
     accI = accI + meas.num.pV;
+    iHIiRe = [ accI + rowInj, accI + rowInj ];
+    accI = accI + meas.num.pIinj;
+    iHIiIm = [ accI + rowInj, accI + rowInj ];
+    accI = accI + meas.num.pIinj;    
     iHf = (accI + (1:meas.num.f));
+    accI = accI + meas.num.f;
     % ---------------------------------------------------------------------
     
     % -------------------------- Column indices ---------------------------
@@ -43,6 +50,8 @@ if dsesettings.initialStage
                2 .* powsys.branch.j(meas.pmu.loc(meas.pmu.Iij)) ];
     jHvRe  = 2 .* meas.pmu.onbus(meas.pmu.v) - 1;
     jHvIm  = 2 .* meas.pmu.onbus(meas.pmu.v);
+    jHIiRe = [ (2 * colInj - 1); 2 * colInj ];
+    jHIiIm = [ (2 * colInj - 1); 2 * colInj ];
     jHf = (2 * powsys.num.bus + 1) .* ones(meas.num.f, 1);
     % ---------------------------------------------------------------------
     
@@ -64,14 +73,34 @@ if dsesettings.initialStage
                  imag(powsys.ybus.fromto(meas.pmu.loc(meas.pmu.Iij)));
                  real(powsys.ybus.fromto(meas.pmu.loc(meas.pmu.Iij)))];
     vHv = ones(meas.num.pV, 1);
+    vHIiRe = [ real(nnzY), -imag(nnzY) ];
+    vHIiIm = [ imag(nnzY),  real(nnzY) ];
     vHf = ones(meas.num.f, 1);
     % ---------------------------------------------------------------------
-    H = sparse([ iHIjiRe, iHIjiIm, iHIijRe, iHIijIm, iHvRe, iHvIm, iHf ],...
-               [ jHIji; jHIji; jHIij; jHIij; jHvRe; jHvIm; jHf ],...
-               [ vHIjiRe; vHIjiIm; vHIijRe; vHIijIm; vHv; vHv; vHf ]);
+    if dsesettings.virtual
+        [ rowZI, colZI ] = find(powsys.ybus.y(powsys.bus.zi, :));  
+        nnzY = nonzeros(powsys.ybus.y(powsys.bus.zi, :));
+        % ---------------------- Row indices ------------------------------
+        iZI = [ rowZI', rowZI' ];       
+        % -----------------------------------------------------------------
+        % -------------------- Column indices -----------------------------
+        jZI = [ (2 * colZI - 1); 2 * colZI ];
+        % -----------------------------------------------------------------
+        % -------------------------- Values -------------------------------
+        vZI_Re = [ real(nnzY); -imag(nnzY) ];
+        vZI_Im = [ imag(nnzY);  real(nnzY) ];
+        % -----------------------------------------------------------------
+        H = sparse([ iHIjiRe, iHIjiIm, iHIijRe, iHIijIm, iHvRe, iHvIm, iHIiRe', iHIiIm', iHf, accI + iZI, accI + powsys.num.zi + iZI ],...
+                   [ jHIji; jHIji; jHIij; jHIij; jHvRe; jHvIm; jHIiRe; jHIiIm; jHf;  jZI; jZI ],...
+                   [ vHIjiRe; vHIjiIm; vHIijRe; vHIijIm; vHv; vHv; vHIiRe; vHIiIm; vHf; vZI_Re; vZI_Im ]);
+    else
+        H = sparse([ iHIjiRe, iHIjiIm, iHIijRe, iHIijIm, iHvRe, iHvIm, iHIiRe, iHIiIm, iHf ],...
+                   [ jHIji; jHIji; jHIij; jHIij; jHvRe; jHvIm; jHIiRe; jHIiIm; jHf ],...
+                   [ vHIjiRe; vHIjiIm; vHIijRe; vHIijIm; vHv; vHv; vHIiRe; vHIiIm; vHf ]);
+    end
     % ---------------------------------------------------------------------
     
-    % ------------------ MeasuRement noise covarinace matrix --------------
+    % ------------------ Measurement noise covarinace matrix --------------
     % ----------------------------- Row indices ---------------------------
     accI = meas.num.pIji;
     iRIji = [ (1:meas.num.pIji), accI + (1:meas.num.pIji)]; 
@@ -81,7 +110,8 @@ if dsesettings.initialStage
     iRv = [ accI + (1:meas.num.pV), accI + meas.num.pV + (1:meas.num.pV)];
     accI = accI + 2 * meas.num.pV;
     iRf =  accI + (1:meas.num.f);
-    iRidx = [ iRIji, iRIij, iRv, iRf ];
+    accI = accI + meas.num.f;
+    iRidx = [ iRIji, iRIij, iRv, iRf, accI + 1:(2 * powsys.num.zi * dsesettings.virtual)];
     % ---------------------------------------------------------------------
 
     % ---------------------------- Column indices -------------------------
@@ -93,7 +123,8 @@ if dsesettings.initialStage
     jRv = [ (accJ + (1:meas.num.pV)), accJ + meas.num.pV + (1:meas.num.pV)];
     accJ = accJ + 2 * meas.num.pV;
     jRf = accJ + (1:meas.num.f);
-    jRidx = [ jRIji, jRIij, jRv, jRf ];
+    accJ = accJ + meas.num.f;
+    jRidx = [ jRIji, jRIij, jRv, jRf, accJ + 1:(2 * powsys.num.zi * dsesettings.virtual) ];
     % ---------------------------------------------------------------------
     % ---------------------------------------------------------------------
 
@@ -126,10 +157,11 @@ z = [
       meas.pmu.m(meas.pmu.Iinj) .* cos(meas.pmu.a(meas.pmu.Iinj));
       meas.pmu.m(meas.pmu.Iinj) .* sin(meas.pmu.a(meas.pmu.Iinj));
       meas.fpmu.m - powsys.fn;
+      zeros(2 * powsys.num.zi * dsesettings.virtual, 1)
     ];
 % -------------------------------------------------------------------------
 
-% -------------- MeasuRements covariance matrix - R -----------------------
+% -------------- Measurements covariance matrix - R -----------------------
 % ----------------- Compute values of the elements ------------------------
 vRIji = [ (cos(meas.pmu.a(meas.pmu.Iji)).^2) .* (meas.pmu.msd(meas.pmu.Iji) .^2)...
             + meas.pmu.m(meas.pmu.Iji).^2 .* (sin(meas.pmu.a(meas.pmu.Iji)).^2) .* ...
@@ -155,25 +187,30 @@ vRv = [ (cos(meas.pmu.a(meas.pmu.v)).^2) .* (meas.pmu.msd(meas.pmu.v) .^2)...
 vRf = (meas.fpmu.fsd).^2;
 vR = [ vRIji; vRIij; vRv; vRf ];
 % -------------------------------------------------------------------------
-R = sparse(iRidx, jRidx, vR);
-% R = 1^-8.* eye(2 * meas.num.pmu + meas.num.f);
+if dsesettings.measurementWeights
+    R = sparse(iRidx, jRidx, [ vR; min(vR)/2 * ones(2 * powsys.num.zi * dsesettings.virtual, 1)]);
+else
+    R = sparse(1:2 * (meas.num.pmu + powsys.num.zi * ssesettings.virtual),...
+               1:2 * (meas.num.pmu + powsys.num.zi * ssesettings.virtual),...
+               [ ones(2 * meas.num.pmu, 1); 5 * ones(2 * powsys.num.zi * ssesettings.virtual, 1) ]);
+end
 % -------------------------------------------------------------------------
 
 % ------------------------ Correction step --------------------------------
 K = P_ * H.' * (H * P_ * H.' + R)^-1;
-X = X_ + K * (z - H * X_);
+x = x_ + K * (z - H * x_);
 P = (eye(2 * powsys.num.bus + 1) - K * H) * P_;
 % -------------------------------------------------------------------------
 
 % ------------------------- Prediction step -------------------------------
-dA = 2 * pi * X(2 * powsys.num.bus + 1) * Trr;
-X_ =  [ reshape([ (X(reidx) * cos(dA) - X(imidx) * sin(dA)).'; (X(reidx) *...
-        sin(dA) + X(imidx) * cos(dA)).' ], [], 1); X(2 * powsys.num.bus + 1) ];
+dA = 2 * pi * x(2 * powsys.num.bus + 1) * Trr;
+x_ =  [ reshape([ (x(reidx) * cos(dA) - x(imidx) * sin(dA)).'; (x(reidx) *...
+        sin(dA) + x(imidx) * cos(dA)).' ], [], 1); x(2 * powsys.num.bus + 1) ];
 % ------------------------ Calculate values of A --------------------------
 vA = [   ones(2 * powsys.num.bus, 1); - dA .* ones(powsys.num.bus, 1); 
          dA .* ones(powsys.num.bus, 1);
-        [ -X(reidx) .* (2 * pi * Trr)^2 * X(2 * powsys.num.bus + 1) - X(imidx) .* 2 * pi * Trr;
-         -X(imidx) .* (2 * pi * Trr)^2 * X(2 * powsys.num.bus + 1) + X(reidx) .* 2 * pi * Trr]; 1 ];
+        [ -x(reidx) .* (2 * pi * Trr)^2 * x(2 * powsys.num.bus + 1) - x(imidx) .* 2 * pi * Trr;
+         -x(imidx) .* (2 * pi * Trr)^2 * x(2 * powsys.num.bus + 1) + x(reidx) .* 2 * pi * Trr]; 1 ];
 A = sparse(iAidx, jAidx, vA);
 
 P_ = A * P * A.' + Q;

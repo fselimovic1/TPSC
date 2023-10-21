@@ -103,7 +103,7 @@ for i = 1:dI:measurements.tstamps
     else
         if strcmp(tsesettings.method, 'quasidyn')
                 [ X, iter, converged, info  ] = run_wls_rect_sse(powsys,...
-                meas);
+                meas, tsesettings);
         elseif strcmp(tsesettings.method, 'fEKFrect')
             % --------------------- Initial state variables ---------------
             if tsesettings.initialStage

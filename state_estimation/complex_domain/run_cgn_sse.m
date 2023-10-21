@@ -84,11 +84,11 @@ jC11Inj = colInj;
 % -------------------------------------------------------------------------
 
 % ------------------------- Values of elements ----------------------------
-vC11Iji = [     powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.Iji));...
-                 powsys.ybus.toto(-meas.pmu.loc(meas.pmu.Iji)); ];
-vC11Iij =  [     powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.Iij));...
-                 powsys.ybus.fromto(meas.pmu.loc(meas.pmu.Iij)); 
-    ];
+vC11Iji = [  powsys.ybus.tofrom(-meas.pmu.loc(meas.pmu.Iji));...
+             powsys.ybus.toto(-meas.pmu.loc(meas.pmu.Iji)); 
+             ];
+vC11Iij =  [ powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.Iij));...
+             powsys.ybus.fromto(meas.pmu.loc(meas.pmu.Iij)); ];
 vC11V = ones(meas.num.pV, 1);
 vC11Inj = nonzeros(powsys.ybus.y(meas.pmu.loc(meas.pmu.Iinj), :));
 % -------------------------------------------------------------------------
@@ -96,7 +96,8 @@ vC11Inj = nonzeros(powsys.ybus.y(meas.pmu.loc(meas.pmu.Iinj), :));
 C11 = sparse(...
              [ iC11Iji, iC11Iij, iC11V, iC11Inj  ],... 
              [ jC11Iji; jC11Iij; jC11V; jC11Inj  ], ...
-             [ vC11Iji; vC11Iij; vC11V; vC11Inj  ], meas.num.pmu, powsys.num.bus );
+             [ vC11Iji; vC11Iij; vC11V; vC11Inj  ], ...
+             meas.num.pmu, powsys.num.bus );
 % -------------------------------------------------------------------------
 
 % ---------------- OPTIONAL - Virtual current injection -------------------
