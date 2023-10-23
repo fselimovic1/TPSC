@@ -17,7 +17,7 @@ vrs = 'TA';
 %----------------------------About Solver----------------------------------
 tsesettings.domain = 'real';
 tsesettings.method = 'fEKFrect';
-tsesettings.mweights = [ "pmuscadaratio", 15 ];
+tsesettings.mweights = [ "deviceinfo", 2 ];
 tsesettings.fc = 10;
 tsesettings.flatStart = 1;
 tsesettings.maxNumberOfIter = 50;

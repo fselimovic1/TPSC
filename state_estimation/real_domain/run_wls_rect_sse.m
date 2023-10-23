@@ -70,7 +70,17 @@ vRv = [ (cos(meas.pmu.a(meas.pmu.v)).^2) .* (meas.pmu.msd(meas.pmu.v) .^2)...
              ];    
 vR = [  1 ./ vRIbrO; 1 ./ vRIbr; 1 ./ vRv; ];
 % -------------------------------------------------------------------------
-
+if strcmp(ssesettings.mweights(1), "deviceinfo")
+    R = [ sparse(iRidx, jRidx, vR), sparse(2 * meas.num.pmu, 2 * powsys.num.zi * ssesettings.virtual);
+        sparse(2 * powsys.num.zi * ssesettings.virtual, 2 * meas.num.pmu), ...
+        sparse(1:2 * powsys.num.zi * ssesettings.virtual,...
+        1:2 * powsys.num.zi  * ssesettings.virtual, 5 * max(vR) * ones(2 * powsys.num.zi * ssesettings.virtual, 1))
+        ];
+else
+    R = sparse(1:2 * (meas.num.pmu + powsys.num.zi * ssesettings.virtual),...
+               1:2 * (meas.num.pmu + powsys.num.zi * ssesettings.virtual),...
+               [ ones(2 * meas.num.pmu, 1); 2 * ones(2 * powsys.num.zi * ssesettings.virtual, 1) ]);
+end
 % -------------------------------------------------------------------------
 
 % -------------------- Measurement matrix - H -------------------------
@@ -159,13 +169,6 @@ end
 % ---------------------------------------------------------------------
 
 % --------------------------- Solve the LS problem ------------------------
-if ssesettings.measurementWeights
-    R = sparse(iRidx, jRidx, vR);
-else
-    R = sparse(1:2 * (meas.num.pmu + powsys.num.zi * ssesettings.virtual),...
-               1:2 * (meas.num.pmu + powsys.num.zi * ssesettings.virtual),...
-               [ ones(2 * meas.num.pmu, 1); 5 * ones(2 * powsys.num.zi * ssesettings.virtual, 1) ]);
-end
 x = (H' * R * H) \ (H' * R * z);
 % -------------------------------------------------------------------------
 

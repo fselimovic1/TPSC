@@ -37,7 +37,7 @@ if strcmp('complex', sesettings.domain)
     end
 else
     if strcmp('wls_rect_sse', sesettings.method)
-        [ Vc, iter, converged, info ] = run_wls_rect_sse(powsys, meas);
+        [ Vc, iter, converged, info ] = run_wls_rect_sse(powsys, meas, sesettings);
         Vc = Vc(1:2:2*powsys.num.bus - 1) + 1i * Vc(2:2:2*powsys.num.bus);
     else
     end

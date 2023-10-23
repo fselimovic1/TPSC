@@ -129,7 +129,7 @@ if dsesettings.initialStage
     % ---------------------------------------------------------------------
 
     % -------------------- Process noise covarinace matrix ----------------
-    Q = [ 1e-9 .* eye(2 * powsys.num.bus)     zeros(2 * powsys.num.bus, 1) 
+    Q = [ 1e-6 .* eye(2 * powsys.num.bus)     zeros(2 * powsys.num.bus, 1) 
             zeros(1, 2 * powsys.num.bus)                 1e-10;
             ];
     % ---------------------------------------------------------------------
@@ -187,12 +187,16 @@ vRv = [ (cos(meas.pmu.a(meas.pmu.v)).^2) .* (meas.pmu.msd(meas.pmu.v) .^2)...
 vRf = (meas.fpmu.fsd).^2;
 vR = [ vRIji; vRIij; vRv; vRf ];
 % -------------------------------------------------------------------------
-if dsesettings.measurementWeights
-    R = sparse(iRidx, jRidx, [ vR; min(vR)/2 * ones(2 * powsys.num.zi * dsesettings.virtual, 1)]);
+if strcmp(dsesettings.mweights(1), "deviceinfo")
+    R = [ sparse(iRidx, jRidx, vR), sparse(2 * meas.num.pmu + meas.num.f, 2 * powsys.num.zi * dsesettings.virtual);
+        sparse(2 * powsys.num.zi * dsesettings.virtual, 2 * meas.num.pmu + meas.num.f), ...
+        sparse(1:2 * powsys.num.zi * dsesettings.virtual,...
+        1:2 * powsys.num.zi  * dsesettings.virtual, min(vR)/5 .* ones(2 * powsys.num.zi * dsesettings.virtual, 1))
+        ];
 else
-    R = sparse(1:2 * (meas.num.pmu + powsys.num.zi * ssesettings.virtual),...
-               1:2 * (meas.num.pmu + powsys.num.zi * ssesettings.virtual),...
-               [ ones(2 * meas.num.pmu, 1); 5 * ones(2 * powsys.num.zi * ssesettings.virtual, 1) ]);
+    R = sparse(1:2 * (meas.num.pmu + powsys.num.zi * dsesettings.virtual + meas.num.f/2),...
+               1:2 * (meas.num.pmu + powsys.num.zi * dsesettings.virtual + meas.num.f/2),...
+               [ ones(2 * meas.num.pmu + meas.num.f, 1); 5 * ones(2 * powsys.num.zi * dsesettings.virtual, 1) ]);
 end
 % -------------------------------------------------------------------------
 

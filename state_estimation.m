@@ -17,10 +17,8 @@ vrs = 'D';
 %------------------- State estimaion solver - Settings --------------------
 sesettings.domain = 'real';
 sesettings.method = 'wls_rect_sse';
-% sesettings.domain = 'complex';
-% sesettings.method = 'lcec_sse';
-sesettings.mweights = [ "pmuscadaratio", 5 ];
-sesettings.virtual = 0;
+sesettings.mweights = [ "non", 5 ];
+sesettings.virtual = 1;
 sesettings.flatStart = 1;
 sesettings.maxNumberOfIter = 50;
 sesettings.eps = 1e-6;
