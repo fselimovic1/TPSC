@@ -13,15 +13,15 @@ meas.scada.pji = find(meas.scada.type == 1 & meas.scada.loc < 0);
 meas.scada.pij = find(meas.scada.type == 1 & meas.scada.loc > 0);
 meas.scada.qji = find(meas.scada.type == 2 & meas.scada.loc < 0);
 meas.scada.qij = find(meas.scada.type == 2 & meas.scada.loc > 0);
-meas.scada.pinj = find(meas.scada.type == 3);
-meas.scada.qinj = find(meas.scada.type == 4);
+meas.scada.pi = find(meas.scada.type == 3);
+meas.scada.qi = find(meas.scada.type == 4);
 meas.scada.Ijim = find(meas.scada.type == 5 & meas.scada.loc < 0);
 meas.scada.Iijm = find(meas.scada.type == 5 & meas.scada.loc > 0);
 meas.scada.vm = find(meas.scada.type == 6);
 % ---------------- Complex pairs (needed for some estimators) -------------
 [ meas.scada.sji.p, meas.scada.sji.q ] = myintersect(meas.scada.loc, meas.scada.pji, meas.scada.qji);
 [ meas.scada.sij.p, meas.scada.sij.q ] = myintersect(meas.scada.loc, meas.scada.pij, meas.scada.qij);
-[ meas.scada.sinj.p, meas.scada.sinj.q ] = myintersect(meas.scada.loc, meas.scada.pinj, meas.scada.qinj);
+[ meas.scada.si.p, meas.scada.si.q ] = myintersect(meas.scada.loc, meas.scada.pi, meas.scada.qi);
 % -------------------------------------------------------------------------
 
 % ----------------------- Real powers indices only ------------------------
@@ -29,8 +29,8 @@ meas.scada.oddPji = setdiff(meas.scada.pji, meas.scada.sji.p);
 meas.scada.oddQji = setdiff(meas.scada.qji, meas.scada.sji.q);
 meas.scada.oddPij = setdiff(meas.scada.pij, meas.scada.sij.p);
 meas.scada.oddQij = setdiff(meas.scada.qij, meas.scada.sij.q);
-meas.scada.oddPinj = setdiff(meas.scada.pinj, meas.scada.sinj.p);
-meas.scada.oddQinj = setdiff(meas.scada.qinj, meas.scada.sinj.q);
+meas.scada.oddPi = setdiff(meas.scada.pi, meas.scada.si.p);
+meas.scada.oddQi = setdiff(meas.scada.qi, meas.scada.si.q);
 % -------------------------------------------------------------------------
 % -------------------------------------------------------------------------
 
@@ -43,7 +43,7 @@ meas.pmu.m = measurements.synpmu(:, 5);
 meas.pmu.a = measurements.synpmu(:, 6);
 meas.pmu.mtrue = measurements.synpmu(:, 7);
 meas.pmu.atrue = measurements.synpmu(:, 8);
-meas.pmu.Iinj = find(meas.pmu.type == 2);
+meas.pmu.Ii = find(meas.pmu.type == 2);
 meas.pmu.Iij = find(meas.pmu.type == 1 & meas.pmu.loc > 0);
 meas.pmu.Iji = find(meas.pmu.type == 1 & meas.pmu.loc < 0);
 meas.pmu.v = find(meas.pmu.type == 3);
@@ -72,24 +72,24 @@ meas.num.sPji = numel(meas.scada.pji);
 meas.num.sPij = numel(meas.scada.pij);
 meas.num.sQji = numel(meas.scada.qji);
 meas.num.sQij = numel(meas.scada.qij);
-meas.num.sPinj = numel(meas.scada.pinj);
-meas.num.sQinj = numel(meas.scada.qinj);
+meas.num.sPi = numel(meas.scada.pi);
+meas.num.sQi = numel(meas.scada.qi);
 meas.num.sIjim = numel(meas.scada.Ijim);
 meas.num.sIijm = numel(meas.scada.Iijm);
 meas.num.sVm = numel(meas.scada.vm);
 meas.num.sSji = numel(meas.scada.sji.p);
 meas.num.sSij = numel(meas.scada.sij.p);
-meas.num.sSinj = numel(meas.scada.sinj.p);
+meas.num.sSi = numel(meas.scada.si.p);
 meas.num.soPji = meas.num.sPji - meas.num.sSji;
 meas.num.soQji = meas.num.sQji - meas.num.sSji;
 meas.num.soPij = meas.num.sPij - meas.num.sSij;
 meas.num.soQij = meas.num.sQij - meas.num.sSij;
-meas.num.soPinj = meas.num.sPinj - meas.num.sSinj;
-meas.num.soQinj = meas.num.sQinj - meas.num.sSinj;
+meas.num.soPi = meas.num.sPi - meas.num.sSi;
+meas.num.soQi = meas.num.sQi - meas.num.sSi;
 % -------------------------------------------------------------------------
 
 % ------------------------------ PMU (-p) ---------------------------------
-meas.num.pIinj = numel(meas.pmu.Iinj);
+meas.num.pIi = numel(meas.pmu.Ii);
 meas.num.pIij = numel(meas.pmu.Iij);
 meas.num.pIji = numel(meas.pmu.Iji);
 meas.num.pV = numel(meas.pmu.v);

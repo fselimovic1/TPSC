@@ -14,8 +14,8 @@ z = [
       meas.pmu.m(meas.pmu.Iij) .* sin(meas.pmu.a(meas.pmu.Iij));
       meas.pmu.m(meas.pmu.v) .* cos(meas.pmu.a(meas.pmu.v));
       meas.pmu.m(meas.pmu.v) .* sin(meas.pmu.a(meas.pmu.v));
-      meas.pmu.m(meas.pmu.Iinj) .* cos(meas.pmu.a(meas.pmu.Iinj));
-      meas.pmu.m(meas.pmu.Iinj) .* sin(meas.pmu.a(meas.pmu.Iinj));
+      meas.pmu.m(meas.pmu.Ii) .* cos(meas.pmu.a(meas.pmu.Ii));
+      meas.pmu.m(meas.pmu.Ii) .* sin(meas.pmu.a(meas.pmu.Ii));
       zeros(2 * powsys.num.zi * ssesettings.virtual, 1)
     ];
 % -------------------------------------------------------------------------
@@ -23,38 +23,38 @@ z = [
 % ------------------------ Measurements' weights --------------------------
 % ----------------------------- Row indices -------------------------------
 accI = meas.num.pIji;
-iRIbrO = [ (1:meas.num.pIji),... 
+iRIji = [ (1:meas.num.pIji),... 
            accI + (1:meas.num.pIji)];    
 accI = accI + meas.num.pIji;
-iRIbr = [ accI + (1:meas.num.pIij),... 
+iRIij = [ accI + (1:meas.num.pIij),... 
           accI + meas.num.pIij + (1:meas.num.pIij)];
 accI = accI + 2 * meas.num.pIij;
 iRv = [ accI + (1:meas.num.pV),...
         accI + meas.num.pV + (1:meas.num.pV)];
-iRidx = [ iRIbrO, iRIbr, iRv ];
+iRidx = [ iRIji, iRIij, iRv ];
 % -------------------------------------------------------------------------
     
 % ---------------------------- Column indices -----------------------------
 accJ = meas.num.pIji;
-jRIbrO = [ 1:meas.num.pIji,...
+jRIji = [ 1:meas.num.pIji,...
            accJ + (1:meas.num.pIji) ];
 accJ = accJ + meas.num.pIji;
-jRIbr = [ (accJ + (1:meas.num.pIij)),... 
+jRIij = [ (accJ + (1:meas.num.pIij)),... 
            accJ + meas.num.pIij + (1:meas.num.pIij)];
 accJ = accJ + 2 * meas.num.pIij;   
 jRv = [ (accJ + (1:meas.num.pV)),... 
          accJ + meas.num.pV + (1:meas.num.pV)];
-jRidx = [ jRIbrO, jRIbr, jRv ];
+jRidx = [ jRIji, jRIij, jRv ];
 % -------------------------------------------------------------------------
 % ----------------- Compute values of the elements ------------------------
-vRIbrO = [ (cos(meas.pmu.a(meas.pmu.Iji)).^2) .* (meas.pmu.msd(meas.pmu.Iji) .^2)...
+vRIji = [ (cos(meas.pmu.a(meas.pmu.Iji)).^2) .* (meas.pmu.msd(meas.pmu.Iji) .^2)...
             + meas.pmu.m(meas.pmu.Iji).^2 .* (sin(meas.pmu.a(meas.pmu.Iji)).^2) .* ...
             (meas.pmu.asd(meas.pmu.Iji) .^2);...
             (sin(meas.pmu.a(meas.pmu.Iji)).^2) .* (meas.pmu.msd(meas.pmu.Iji) .^2)...
             + meas.pmu.m(meas.pmu.Iji).^2 .* (cos(meas.pmu.a(meas.pmu.Iji)).^2) .* ...
             (meas.pmu.asd(meas.pmu.Iji) .^2);
              ];      
-vRIbr = [ (cos(meas.pmu.a(meas.pmu.Iij)).^2) .* (meas.pmu.msd(meas.pmu.Iij) .^2)...
+vRIij = [ (cos(meas.pmu.a(meas.pmu.Iij)).^2) .* (meas.pmu.msd(meas.pmu.Iij) .^2)...
             + meas.pmu.m(meas.pmu.Iij).^2 .* (sin(meas.pmu.a(meas.pmu.Iij)).^2) .* ...
             (meas.pmu.asd(meas.pmu.Iij) .^2);...
             (sin(meas.pmu.a(meas.pmu.Iij)).^2) .* (meas.pmu.msd(meas.pmu.Iij) .^2)...
@@ -68,7 +68,14 @@ vRv = [ (cos(meas.pmu.a(meas.pmu.v)).^2) .* (meas.pmu.msd(meas.pmu.v) .^2)...
             + meas.pmu.m(meas.pmu.v).^2 .* (cos(meas.pmu.a(meas.pmu.v)).^2) .* ...
             (meas.pmu.asd(meas.pmu.v) .^2);
              ];    
-vR = [  1 ./ vRIbrO; 1 ./ vRIbr; 1 ./ vRv; ];
+vRIi = [ (cos(meas.pmu.a(meas.pmu.Ii)).^2) .* (meas.pmu.msd(meas.pmu.Ii) .^2)...
+           + meas.pmu.m(meas.pmu.Ii).^2 .* (sin(meas.pmu.a(meas.pmu.Ii)).^2) .* ...
+           (meas.pmu.asd(meas.pmu.Ii) .^2);...
+           (sin(meas.pmu.a(meas.pmu.Ii)).^2) .* (meas.pmu.msd(meas.pmu.Ii) .^2)...
+           + meas.pmu.m(meas.pmu.Ii).^2 .* (cos(meas.pmu.a(meas.pmu.Ii)).^2) .* ...
+           (meas.pmu.asd(meas.pmu.Ii) .^2);
+        ];
+vR = [  1 ./ vRIji; 1 ./ vRIij; 1 ./ vRv; 1 ./ vRIi];
 % -------------------------------------------------------------------------
 if strcmp(ssesettings.mweights(1), "deviceinfo")
     R = [ sparse(iRidx, jRidx, vR), sparse(2 * meas.num.pmu, 2 * powsys.num.zi * ssesettings.virtual);
@@ -85,8 +92,8 @@ end
 
 % -------------------- Measurement matrix - H -------------------------
 accI = 0;
-[ rowInj, colInj ] = find(powsys.ybus.y(meas.pmu.loc(meas.pmu.Iinj), :));  
-nnzY = nonzeros(powsys.ybus.y(meas.pmu.loc(meas.pmu.Iinj), :));
+[ rowInj, colInj ] = find(powsys.ybus.y(meas.pmu.loc(meas.pmu.Ii), :));  
+nnzY = nonzeros(powsys.ybus.y(meas.pmu.loc(meas.pmu.Ii), :));
 % ------------------------ Row indices --------------------------------
 iHIjiRe = [ 1:meas.num.pIji, 1:meas.num.pIji, 1:meas.num.pIji, 1:meas.num.pIji ];
 accI = accI + meas.num.pIji;
@@ -104,9 +111,9 @@ accI = accI + meas.num.pV;
 iHvIm = (accI + (1:meas.num.pV));
 accI = accI + meas.num.pV;
 iHIiRe = [ accI + rowInj, accI + rowInj ];
-accI = accI + meas.num.pIinj;
+accI = accI + meas.num.pIi;
 iHIiIm = [ accI + rowInj, accI + rowInj ];
-accI = accI + meas.num.pIinj;    
+accI = accI + meas.num.pIi;    
 % ---------------------------------------------------------------------
 
 % -------------------------- Column indices ---------------------------

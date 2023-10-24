@@ -27,6 +27,7 @@ powsys = admittance_matrix(powsys);
 % -------------------------------------------------------------------------
 
 % -------------------- Allocate memeory for the results -------------------
+global X
 results.Vc = complex(zeros(powsys.num.bus, tstamps));
 rmse.vm = zeros(tstamps, 1);
 rmse.va = zeros(tstamps, 1);
@@ -102,27 +103,47 @@ for i = 1:dI:measurements.tstamps
         end
     else
         if strcmp(tsesettings.method, 'quasidyn')
-                [ X, iter, converged, info  ] = run_wls_rect_sse(powsys,...
+                [ x, iter, converged, info  ] = run_wls_rect_sse(powsys,...
                 meas, tsesettings);
         elseif strcmp(tsesettings.method, 'fEKFrect')
-            % --------------------- Initial state variables ---------------
+            %--------------------- Initial state variables ----------------
             if tsesettings.initialStage
                 if tsesettings.flatStart     
-                    X_ = [ reshape([ones(1, powsys.num.bus, 1); ...
+                    x_ = [ reshape([ones(1, powsys.num.bus, 1); ...
                            zeros(1 ,powsys.num.bus) ], [], 1); 0 ];
                 else
-                    X_ = [ powsys.bus.Vmi .* cos(powsys.bus.Vai);
+                    x_ = [ powsys.bus.Vmi .* cos(powsys.bus.Vai);
                            powsys.bus.Vmi .* sin(powsys.bus.Vai); 
                            0
                            ];
                 end
             end
             % -------------------------------------------------------------
-            [ X, X_, converged, info ] = run_fEKFrect_dse(powsys,...
-                meas, tsesettings, X_);       
-            results.f(i) = 50 + X(2 * powsys.num.bus + 1);
+            [ x, x_, converged, info ] = run_fEKFrect_dse(powsys,...
+                meas, tsesettings, x_);       
+            results.f(i) = 50 + x(2 * powsys.num.bus + 1);
+        elseif strcmp(tsesettings.method, "qDKF")
+            %--------------------- Initial state variables ----------------
+            if tsesettings.initialStage
+                if tsesettings.flatStart     
+                    x_ = [ reshape([ones(1, powsys.num.bus, 1); ...
+                           zeros(1 ,powsys.num.bus) ], [], 1) ];
+                else
+                    x_ = [ powsys.bus.Vmi .* cos(powsys.bus.Vai);
+                           powsys.bus.Vmi .* sin(powsys.bus.Vai); 
+                           ];
+                end
+            end
+            % -------------------------------------------------------------
+            if tsesettings.initialStage
+                X = zeros( 2 * powsys.num.bus, tstamps);
+            end
+            tsesettings.tstep = ceil(i/dI);
+            [ x, x_, converged, info ] = run_qDKF_dse(powsys,...
+                meas, tsesettings, x_);
+            X(:, ceil(i/dI)) = x;
         end
-        Vc = X(1:2:2 * powsys.num.bus - 1) + 1i .* X(2:2:2 * powsys.num.bus);
+        Vc = x(1:2:2 * powsys.num.bus - 1) + 1i .* x(2:2:2 * powsys.num.bus);
     end
     % ------------------ OPTIONAL - Measure execution time ----------------
     if tsesettings.measureTime && i ~= 1
@@ -154,7 +175,7 @@ for i = 1:dI:measurements.tstamps
     tsesettings.initialStage = false;
 end
 if tsesettings.measureTime
-    fprintf("PGNE requires %.2f [ms] in average.\n", mean(times) * 1000);
+    fprintf("%s requires %.2f [ms] in average.\n", tsesettings.method, mean(times) * 1000);
 end
 results.rmse = rmse;
 end
