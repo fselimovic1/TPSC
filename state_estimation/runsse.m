@@ -29,7 +29,7 @@ if strcmp('complex', sesettings.domain)
         sesettings.initialStage = 1;
         [ Vc, iter, converged, info ] = run_pgne_rtse(powsys, meas, sesettings, ones(powsys.num.bus, 1));
     elseif strcmp('cls_sse', sesettings.method)
-        [ Vc, iter, converged, info ] = run_cls_sse(powsys, meas);
+        [ Vc, iter, converged, info ] = run_cls_sse(powsys, meas, sesettings);
     elseif strcmp('lcec_sse', sesettings.method)
         [ Vc, iter, converged, info ] = run_lcec_sse(powsys, meas);
     else

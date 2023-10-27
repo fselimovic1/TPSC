@@ -75,6 +75,8 @@ for i = 1:dI:measurements.tstamps
     
     % ------------------- Calculate state variables -----------------------
     tic
+    % ---------------------- COMPLEX DOMAIN METHODS -----------------------
+    % ---------------------------------------------------------------------
     if strcmp(tsesettings.domain, "complex")
         if strcmp(tsesettings.method, "quasidyn") 
             % --------------------- Initial state variables ---------------
@@ -100,8 +102,28 @@ for i = 1:dI:measurements.tstamps
             end
             [ Vc, iter, converged, info ] = run_pgne_tse(powsys, meas, tsesettings, Vc);
             % -------------------------------------------------------------
+        elseif strcmp(tsesettings.method, "ckf")
+            %--------------------- Initial state variables ----------------
+            if tsesettings.initialStage
+                if tsesettings.flatStart     
+                    x_ = ones(powsys.num.bus, 1);
+                else
+                    x_ = powsys.bus.Vmi .* (cos(powsys.bus.Vai)...
+                            +  1i .* sin(powsys.bus.Vai)); 
+                end
+            end
+            % -------------------------------------------------------------
+            if tsesettings.initialStage
+                X = zeros(powsys.num.bus, tstamps);
+            end
+            tsesettings.tstep = ceil(i/dI);
+            [ Vc, x_, converged, info ] = run_ckf_dse(powsys,...
+                meas, tsesettings, x_);
+            X(:, ceil(i/dI)) = Vc;
         end
     else
+    % ------------------------ REAL DOMAIN METHODS ------------------------
+    % ---------------------------------------------------------------------
         if strcmp(tsesettings.method, 'quasidyn')
                 [ x, iter, converged, info  ] = run_wls_rect_sse(powsys,...
                 meas, tsesettings);

@@ -9,7 +9,7 @@ converged = 1;
 z = [ meas.pmu.m(meas.pmu.Iji) .* exp(1i .* meas.pmu.a(meas.pmu.Iji));
       meas.pmu.m(meas.pmu.Iij) .* exp(1i .* meas.pmu.a(meas.pmu.Iij));
       meas.pmu.m(meas.pmu.v) .* exp(1i .* meas.pmu.a(meas.pmu.v));
-      meas.pmu.m(meas.pmu.Iinj) .* exp(1i .* meas.pmu.a(meas.pmu.Iinj));
+      meas.pmu.m(meas.pmu.Ii) .* exp(1i .* meas.pmu.a(meas.pmu.Ii));
     ];
 % -------------------------------------------------------------------------
 
@@ -19,23 +19,23 @@ W = sparse(1:meas.num.pmu, 1:meas.num.pmu, ...
 % -------------------------------------------------------------------------
 
 % ------------------------- Construct H matrix --------------------------
-[ rowInj, colInj ] = find(powsys.ybus.y(meas.pmu.loc(meas.pmu.Iinj), :));  
+[ rowIi, colIi ] = find(powsys.ybus.y(meas.pmu.loc(meas.pmu.Ii), :));  
 
 % ---------------------------- Row indices --------------------------------
 iHIji = [ 1:meas.num.pIji, 1:meas.num.pIji ];
 iHIij = [ (meas.num.pIji  + (1:meas.num.pIij)), (meas.num.pIji  + (1:meas.num.pIij)) ];
 iHV = (meas.num.pIji + meas.num.pIij + (1:meas.num.pV));
-iHInj = meas.num.pIji + meas.num.pIij + meas.num.pV + rowInj;
+iHIi = meas.num.pIji + meas.num.pIij + meas.num.pV + rowIi;
 % -------------------------------------------------------------------------
 
 % ------------------------ Column indices ---------------------------------
-jHIij0 = [     powsys.branch.i(-meas.pmu.loc(meas.pmu.Iji)); 
+jHIji = [     powsys.branch.i(-meas.pmu.loc(meas.pmu.Iji)); 
                  powsys.branch.j(-meas.pmu.loc(meas.pmu.Iji)); ];
 jHIij =  [     powsys.branch.i(meas.pmu.loc(meas.pmu.Iij)); 
                  powsys.branch.j(meas.pmu.loc(meas.pmu.Iij));
                  ];
 jHV = meas.pmu.onbus(meas.pmu.v);
-jHInj = colInj;
+jHIi = colIi;
 % -------------------------------------------------------------------------
 
 % ------------------------- Values of elements ----------------------------
@@ -45,13 +45,13 @@ vHIij =  [     powsys.ybus.fromfrom(meas.pmu.loc(meas.pmu.Iij));...
                  powsys.ybus.fromto(meas.pmu.loc(meas.pmu.Iij)); 
     ];
 vHV = ones(meas.num.pV, 1);
-vHInj = nonzeros(powsys.ybus.y(meas.pmu.loc(meas.pmu.Iinj), :));
+vHIi = nonzeros(powsys.ybus.y(meas.pmu.loc(meas.pmu.Ii), :));
 % -------------------------------------------------------------------------
 
 H = sparse(...
-             [ iHIji, iHIij, iHV, iHInj  ],... 
-             [ jHIij0; jHIij; jHV; jHInj  ], ...
-             [ vHIji; vHIij; vHV; vHInj  ], ...
+             [ iHIji, iHIij, iHV, iHIi  ],... 
+             [ jHIji; jHIij; jHV; jHIi  ], ...
+             [ vHIji; vHIij; vHV; vHIi  ], ...
              meas.num.pmu, powsys.num.bus ...
          );
 % -------------------------------------------------------------------------

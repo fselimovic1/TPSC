@@ -11,26 +11,27 @@ clearvars
 
 %--------------------------- Power System Case ----------------------------
 casename = 'case39';
-vrs = 'TB';
+vrs = 'TA';
 %--------------------------------------------------------------------------
 
 %----------------------------About Solver----------------------------------
-tsesettings.domain = 'real';
-tsesettings.method = 'qDKF';
+tsesettings.domain = 'complex';
+tsesettings.method = 'ckf';
 tsesettings.mweights = [ "deviceinfo", 2 ];
 tsesettings.fc = 10;
-tsesettings.flatStart = 1;
+tsesettings.flatStart = 0;
 tsesettings.maxNumberOfIter = 50;
 tsesettings.eps = 1e-8;
 tsesettings.initialStage = 1;
 tsesettings.virtual = 1;
 tsesettings.realtimeplot = 1;
-tsesettings.rtpbus = 1;
+tsesettings.rtpbus = 27;
 tsesettings.plotpause = 0.05;
 tsesettings.plotForPaper = 1;
 tsesettings.measureTime = 1;
 tsesettings.timevariantR = 0;
-tsesettings.NQ = 10;
+tsesettings.NQ = 2;
+tsesettings.isQconst = 0;
 %--------------------------------------------------------------------------
 
 % --------------------------- Run  TSE solver -----------------------------

@@ -15,10 +15,10 @@ vrs = 'D';
 %--------------------------------------------------------------------------
 
 %------------------- State estimaion solver - Settings --------------------
-sesettings.domain = 'real';
-sesettings.method = 'wls_rect_sse';
+sesettings.domain = 'complex';
+sesettings.method = 'cls_sse';
 sesettings.mweights = [ "non", 5 ];
-sesettings.virtual = 1;
+sesettings.virtual = 0;
 sesettings.flatStart = 1;
 sesettings.maxNumberOfIter = 50;
 sesettings.eps = 1e-6;
