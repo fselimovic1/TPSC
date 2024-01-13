@@ -39,7 +39,7 @@ octave-workspace
 
 # A directory for testing and fun
 Fun/
-tests/
+# tests/
 docs/figs
 
 # matopower cases
