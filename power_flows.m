@@ -2,9 +2,6 @@ clc
 close
 clearvars
 
-
-% A comment to practice Git workflows.
-
 %--------------------- Transmission System Power Flows --------------------
 %--------------------------------------------------------------------------
 

@@ -4,6 +4,7 @@ if desktop('-inuse')
     home = getenv('USERPROFILE');
 else
     home = '/MATLAB Drive';
+end
 
 addpath(strcat(home, '/TPSC/data/power_systems'), ...
         strcat(home, '/TPSC/data/power_system_with_devices'), ...

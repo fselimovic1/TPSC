@@ -102,7 +102,7 @@ for i = 1:dI:measurements.tstamps
             end
             [ Vc, iter, converged, info ] = run_pgne_tse(powsys, meas, tsesettings, Vc);
             % -------------------------------------------------------------
-        elseif strcmp(tsesettings.method, "ckf")
+        elseif strcmp(tsesettings.method, "ckf_dse")
             %--------------------- Initial state variables ----------------
             if tsesettings.initialStage
                 if tsesettings.flatStart     
