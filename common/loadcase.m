@@ -1,8 +1,14 @@
 function data = loadcase(casename, varargin)
-home = getenv('USERPROFILE');
-addpath(strcat(home, '\TPSC\data\power_systems'), ...
-        strcat(home, '\TPSC\data\power_system_with_devices'), ...
-        strcat(home, '\TPSC\data\measurements'));
+% Adjustment for Matlab online
+if desktop('-inuse')
+    home = getenv('USERPROFILE');
+else
+    home = '/MATLAB Drive';
+
+addpath(strcat(home, '/TPSC/data/power_systems'), ...
+        strcat(home, '/TPSC/data/power_system_with_devices'), ...
+        strcat(home, '/TPSC/data/measurements'));
+
 if nargin == 1
     filename = strcat('TPSC', casename, '.mat');
 elseif nargin == 2
