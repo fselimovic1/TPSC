@@ -139,7 +139,8 @@ if dsesettings.initialStage
     else
         R = sparse(1:2 * (meas.num.pmu + powsys.num.zi * dsesettings.virtual),...
                    1:2 * (meas.num.pmu + powsys.num.zi * dsesettings.virtual),...
-                   [ ones(2 * meas.num.pmu, 1); 5 * ones(2 * powsys.num.zi * dsesettings.virtual, 1) ]);
+                   [ 1e-4 .* ones(2 * meas.num.pmu, 1); ...
+                   1e-5 * ones(2 * powsys.num.zi * dsesettings.virtual, 1) ]);
     end
     % -------------------- State Transition Matrix ------------------------
     A = sparse(1:2 * powsys.num.bus, 1:2 * powsys.num.bus, ones(2 * powsys.num.bus, 1));
@@ -210,16 +211,6 @@ if dsesettings.timevariantR && strcmp(dsesettings.mweights(1), "deviceinfo")
 end
 % -------------------------------------------------------------------------
 
-% ------------------- Calculate process covariance matrix -----------------
-if dsesettings.tstep == 1
-    Q = A .* 10^-9;
-elseif dsesettings.tstep <= dsesettings.NQ
-    Q = diag(var(X(:, 1:dsesettings.tstep - 1), 0, 2));
-else
-    Q = diag(var(X(:, dsesettings.tstep - dsesettings.NQ:dsesettings.tstep), 0, 2));
-end
-% -------------------------------------------------------------------------
-
 % ----------------------- KF COMPUTING PART -------------------------------
 % -------------------------------------------------------------------------
 
@@ -228,6 +219,20 @@ K = P_ * H.' * (H * P_ * H.' + R)^-1;
 x = x_ + K * (z - H * x_);
 P = (A - K * H) * P_;
 % -------------------------------------------------------------------------
+
+% ------------------- Calculate process covariance matrix -----------------
+if dsesettings.tstep < 3
+    Q = A .* 10^-9;
+elseif dsesettings.tstep <= dsesettings.NQ
+    y = X(:, dsesettings.tstep - 1:-1:2) - X(:, 1);
+    Q = diag(var(y, 0, 2));
+else
+    y = X(:, dsesettings.tstep - 1:-1:dsesettings.tstep - dsesettings.NQ + 1)...
+        - X(:, dsesettings.tstep - dsesettings.NQ);
+    Q = diag(var(y, 0, 2));
+end
+% -------------------------------------------------------------------------
+
 
 % ------------------------- Prediction step -------------------------------
 x_ =  x;

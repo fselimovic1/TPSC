@@ -422,8 +422,12 @@ else
     end
 end
 %------------------------------Save case-----------------------------------
-home = getenv('USERPROFILE');
-path = strcat(home, '\TPSC\data\power_system_with_devices\TPSC', name, 'D_', vrs);
+if desktop('-inuse')
+    home = getenv('USERPROFILE');
+else
+    home = '/MATLAB Drive';
+end
+path = strcat(home, '/TPSC/data/power_system_with_devices/TPSC', name, 'D_', vrs);
 save(path, 'data')
 %--------------------------------------------------------------------------
 end

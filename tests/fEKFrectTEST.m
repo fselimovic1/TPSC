@@ -6,15 +6,16 @@ clearvars
 %--------------------------------------------------------------------------
 domains = [ "complex", "real", "real" ];
 methods = [ "ckf_dse", "fEKFrect", "qDKF", ];
+% NQ = [ 10, 20, 25 ];
 magnitudeOrPhase = 1;
 %--------------------------- Power System Case ----------------------------
 casename = 'case39';
-vrs = 'TB';
+vrs = 'TC';
 %--------------------------------------------------------------------------
 
 %----------------------------About Solver----------------------------------
 tsesettings.mweights = [ "deviceinfo", 5 ];
-tsesettings.fc = 10;
+tsesettings.fc = 25;
 tsesettings.flatStart = 1;
 tsesettings.maxNumberOfIter = 50;
 tsesettings.eps = 1e-8;
@@ -29,6 +30,7 @@ tsesettings.measureTime = 1;
 tsesettings.timevariantR = 1;
 tsesettings.isQconst = 0;
 tsesettings.NQ = 30;
+% tsesettings.NQ = [ 5, 10, 15 ];
 tsesettings.excludeStart = 5;
 %--------------------------------------------------------------------------
 figure
@@ -37,6 +39,7 @@ hold on
 for i = 1:numel(domains)
     tsesettings.domain = domains(i);
     tsesettings.method = methods(i);
+    % tsesettings.NQ = NQ(i);
     if i == 2
         tsesettings.virtual = 1;
     end
@@ -45,6 +48,7 @@ for i = 1:numel(domains)
     % ---------------------------------------------------------------------
     if magnitudeOrPhase == 1
         plot(results.rmse.vm(tsesettings.excludeStart:end), '-*', 'DisplayName', [char(methods(i)), ' in ', char(domains(i)), ' domain']);
+        % plot(results.rmse.vm(tsesettings.excludeStart:end), '-*', 'DisplayName', [char(methods(i)), ' in ', char(domains(i)), ' domain']);
     elseif magnitudeOrPhase == 2 
         plot(results.rmse.va(tsesettings.excludeStart:end), '-*', 'DisplayName', [char(methods(i)), ' in ', char(domains(i)), ' domain']);
     end

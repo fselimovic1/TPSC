@@ -306,8 +306,12 @@ else
     fprintf("\t%d PMU (frequency and rocof) measurements generated.\n", mfreqPMU);
 end
 %------------------------------Save Case-----------------------------------
-home = getenv('USERPROFILE');
-path = strcat(home, '\TPSC\data\measurements\TPSC', casename, ...
+if desktop('-inuse')
+    home = getenv('USERPROFILE');
+else
+    home = '/MATLAB Drive';
+end
+path = strcat(home, '/TPSC/data/measurements/TPSC', casename, ...
     'M_', vrs);
 save(path, 'measurements')
 %--------------------------------------------------------------------------

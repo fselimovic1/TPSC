@@ -8,7 +8,7 @@ clear
 %--------------------------Generate New Data-------------------------------
 %--------------------Power system with measurement devices-----------------
 casename = 'case39';
-vrs = 'TA';
+vrs = 'TC';
 %--------------------------------------------------------------------------
 
 %---------------------------- State Estimation mode -----------------------
@@ -19,7 +19,7 @@ mgsettings.mode = 'tracking';
 
 %------------------------- Tracking SE options ----------------------------
 mgsettings.t = 5;
-mgsettings.fdynamics = [ "const" ];
+mgsettings.fdynamics = [ "const", 49.5 ];
 mgsettings.ldynamics = [ "random", 0.001  ];
 %--------------------------------------------------------------------------
 

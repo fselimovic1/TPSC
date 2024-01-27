@@ -12,7 +12,7 @@ clear
 % are contained within the structure 'ddsettings'.
 %----------------------------Power System----------------------------------
 name = 'case39';
-vrs = 'TA';
+vrs = 'TC';
 %--------------------------------------------------------------------------
 
 %---------------------------Legacy measurements----------------------------
@@ -42,7 +42,7 @@ ddsettings.pmuset = [ "num", 39, "currCh", 1 ]; %[ "perc", 95, "currCh" -1];
 ddsettings.pmusd = [ "fixed", "magnitude", 0.7 * 1/3, "phase", 1/3 * 0.7e-2 * 180 / pi, ...
                       "frequency", 1/3 * 5, "rocof",  0.4 ];
 
-ddsettings.pmufreq = [ "complete", 10 ];%[ "P100", 50 "P50", 20, "P25", 10, "P10", 20 ];
+ddsettings.pmufreq = [ "complete", 25 ];%[ "P100", 50 "P50", 20, "P25", 10, "P10", 20 ];
 %--------------------------------------------------------------------------
 
 %------------------------- Run Device Distribution ------------------------
