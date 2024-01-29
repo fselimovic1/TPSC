@@ -16,7 +16,7 @@ vrs = 'TC';
 
 %----------------------------About Solver----------------------------------
 tsesettings.domain = 'real';
-tsesettings.method = 'fEKFrect';
+tsesettings.method = 'qDKF';
 tsesettings.mweights = [ "deviceinfo", 2 ];
 tsesettings.fc = 25;
 tsesettings.flatStart = 0;
@@ -30,7 +30,7 @@ tsesettings.plotpause = 0.05;
 tsesettings.plotForPaper = 1;
 tsesettings.measureTime = 1;
 tsesettings.timevariantR = 0;
-tsesettings.NQ = 10;
+tsesettings.NQ = 20;
 tsesettings.isQconst = 0;
 %--------------------------------------------------------------------------
 

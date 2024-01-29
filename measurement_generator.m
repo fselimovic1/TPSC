@@ -19,8 +19,8 @@ mgsettings.mode = 'tracking';
 
 %------------------------- Tracking SE options ----------------------------
 mgsettings.t = 5;
-mgsettings.fdynamics = [ "const", 49.5 ];
-mgsettings.ldynamics = [ "random", 0.001  ];
+mgsettings.fdynamics = [ "const", 50.2 ];
+mgsettings.ldynamics = [ "const" ];
 %--------------------------------------------------------------------------
 
 %--------------------------- Power Flow options ---------------------------

@@ -189,8 +189,11 @@ for i = 1:dI:measurements.tstamps
     % ----------------------- Compute RMSE  -------------------------------
     rmse.vm(ceil(i/dI)) = sqrt(sum(abs(abs(measurements.trueVoltage(:, i))... 
                         - abs(Vc(1:powsys.num.bus)))));
-    rmse.va(ceil(i/dI)) = sqrt(sum(abs(angle(measurements.trueVoltage(:, i))...
-                        - angle(Vc(1:powsys.num.bus)))));
+    angleDiff = angle(measurements.trueVoltage(:, i))...
+                        - angle(Vc(1:powsys.num.bus));
+    angleDiff(angleDiff > pi) = angleDiff(angleDiff > pi) - 2 * pi;
+    angleDiff(angleDiff < -pi) = angleDiff(angleDiff < -pi) + 2 * pi;
+    rmse.va(ceil(i/dI)) = sqrt(sum(abs(angleDiff)));
     % ---------------------------------------------------------------------
     results.Vc(:, i) = Vc;
     pause(tsesettings.plotpause)

@@ -7,21 +7,21 @@ clearvars
 domains = [ "complex", "real", "real" ];
 methods = [ "ckf_dse", "fEKFrect", "qDKF", ];
 % NQ = [ 10, 20, 25 ];
-magnitudeOrPhase = 1;
+magnitudeOrPhase = 2;
 %--------------------------- Power System Case ----------------------------
 casename = 'case39';
 vrs = 'TC';
 %--------------------------------------------------------------------------
 
 %----------------------------About Solver----------------------------------
-tsesettings.mweights = [ "deviceinfo", 5 ];
+tsesettings.mweights = [ "", 5 ];
 tsesettings.fc = 25;
 tsesettings.flatStart = 1;
 tsesettings.maxNumberOfIter = 50;
 tsesettings.eps = 1e-8;
 tsesettings.initialStage = 1;
 tsesettings.measurementWeights = 0;
-tsesettings.virtual = 0;
+tsesettings.virtual = 1;
 tsesettings.realtimeplot = 0;
 tsesettings.rtpbus = 109;
 tsesettings.plotpause = 0.05;
@@ -29,7 +29,7 @@ tsesettings.plotForPaper = 0;
 tsesettings.measureTime = 1;
 tsesettings.timevariantR = 1;
 tsesettings.isQconst = 0;
-tsesettings.NQ = 30;
+tsesettings.NQ = 20;
 % tsesettings.NQ = [ 5, 10, 15 ];
 tsesettings.excludeStart = 5;
 %--------------------------------------------------------------------------
@@ -39,10 +39,10 @@ hold on
 for i = 1:numel(domains)
     tsesettings.domain = domains(i);
     tsesettings.method = methods(i);
-    % tsesettings.NQ = NQ(i);
-    if i == 2
-        tsesettings.virtual = 1;
+    if i == 3 || i == 2
+        tsesettings.mweights = [ "deviceinfo", 5 ];
     end
+    % tsesettings.NQ = NQ(i);
     % --------------------------- Run  TSE solver -------------------------
     [ results, ~, ~ ] = runtse(casename, vrs, tsesettings);
     % ---------------------------------------------------------------------

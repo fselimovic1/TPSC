@@ -58,7 +58,7 @@ if dsesettings.initialStage
                  );
         % --------------------- Construct R matrix -------------------------
         R = sparse(1:meas.num.pmu + powsys.num.zi, 1:meas.num.pmu + powsys.num.zi, ...
-            [1e-2 .* ones(meas.num.pmu, 1);  (1e-3) .* ones(powsys.num.zi, 1)]);
+            [1e-4 .* ones(meas.num.pmu, 1);  (1e-5) .* ones(powsys.num.zi, 1)]);
         % -----------------------------------------------------------------          
     else
         H = sparse(...
@@ -73,7 +73,7 @@ if dsesettings.initialStage
     end
     % ---------------------------------------------------------------------
     % -------------------- Initial prediction covariance ------------------
-    P_ = 100 * eye(powsys.num.bus);
+    P_ = 10 * eye(powsys.num.bus);
     % ---------------------------------------------------------------------
     Im = sparse(1:powsys.num.bus, 1:powsys.num.bus, ones(powsys.num.bus, 1));
 end
@@ -93,12 +93,15 @@ z = [ meas.pmu.m(meas.pmu.Iji) .* exp(1i .* meas.pmu.a(meas.pmu.Iji));
 % -------------------------------------------------------------------------
 
 % ------------------- Calculate process covariance matrix -----------------
-if dsesettings.tstep == 1 || dsesettings.isQconst
-    Q = Im .* 10^-6;
+if dsesettings.tstep < 3
+    Q = Im .* 10^-9;
 elseif dsesettings.tstep <= dsesettings.NQ
-    Q = diag(var(abs(X(:, 1:dsesettings.tstep - 1)), 0, 2));
+    y = X(:, dsesettings.tstep - 1:-1:2) - X(:, 1);
+    Q = diag(var(y, 0, 2));
 else
-    Q = diag(var(abs(X(:, dsesettings.tstep - dsesettings.NQ:dsesettings.tstep)), 0, 2));
+    y = X(:, dsesettings.tstep - 1:-1:dsesettings.tstep - dsesettings.NQ + 1)...
+        - X(:, dsesettings.tstep - dsesettings.NQ);
+    Q = diag(var(y, 0, 2));
 end
 % -------------------------------------------------------------------------
 

@@ -101,8 +101,8 @@ if dsesettings.initialStage
     % ---------------------------------------------------------------------
 
     % -------------------- Process noise covarinace matrix ----------------
-    Q = [ 1e-4 .* eye(2 * powsys.num.bus)     zeros(2 * powsys.num.bus, 1) 
-            zeros(1, 2 * powsys.num.bus)                 1e-6;
+    Q = [ 1e-9 .* eye(2 * powsys.num.bus)     zeros(2 * powsys.num.bus, 1) 
+            zeros(1, 2 * powsys.num.bus)                 10e-6;
             ];
     % ---------------------------------------------------------------------
     
@@ -177,7 +177,7 @@ if strcmp(dsesettings.mweights(1), "deviceinfo")
 else
     R = sparse(1:2 * (meas.num.pmu + powsys.num.zi * dsesettings.virtual + meas.num.f/2),...
                1:2 * (meas.num.pmu + powsys.num.zi * dsesettings.virtual + meas.num.f/2),...
-               [ ones(2 * meas.num.pmu + meas.num.f, 1); 5 * ones(2 * powsys.num.zi * dsesettings.virtual, 1) ]);
+               [ 1e-3 .* ones(2 * meas.num.pmu + meas.num.f, 1); 1e-4 * ones(2 * powsys.num.zi * dsesettings.virtual, 1) ]);
 end
 % -------------------------------------------------------------------------
 
